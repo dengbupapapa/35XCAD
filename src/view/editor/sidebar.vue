@@ -15,8 +15,9 @@
 import { ref, watch } from 'vue'
 import { nanoid } from './utils/simple'
 import { createFromIconfontCN } from '@ant-design/icons-vue';
+import iconfont from "@/assets/iconfont/iconfont.js?url"
 const Icon = createFromIconfontCN({
-  scriptUrl: './iconfont/iconfont.js', // 在 iconfont.cn 上生成
+  scriptUrl: iconfont, // 在 iconfont.cn 上生成
 });
 
 const treeData = [
