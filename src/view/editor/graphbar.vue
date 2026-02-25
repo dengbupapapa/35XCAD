@@ -1,26 +1,31 @@
 <template>
   <Cursor
+    class="icon"
     :class="{
       actived:
         interactionsManager.enable.entitieSelect && interactionsManager.enable.entitieTranslation,
     }"
   />
   <Line
+    class="icon"
     :class="{
       actived: interactionsManager.enable.linesAdd,
     }"
   />
   <Polyline
+    class="icon"
     :class="{
       actived: interactionsManager.enable.polylinesAdd,
     }"
   />
   <Arc
+    class="icon"
     :class="{
       actived: interactionsManager.enable.arcsAdd,
     }"
   />
   <Point
+    class="icon"
     :class="{
       actived: interactionsManager.enable.pointsAdd,
     }"
@@ -66,5 +71,8 @@ onMounted(()=>{
 <style scoped lang="less">
 .actived {
   background-color: #e6fffb;
+}
+.icon {
+  outline: none;
 }
 </style>
