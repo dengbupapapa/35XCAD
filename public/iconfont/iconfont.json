@@ -1,0 +1,65 @@
+{
+  "id": "5126319",
+  "name": "cad",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "4269079",
+      "name": "指针-彩",
+      "font_class": "zhizhen-cai",
+      "unicode": "e621",
+      "unicode_decimal": 58913
+    },
+    {
+      "icon_id": "4933869",
+      "name": "点",
+      "font_class": "dian",
+      "unicode": "ec1e",
+      "unicode_decimal": 60446
+    },
+    {
+      "icon_id": "11426536",
+      "name": "圆弧",
+      "font_class": "yuanhu",
+      "unicode": "e689",
+      "unicode_decimal": 59017
+    },
+    {
+      "icon_id": "33084125",
+      "name": "Sketcher_Sketcher_CreatePolyline_Constr",
+      "font_class": "Sketcher_Sketcher_CreatePolyline_Constr",
+      "unicode": "e801",
+      "unicode_decimal": 59393
+    },
+    {
+      "icon_id": "42868278",
+      "name": "线",
+      "font_class": "xian5",
+      "unicode": "e628",
+      "unicode_decimal": 58920
+    },
+    {
+      "icon_id": "9254527",
+      "name": "坐标",
+      "font_class": "zuobiao",
+      "unicode": "e8fd",
+      "unicode_decimal": 59645
+    },
+    {
+      "icon_id": "28488884",
+      "name": "基准面",
+      "font_class": "jizhunmian",
+      "unicode": "e76f",
+      "unicode_decimal": 59247
+    },
+    {
+      "icon_id": "29054135",
+      "name": "创建草图",
+      "font_class": "chuangjiancaotu",
+      "unicode": "e7af",
+      "unicode_decimal": 59311
+    }
+  ]
+}
