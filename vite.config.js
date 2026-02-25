@@ -10,6 +10,7 @@ import { dirGCS } from "./config"
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: './',
   plugins: [
     vue(),
     vueJsx(),
