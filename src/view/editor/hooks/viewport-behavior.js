@@ -549,6 +549,9 @@ export function useSelect() {
 }
 const THRESHOLD = 5
 const CLICK_TIME = 200
+/* [问题]
+ * 重合项选中时怎么让选中项再最上方（边框？）
+ */
 function useSelectPoints() {
   const raycaster = useRaycaster()
   const pointsGeometryQuery = usePointsGeometryQuery()
@@ -822,7 +825,7 @@ function useMoveLines() {
       let pointStart = pointsGeometryQuery.get(start)
       let pointEnd = pointsGeometryQuery.get(end)
       if (
-        !selectPointsInteractionQuery.includes(pointStart.id) ||
+        !selectPointsInteractionQuery.includes(pointStart.id) &&
         !selectPointsInteractionQuery.includes(pointEnd.id)
       )
         return false

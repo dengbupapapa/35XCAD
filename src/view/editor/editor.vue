@@ -9,11 +9,11 @@
       </div>
     </div>
     <div class="graphbar">
-      <Graphbar/>
+      <Graphbar />
     </div>
     <div class="body">
       <div class="sidebar">
-        <Sidebar/>
+        <Sidebar />
       </div>
       <div class="viewport">
         <!-- <TestConstraintsButton /> -->
@@ -21,14 +21,26 @@
       </div>
     </div>
   </div>
-  <template v-else-if="status === 'reject'">reject</template>
-  <template v-else>loading...</template>
+  <template v-else-if="status === 'reject'">
+    <div style="display: flex; height: 100%; justify-content: center; align-items: center">
+      <a-result status="error" title="加载失败">
+        <template #extra>
+          <a-button type="primary" @click="onReload">刷新</a-button>
+        </template>
+      </a-result>
+    </div>
+  </template>
+  <template v-else>
+    <div style="display: flex; height: 100%; justify-content: center; align-items: center">
+      <a-spin tip="Loading..." />
+    </div>
+  </template>
 </template>
 <script setup>
 import { onMounted, onUnmounted } from 'vue'
 import Toolbar from './toolbar.vue'
 import Graphbar from './graphbar.vue'
-import Sidebar from "./sidebar.vue"
+import Sidebar from './sidebar.vue'
 import Viewport from './viewport.vue'
 import TestModesInteractionButton from './test-modes-interaction-button.vue'
 import TestConstraintsButton from './test-constraints-button.vue'
@@ -59,6 +71,13 @@ onMounted(() => {
 onUnmounted(() => {
   document.removeEventListener('contextmenu', preventDefaultFn)
 })
+
+/*
+ * 其他事件
+ */
+function onReload() {
+  window.location.reload(true)
+}
 
 /*
  * 1、射线->几何算法——现在的mesh不是threejs的标准对象了 （ko）
@@ -107,13 +126,13 @@ onUnmounted(() => {
         justify-content: center;
         align-items: center;
         margin: 0 5px;
-        padding:5px;
-        user-select :none;
+        padding: 5px;
+        user-select: none;
         cursor: pointer;
-        &:hover{
+        &:hover {
           background-color: #eee;
         }
-        &:active{
+        &:active {
           background-color: #ddd;
         }
       }
@@ -128,13 +147,13 @@ onUnmounted(() => {
     padding-left: 10px;
     > * {
       margin: 0 2px;
-      padding:2px;
+      padding: 2px;
       line-height: 30px;
       cursor: pointer;
-      &:hover{
+      &:hover {
         background-color: #eee;
       }
-      &:active{
+      &:active {
         background-color: #ddd;
       }
     }
