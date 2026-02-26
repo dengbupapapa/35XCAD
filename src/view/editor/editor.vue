@@ -161,6 +161,7 @@ function onReload() {
   .body {
     display: flex;
     flex: 1;
+    overflow: hidden;
     .sidebar {
       width: 240px;
       margin-top: 15px;

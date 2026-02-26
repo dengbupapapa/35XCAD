@@ -30,14 +30,8 @@ export function useSelectPoints() {
       ids = ids.filter((id) => {
         return selectPointsInteractionQuery.check(id)
       })
-      selectsPoints.value.forEach((id) => {
-        active(id, false)
-        selectPointsStrictInteractionManage.remove(id)
-      })
-      ids.forEach((id) => {
-        active(id, true)
-      })
-      selectsPoints.value = ids
+      this.clear()
+      this.push(ids)
     },
     push(ids) {
       if (!(ids instanceof Array)) {
@@ -75,7 +69,7 @@ export function useSelectPoints() {
         active(id, false)
         selectPointsStrictInteractionManage.remove(id)
       })
-      selectsPoints.value = []
+      selectsPoints.value.length = 0
     },
   }
 }
@@ -139,7 +133,7 @@ export function useSelectPointsStrict() {
       // selectsPointsStrict.value.forEach((id) => {
       //   active(id, false)
       // })
-      selectsPointsStrict.value = []
+      selectsPointsStrict.value.length = 0
     },
   }
 }
@@ -162,13 +156,8 @@ export function useSelectLines() {
       ids = ids.filter((id) => {
         return selectLinesInteractionQuery.check(id)
       })
-      selectsLines.value.forEach((id) => {
-        active(id, false)
-      })
-      ids.forEach((id) => {
-        active(id, true)
-      })
-      selectsLines.value = ids
+      this.clear()
+      this.push()
     },
     push(ids) {
       if (!(ids instanceof Array)) {
@@ -204,7 +193,7 @@ export function useSelectLines() {
       selectsLines.value.forEach((id) => {
         active(id, false)
       })
-      selectsLines.value = []
+      selectsLines.value.length = 0
     },
   }
 }
