@@ -18,9 +18,9 @@ import { computed } from 'vue'
 import { DownloadOutlined } from '@ant-design/icons-vue'
 import {  ConstraintResolver } from './core/solver-gcs.js'
 import { useSelectGeometrysStrict } from './hooks/select-derived'
-import { labelConstraintMap } from './locales/zh-CN/displayMap.js'
 import { useConstraints as useConstraintsGeometryManager } from './hooks/geometry-manager'
 import { usePlanes as usePlanesGeometryQuery } from "./hooks/geometry-query"
+import { labelConstraintMap } from './locales/zh-CN/displayMap.js'
 
 let constraintsGeometryManager = useConstraintsGeometryManager()
 let planesGeometryQuery = usePlanesGeometryQuery()

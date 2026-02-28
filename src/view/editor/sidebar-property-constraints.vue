@@ -1,13 +1,25 @@
 <template>
-  <select size="5" class="select">
-    <option value="1">选项一</option>
-    <option value="2">选项二</option>
-    <option value="3">选项三</option>
-    <option value="4">选项四</option>
-    <option value="5">选项五</option>
+  <select :size="constraints.length > 1 ? constraints.length : 2" class="select">
+    <option :key="constraint.id" :value="constraint.id" v-for="constraint in constraints">
+      {{ labelConstraintMap[constraint.type] }}
+    </option>
   </select>
 </template>
-<script setup></script>
+<script setup>
+import { computed } from 'vue'
+import { useConstraints as useConstraintsGeometryDerived } from './hooks/geometry-derived'
+import { useSelectGeometrysStrict as useSelectGeometrysStrictInteractionDerived } from './hooks/interaction-derived'
+import { labelConstraintMap } from './locales/zh-CN/displayMap.js'
+let constraintsGeometryDerived = useConstraintsGeometryDerived()
+let selectGeometrysStrictInteractionDerived = useSelectGeometrysStrictInteractionDerived()
+let constraints = computed(() => {
+  return constraintsGeometryDerived.value.filter((constraint) => {
+    return selectGeometrysStrictInteractionDerived.value.every((geometry)=>{
+      return constraint.args.includes(geometry)
+    })
+  })
+})
+</script>
 <style scoped lang="less">
 .select {
   width: 100%;

@@ -31,3 +31,18 @@ export function useHasSelect() {
     return selectsPoints.value.length > 0 || selectLines.value.length > 0
   })
 }
+
+export function useSelectGeometrysStrict() {
+  let selectPointsStrict = useSelectPointsStrict()
+  let selectLines = useSelectLines()
+  return computed(() => {
+    return [...selectPointsStrict.value, ...selectLines.value]
+  })
+}
+export function useSelectGeometrys() {
+  let selectPoints = useSelectPoints()
+  let selectLines = useSelectLines()
+  return computed(() => {
+    return [...selectPoints.value, ...selectLines.value]
+  })
+}

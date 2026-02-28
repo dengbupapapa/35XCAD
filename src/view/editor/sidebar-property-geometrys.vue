@@ -1,9 +1,9 @@
 <template>
   <select :size="selectGeometrysStrict.length" class="select">
-    <option v-for="(point, index) in selectPointsStrict" :value="point.id">
+    <option v-for="(point, index) in selectPointsStrict" :value="point.id" :key="point.id">
       {{ labelGeometryMap[point.type] }}{{ index + 1 }}
     </option>
-    <option v-for="(line, index) in selectLines" :value="line.id">
+    <option v-for="(line, index) in selectLines" :value="line.id" :key="line.id">
       {{ labelGeometryMap[line.type] }}{{ index + 1 }}
     </option>
   </select>

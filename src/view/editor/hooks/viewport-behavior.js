@@ -550,7 +550,8 @@ export function useSelect() {
 const THRESHOLD = 5
 const CLICK_TIME = 200
 /* [问题]
- * 重合项选中时怎么让选中项再最上方（边框？）
+ * 重合项选中时怎么让选中项在最上方（边框？选中规则顺序问题？）
+ * 先选线再选线上的点好像有点逻辑问题
  */
 function useSelectPoints() {
   const raycaster = useRaycaster()
