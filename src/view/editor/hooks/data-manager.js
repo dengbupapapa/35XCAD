@@ -4,9 +4,12 @@ import {
   useLines as useLinesGeometryManager,
   usePolylines as usePolylinesGeometryManager,
   useArcs as useArcsGeometryManager,
-  useConstraints as useConstraintsGeometryManager,
   //   useConstraintsIncrement as useConstraintsIncrementGeometryManager,
 } from './geometry-manager'
+import {
+  useConstraints as useConstraintsManager,
+  //   useConstraintsIncrement as useConstraintsIncrementGeometryManager,
+} from './constraint-manager'
 import { useSelectPoints, useSelectPointsStrict, useSelectLines } from './interaction-manager.js'
 import { cloneDeep } from 'lodash-es'
 
@@ -16,7 +19,7 @@ export function useLoader() {
   let linesGeometryManager = useLinesGeometryManager()
   let polylinesGeometryManager = usePolylinesGeometryManager()
   let arcsGeometryManager = useArcsGeometryManager()
-  let constraintsGeometryManager = useConstraintsGeometryManager()
+  let constraintsManager = useConstraintsManager()
   return {
     json(data) {
       let { planes, points, lines, polylines, arcs, constraints } = data
@@ -28,7 +31,7 @@ export function useLoader() {
       linesGeometryManager.load(cloneDeep(lines))
       polylinesGeometryManager.load(cloneDeep(polylines))
       arcsGeometryManager.load(cloneDeep(arcs))
-      constraintsGeometryManager.load(cloneDeep(constraints))
+      constraintsManager.load(cloneDeep(constraints))
     },
     empty() {
       planesGeometryManager.add([0, 0, 1], 0)
@@ -44,7 +47,7 @@ export function useClear() {
   let linesGeometryManager = useLinesGeometryManager()
   let polylinesGeometryManager = usePolylinesGeometryManager()
   let arcsGeometryManager = useArcsGeometryManager()
-  let constraintsGeometryManager = useConstraintsGeometryManager()
+  let constraintsManager = useConstraintsManager()
 
   let selectPoints = useSelectPoints()
   let selectPointsStrict = useSelectPointsStrict()
@@ -59,7 +62,7 @@ export function useClear() {
       polylinesGeometryManager.clear()
       linesGeometryManager.clear()
       pointsGeometryManager.clear()
-      constraintsGeometryManager.clear()
+      constraintsManager.clear()
       planesGeometryManager.clear()
       /* [问题]
        * 清理应该在架构层,从下至上
@@ -70,7 +73,7 @@ export function useClear() {
       polylinesGeometryManager.clear()
       linesGeometryManager.clear()
       pointsGeometryManager.clear()
-      constraintsGeometryManager.clear()
+      constraintsManager.clear()
     },
   }
 }

@@ -4,14 +4,14 @@ import {
   usePoints as usePointsGeometry,
   useLines as useLinesGeometry,
   useArcs as useArcsGeometry,
-  useConstraints as useConstraintsGeometry,
+  // useConstraints as useConstraintsGeometry,
   usePlanesHash as usePlanesHashGeometry,
   usePointsHash as usePointsHashGeometry,
   useLinesHash as useLinesHashGeometry,
   useArcsHash as useArcsHashGeometry,
   usePolylines as usePolylinesGeometry,
-  useConstraintsHash as useConstraintsHashGeometry,
-  useConstraintsIncrement as useConstraintsIncrementGeometry,
+  // useConstraintsHash as useConstraintsHashGeometry,
+  // useConstraintsIncrement as useConstraintsIncrementGeometry,
 } from './geometry-provide-context.js'
 export function usePlane(id) {
   let planes = usePlanesHashGeometry()
@@ -37,12 +37,12 @@ export function useArc(id) {
     return arcs.value[id]
   })
 }
-export function useConstraint(id) {
-  let constraints = useConstraintsHashGeometry()
-  return computed(() => {
-    return constraints.value[id]
-  })
-}
+// export function useConstraint(id) {
+//   let constraints = useConstraintsHashGeometry()
+//   return computed(() => {
+//     return constraints.value[id]
+//   })
+// }
 export function useLinePoints(id) {
   let line = useLine(id)
   let pointsHash = usePointsHashGeometry()
@@ -96,18 +96,18 @@ export function usePolylines() {
   })
 }
 
-export function useConstraints() {
-  let constraintsGeometry = useConstraintsGeometry()
-  return computed(() => {
-    return constraintsGeometry.value
-  })
-}
-export function useConstraintsIncrement() {
-  let constraintsIncrementGeometry = useConstraintsIncrementGeometry()
-  return computed(() => {
-    return constraintsIncrementGeometry.value
-  })
-}
+// export function useConstraints() {
+//   let constraintsGeometry = useConstraintsGeometry()
+//   return computed(() => {
+//     return constraintsGeometry.value
+//   })
+// }
+// export function useConstraintsIncrement() {
+//   let constraintsIncrementGeometry = useConstraintsIncrementGeometry()
+//   return computed(() => {
+//     return constraintsIncrementGeometry.value
+//   })
+// }
 export function usePlanesHash() {
   let planesHash = usePlanesHashGeometry()
   return computed(() => {

@@ -11,10 +11,10 @@ export default function useRegistry() {
   const linesHash = ref({})
   const polylinesHash = ref({})
   const arcsHash = ref({})
-  const constraints = ref([])
-  const constraintsHash = ref({})
-  const constraintsPlaneHash = ref({})
-  const constraintsIncrement = ref(0)
+  // const constraints = ref([])
+  // const constraintsHash = ref({})
+  // const constraintsPlaneHash = ref({})
+  // const constraintsIncrement = ref(0)
   const increment = ref(0)
 
   provide(pointsSymbol, points)
@@ -27,10 +27,10 @@ export default function useRegistry() {
   provide(linesHashSymbol, linesHash)
   provide(polylinesHashSymbol, polylinesHash)
   provide(arcsHashSymbol, arcsHash)
-  provide(constraintsSymbol, constraints)
-  provide(constraintsHashSymbol, constraintsHash)
-  provide(constraintsPlaneHashSymbol, constraintsPlaneHash)
-  provide(constraintsIncrementSymbol, constraintsIncrement)
+  // provide(constraintsSymbol, constraints)
+  // provide(constraintsHashSymbol, constraintsHash)
+  // provide(constraintsPlaneHashSymbol, constraintsPlaneHash)
+  // provide(constraintsIncrementSymbol, constraintsIncrement)
   provide(incrementSymbol, increment)
 }
 
@@ -44,10 +44,10 @@ const pointsHashSymbol = Symbol('points-hash')
 const linesHashSymbol = Symbol('lines-hash')
 const polylinesHashSymbol = Symbol('polylines-hash')
 const arcsHashSymbol = Symbol('arcs-hash')
-const constraintsSymbol = Symbol('constraints')
-const constraintsHashSymbol = Symbol('constraintsHash')
-const constraintsPlaneHashSymbol = Symbol('constraintsPlaneHash')
-const constraintsIncrementSymbol = Symbol('constraintsIncrement')
+// const constraintsSymbol = Symbol('constraints')
+// const constraintsHashSymbol = Symbol('constraintsHash')
+// const constraintsPlaneHashSymbol = Symbol('constraintsPlaneHash')
+// const constraintsIncrementSymbol = Symbol('constraintsIncrement')
 const incrementSymbol = Symbol('increment')
 export function usePlanes() {
   return inject(planesSymbol)
@@ -79,18 +79,18 @@ export function usePolylinesHash() {
 export function useArcsHash() {
   return inject(arcsHashSymbol)
 }
-export function useConstraints() {
-  return inject(constraintsSymbol)
-}
-export function useConstraintsHash() {
-  return inject(constraintsHashSymbol)
-}
-export function useConstraintsPlaneHash() {
-  return inject(constraintsPlaneHashSymbol)
-}
-export function useConstraintsIncrement() {
-  return inject(constraintsIncrementSymbol)
-}
+// export function useConstraints() {
+//   return inject(constraintsSymbol)
+// }
+// export function useConstraintsHash() {
+//   return inject(constraintsHashSymbol)
+// }
+// export function useConstraintsPlaneHash() {
+//   return inject(constraintsPlaneHashSymbol)
+// }
+// export function useConstraintsIncrement() {
+//   return inject(constraintsIncrementSymbol)
+// }
 export function useIncrement() {
   return inject(incrementSymbol)
 }

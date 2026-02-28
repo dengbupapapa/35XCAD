@@ -46,6 +46,7 @@ import Viewport from './viewport.vue'
 // import TestConstraintsButton from './test-constraints-button.vue'
 // import TestLocalStorage from './test-local-storage.vue'
 import useRegistryGeometryProvideContext from './hooks/geometry-provide-context.js'
+import useRegistryConstraintProvideContext from './hooks/constraint-provide-context.js'
 import useRegistryViewportProvideContext from './hooks/viewport-provide-context.js'
 import useRegistryModesProvideContext from './hooks/modes-provide-context.js'
 import useRegistryInteractionProvideContext from './hooks/interaction-provide-context.js'
@@ -54,6 +55,7 @@ import useRegistrySolverProvideContext from './hooks/solver-gcs-provide-context.
  * 注册provide上下文
  */
 useRegistryGeometryProvideContext()
+useRegistryConstraintProvideContext()
 useRegistryViewportProvideContext()
 useRegistryModesProvideContext()
 useRegistryInteractionProvideContext()

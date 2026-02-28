@@ -18,13 +18,13 @@ import { computed } from 'vue'
 import { DownloadOutlined } from '@ant-design/icons-vue'
 import {  ConstraintResolver } from './core/solver-gcs.js'
 import { useSelectGeometrysStrict } from './hooks/select-derived'
-import { useConstraints as useConstraintsGeometryManager } from './hooks/geometry-manager'
+import { useConstraints as useConstraintsManager } from './hooks/constraint-manager'
 import { usePlanes as usePlanesGeometryQuery } from "./hooks/geometry-query"
 import { labelConstraintMap } from './locales/zh-CN/displayMap.js'
 
-let constraintsGeometryManager = useConstraintsGeometryManager()
+let constraintsManager = useConstraintsManager()
 let planesGeometryQuery = usePlanesGeometryQuery()
-ConstraintResolver.setContext('constraintsGeometryManager',constraintsGeometryManager)
+ConstraintResolver.setContext('constraintsGeometryManager',constraintsManager)
 ConstraintResolver.setContext('planesGeometryQuery',planesGeometryQuery)
 let constraintResolver = new ConstraintResolver()
 /*

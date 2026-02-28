@@ -33,8 +33,10 @@ import {
   usePoints as usePointsGeometryQuery,
   usePlanes as usePlanesGeometryQuery,
   useArcs as useArcsGeometryQuery,
-  useConstraints as useConstraintsGeometryQuery,
 } from './geometry-query.js'
+import {
+  useConstraints as useConstraintsDataQuery,
+} from './constraint-query.js'
 import { Vector2, Vector3 } from '../core/gl-math'
 import { nanoid, assertIndexFormList, worldCoords2planeCoords } from '../utils/simple'
 import { upperFirst, throttle } from 'lodash-es'
@@ -450,7 +452,7 @@ export function useConstraints() {
   let constraintsHashGCS = useConstraintsHashGCS()
   let numeralsGCSQuery = useNumeralsGCSQuery()
   let systems = useSystemsGCSQuery()
-  let constraintsGeometryQuery = useConstraintsGeometryQuery()
+  let constraintsDataQuery = useConstraintsDataQuery()
   return {
     add(data) {
       let { type, args, points, arcs, unknowns, numerals, id, plane } = data
@@ -538,8 +540,8 @@ export function useConstraints() {
     },
     removeById(id) {
       //删除tag
-      let constraintGeometry = constraintsGeometryQuery.get(constraint.creator)
-      systems.active.handle.clearByTag(constraintGeometry.tag)
+      let constraintData = constraintsDataQuery.get(constraint.creator)
+      systems.active.handle.clearByTag(constraintData.tag)
       //删除相关数值
       let { args, numerals } = constraint
       args.forEach((arg, index) => {
@@ -563,8 +565,8 @@ export function useConstraints() {
     },
     clear() {
       ;[...constraintsGCS].forEach((constraint) => {
-        let constraintGeometry = constraintsGeometryQuery.get(constraint.creator)
-        systems.active.handle.clearByTag(constraintGeometry.tag)
+        let constraintData = constraintsDataQuery.get(constraint.creator)
+        systems.active.handle.clearByTag(constraintData.tag)
         constraintsGCS.shift()
         delete constraintsHashGCS[constraint.id]
       })
@@ -654,7 +656,7 @@ export function useSystems() {
   let resultsQuery = useResultsQuery()
   let systemsGCSQuery = useSystemsGCSQuery()
   let planesGeometryQuery = usePlanesGeometryQuery()
-  let constraintsGeometryQuery = useConstraintsGeometryQuery()
+  let constraintsDataQuery = useConstraintsDataQuery()
   let constraintsGCSQuery = useConstraintsGCSQuery()
   let pointsGCSQuery = usePointsGCSQuery()
   let numeralsGCSQuery = useNumeralsGCSQuery()
@@ -699,7 +701,7 @@ export function useSystems() {
       // //需要加载约束项
       // let index = systemsGCSQuery.indexOf(systemsGCSQuery.active)
       // let plane = planesGeometryQuery.getByIndex(index)
-      // let constraints = constraintsGeometryQuery.getByPlane(plane.id)
+      // let constraints = constraintsDataQuery.getByPlane(plane.id)
       // constraints.forEach(({ type, points, numerals, tag, id, gcs }) => {
       //   let { args } = constraintsGCSQuery.get(gcs)
       //   let args2System = []

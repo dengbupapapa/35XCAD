@@ -91,11 +91,13 @@ ConstraintResolver.registryRuler('addConstraintP2PCoincident')
   .availability((selects) => {
     return selects.length > 1 && selects.every(({ type }) => type === 'point')
   })
-  .executor((name, dispatcher, selects) => {
+  .executor(function(name, selects){
+    let context = this.getContext()
+    let constraintsGeometryManager = context.get('constraintsGeometryManager')
     for (let i = 0; i < selects.length - 1; i++) {
       let current = selects[i]
       let next = selects[i + 1]
-      dispatcher[name].apply(dispatcher, [current.id, next.id])
+      constraintsGeometryManager[name].apply(constraintsGeometryManager, [current.id, next.id])
     }
   })
 ConstraintResolver.registryRuler('addConstraintCoordinateX')

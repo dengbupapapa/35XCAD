@@ -7,13 +7,13 @@
 </template>
 <script setup>
 import { computed } from 'vue'
-import { useConstraints as useConstraintsGeometryDerived } from './hooks/geometry-derived'
+import { useConstraints as useConstraintsDerived } from './hooks/constraint-derived'
 import { useSelectGeometrysStrict as useSelectGeometrysStrictInteractionDerived } from './hooks/interaction-derived'
 import { labelConstraintMap } from './locales/zh-CN/displayMap.js'
-let constraintsGeometryDerived = useConstraintsGeometryDerived()
+let constraintsDerived = useConstraintsDerived()
 let selectGeometrysStrictInteractionDerived = useSelectGeometrysStrictInteractionDerived()
 let constraints = computed(() => {
-  return constraintsGeometryDerived.value.filter((constraint) => {
+  return constraintsDerived.value.filter((constraint) => {
     return selectGeometrysStrictInteractionDerived.value.every((geometry)=>{
       return constraint.args.includes(geometry)
     })

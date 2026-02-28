@@ -11,8 +11,10 @@ import {
   useLines as useLinesGeometryManager,
   usePolylines as usePolylinesGeometryManager,
   useArcs as useArcsGeometryManager,
-  useConstraints as useConstraintsGeometryManager,
 } from './geometry-manager.js'
+import {
+  useConstraints as useConstraintsManager,
+} from './constraint-manager.js'
 import {
   usePoints as usePointsGeometryQuery,
   useLines as useLinesGeometryQuery,
@@ -167,7 +169,7 @@ export function useAddPolylineClick() {
   const pointsGeometryManager = usePointsGeometryManager()
   const linesGeometryManager = useLinesGeometryManager()
   const polylinesGeometryManager = usePolylinesGeometryManager()
-  const constraintsGeometryManager = useConstraintsGeometryManager()
+  const constraintsManager = useConstraintsManager()
   const modesManagerInteractions = useModesManagerInteractions()
   const canvas = renderer.element()
 
@@ -191,7 +193,7 @@ export function useAddPolylineClick() {
         //画第二跟线就要拷贝前面的了
         let pointReferenceClone = pointsGeometryManager.clone(pointReference.id)
         pointsGeometryManager.attach(pointReferenceClone)
-        constraintsGeometryManager.addConstraintP2PCoincident(
+        constraintsManager.addConstraintP2PCoincident(
           pointReferenceClone.id,
           pointReference.id,
         )

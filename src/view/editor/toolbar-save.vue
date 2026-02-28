@@ -29,9 +29,12 @@ import {
   useLines as useLinesQuery,
   usePolylines as usePolylinesQuery,
   useArcs as useArcsQuery,
-  useConstraints as useConstraintsQuery,
   //   useConstraintsIncrement as useConstraintsIncrementQuery,
 } from './hooks/geometry-query'
+import {
+  useConstraints as useConstraintsQuery,
+  //   useConstraintsIncrement as useConstraintsIncrementQuery,
+} from './hooks/constraint-query'
 // storage
 let planesQuery = usePlanesQuery()
 let pointsQuery = usePointsQuery()
