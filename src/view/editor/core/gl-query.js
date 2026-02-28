@@ -1,5 +1,5 @@
 import { Raycaster as ImplRaycaster, Vector2, Vector3, MathUtils } from 'three'
-import config from '../config.json'
+import config from '../config-gl-style.json'
 
 export class Raycaster {
   impl

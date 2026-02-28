@@ -14,6 +14,7 @@ import {
   useConstraintsHash as useConstraintsHashGeometry,
   useConstraintsPlaneHash as useConstraintsPlaneHashGeometry,
   useConstraintsIncrement as useConstraintsIncrementGeometry,
+  useIncrement as useIncrementGeometry
 } from './geometry-provide-context.js'
 
 export function usePlanes() {
@@ -170,10 +171,19 @@ export function useConstraints() {
   }
 }
 export function useConstraintsIncrement() {
-  let constraintsIncrement = useConstraintsIncrementGeometry()
+  let constraintsIncrementGeometry = useConstraintsIncrementGeometry()
   return {
     get() {
-      return ++constraintsIncrement.value
+      return ++constraintsIncrementGeometry.value
     },
   }
+}
+
+export function useIncrement(){
+  let incrementGeometry = useIncrementGeometry()
+  return {
+    get() {
+      return ++incrementGeometry.value
+    },
+  }  
 }

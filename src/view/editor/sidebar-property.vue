@@ -3,39 +3,14 @@
     <div class="title"><ProfileTwoTone /><b>属性</b></div>
     <div class="content">
       <a-collapse :bordered="false" v-model:activeKey="activeKey">
-        <a-collapse-panel key="1" header="所选实体">
-          <select size="5" class="select">
-            <option value="1">选项一</option>
-            <option value="2">选项二</option>
-            <option value="3">选项三</option>
-            <option value="4">选项四</option>
-            <option value="5">选项五</option>
-          </select>
+        <a-collapse-panel key="1" header="所选实体" v-if="selectGeometrysStrict.length > 1">
+          <SidebarPropertyGeometrys/>
         </a-collapse-panel>
         <a-collapse-panel key="2" header="现有几何关系">
-          <select size="5" class="select">
-            <option value="1">选项一</option>
-            <option value="2">选项二</option>
-            <option value="3">选项三</option>
-            <option value="4">选项四</option>
-            <option value="5">选项五</option>
-          </select>
+          <SidebarPropertyConstraints/>
         </a-collapse-panel>
         <a-collapse-panel key="3" header="添加几何关系">
-          <div style="display: flex; flex-direction: column; margin-left: -16px; margin-right: -16px;">
-            <a-button type="text" style="text-align: left">
-              <template #icon>
-                <DownloadOutlined />
-              </template>
-              Text Button
-            </a-button>
-            <a-button type="text" style="text-align: left">
-              <template #icon>
-                <DownloadOutlined />
-              </template>
-              Text Button
-            </a-button>
-          </div>
+          <SidebarPropertyConstraintAdd />
         </a-collapse-panel>
       </a-collapse>
     </div>
@@ -43,8 +18,15 @@
 </template>
 <script setup>
 import { ref } from 'vue'
-import { ProfileTwoTone, DownloadOutlined } from '@ant-design/icons-vue'
+import { ProfileTwoTone } from '@ant-design/icons-vue'
+import {
+  useSelectGeometrysStrict,
+} from './hooks/select-derived'
+import SidebarPropertyGeometrys from "./sidebar-property-geometrys.vue"
+import SidebarPropertyConstraints from "./sidebar-property-constraints.vue"
+import SidebarPropertyConstraintAdd from "./sidebar-property-constraint-add.vue"
 let activeKey = ref([1, 2, 3])
+let selectGeometrysStrict = useSelectGeometrysStrict()
 </script>
 <style scoped lang="less">
 .sidebar-property {

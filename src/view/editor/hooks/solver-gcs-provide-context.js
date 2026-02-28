@@ -25,7 +25,6 @@ export default function useRegistry() {
   const constraintsHash = {}
   const results = ref([])
   const resultsHash = ref({})
-
   provide(moduleSymbol, ModuleCallback)
   provide(systemsSymbol, systems)
   provide(unknownsSetSymbol, unknownsSet)

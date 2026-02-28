@@ -1,35 +1,37 @@
 <template>
-  <Cursor
-    class="icon"
-    :class="{
-      actived:
-        interactionsManager.enable.entitieSelect && interactionsManager.enable.entitieTranslation,
-    }"
-  />
-  <Line
-    class="icon"
-    :class="{
-      actived: interactionsManager.enable.linesAdd,
-    }"
-  />
-  <Polyline
-    class="icon"
-    :class="{
-      actived: interactionsManager.enable.polylinesAdd,
-    }"
-  />
-  <Arc
-    class="icon"
-    :class="{
-      actived: interactionsManager.enable.arcsAdd,
-    }"
-  />
-  <Point
-    class="icon"
-    :class="{
-      actived: interactionsManager.enable.pointsAdd,
-    }"
-  />
+  <div class="graphbar" @click="onClick">
+    <Cursor
+      class="icon cursor"
+      :class="{
+        actived:
+          interactionsManager.enable.entitieSelect && interactionsManager.enable.entitieTranslation,
+      }"
+    />
+    <Line
+      class="icon"
+      :class="{
+        actived: interactionsManager.enable.linesAdd,
+      }"
+    />
+    <Polyline
+      class="icon"
+      :class="{
+        actived: interactionsManager.enable.polylinesAdd,
+      }"
+    />
+    <Arc
+      class="icon"
+      :class="{
+        actived: interactionsManager.enable.arcsAdd,
+      }"
+    />
+    <Point
+      class="icon"
+      :class="{
+        actived: interactionsManager.enable.pointsAdd,
+      }"
+    />
+  </div>
 </template>
 <script setup>
 import Cursor from './graphbar-cursor.vue'
@@ -59,20 +61,53 @@ watchEffect(() => {
     canvas.style.cursor = 'default'
   }
 })
-onMounted(()=>{
+onMounted(() => {
   /* [问题]
    * 控制器按中键旋转 加 ctrl 才平移
    */
   interactionsManager.activator.controls()
-  interactionsManager.activator.entitieSelect();
-  interactionsManager.activator.entitieTranslation();
+  interactionsManager.activator.entitieSelect()
+  interactionsManager.activator.entitieTranslation()
+})
+/*
+ * 事件
+ */
+import { useSelectGeometrys as useSelectGeometrysInteractionDispatch } from './hooks/interaction-dispatch'
+let selectGeometrysInteractionDispatch = useSelectGeometrysInteractionDispatch()
+function onClick(event) {
+  if (!event.target.closest('.icon')) return
+  if (event.target.closest('.cursor')) return
+  selectGeometrysInteractionDispatch.clear()
+}
+import hotkeys from 'hotkeys-js'
+hotkeys('esc', function (event, handler) {
+  event.preventDefault()
+  selectGeometrysInteractionDispatch.clear()
+  if (interactionsManager.enable.entitieSelect && interactionsManager.enable.entitieTranslation) {
+    selectGeometrysInteractionDispatch.clear()
+  }
 })
 </script>
 <style scoped lang="less">
-.actived {
-  background-color: #e6fffb;
-}
-.icon {
-  outline: none;
+.graphbar {
+  display: flex;
+  align-items: center;
+  padding-left: 10px;
+  > * {
+    margin: 0 2px;
+    padding: 2px;
+    line-height: 30px;
+    outline: none;
+    cursor: pointer;
+    &:hover {
+      background-color: #eee;
+    }
+    &:active {
+      background-color: #ddd;
+    }
+    .actived {
+      background-color: #e6fffb;
+    }
+  }
 }
 </style>

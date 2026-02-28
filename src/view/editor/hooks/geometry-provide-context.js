@@ -15,6 +15,7 @@ export default function useRegistry() {
   const constraintsHash = ref({})
   const constraintsPlaneHash = ref({})
   const constraintsIncrement = ref(0)
+  const increment = ref(0)
 
   provide(pointsSymbol, points)
   provide(planesSymbol, planes)
@@ -30,6 +31,7 @@ export default function useRegistry() {
   provide(constraintsHashSymbol, constraintsHash)
   provide(constraintsPlaneHashSymbol, constraintsPlaneHash)
   provide(constraintsIncrementSymbol, constraintsIncrement)
+  provide(incrementSymbol, increment)
 }
 
 const planesSymbol = Symbol('planes')
@@ -46,6 +48,7 @@ const constraintsSymbol = Symbol('constraints')
 const constraintsHashSymbol = Symbol('constraintsHash')
 const constraintsPlaneHashSymbol = Symbol('constraintsPlaneHash')
 const constraintsIncrementSymbol = Symbol('constraintsIncrement')
+const incrementSymbol = Symbol('increment')
 export function usePlanes() {
   return inject(planesSymbol)
 }
@@ -87,4 +90,7 @@ export function useConstraintsPlaneHash() {
 }
 export function useConstraintsIncrement() {
   return inject(constraintsIncrementSymbol)
+}
+export function useIncrement() {
+  return inject(incrementSymbol)
 }

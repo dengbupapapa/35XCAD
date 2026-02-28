@@ -7,7 +7,7 @@ import {
   useConstraints as useConstraintsGeometryManager,
   //   useConstraintsIncrement as useConstraintsIncrementGeometryManager,
 } from './geometry-manager'
-import { useSelectPoints } from './interaction-manager.js'
+import { useSelectPoints, useSelectPointsStrict, useSelectLines } from './interaction-manager.js'
 import { cloneDeep } from 'lodash-es'
 
 export function useLoader() {
@@ -47,15 +47,19 @@ export function useClear() {
   let constraintsGeometryManager = useConstraintsGeometryManager()
 
   let selectPoints = useSelectPoints()
+  let selectPointsStrict = useSelectPointsStrict()
+  let selectLines = useSelectLines() 
 
   return {
     all() {
+      selectPoints.clear()
+      selectPointsStrict.clear()
+      selectLines.clear()
       arcsGeometryManager.clear()
       polylinesGeometryManager.clear()
       linesGeometryManager.clear()
       pointsGeometryManager.clear()
       constraintsGeometryManager.clear()
-      selectPoints.clear()
       planesGeometryManager.clear()
       /* [问题]
        * 清理应该在架构层,从下至上

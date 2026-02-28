@@ -1,19 +1,26 @@
 import { computed } from 'vue'
 import {
+  useSelectPointsStrict as useSelectPointsStrictInteraction,
   useSelectPoints as useSelectPointsInteraction,
   useSelectLines as useSelectLinesInteraction,
 } from './interaction-provide-context'
 
-export function useSelectPoints() {
-  let selectsPoints = useSelectPointsInteraction()
+export function useSelectPointsStrict() {
+  let selectPointsStrictInteraction = useSelectPointsStrictInteraction()
   return computed(() => {
-    return selectsPoints.value
+    return selectPointsStrictInteraction.value
+  })
+}
+export function useSelectPoints() {
+  let selectsPointsInteraction = useSelectPointsInteraction()
+  return computed(() => {
+    return selectsPointsInteraction.value
   })
 }
 export function useSelectLines() {
-  let selectLines = useSelectLinesInteraction()
+  let selectLinesInteraction = useSelectLinesInteraction()
   return computed(() => {
-    return selectLines.value
+    return selectLinesInteraction.value
   })
 }
 

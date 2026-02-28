@@ -6,6 +6,7 @@ import {
   useArcs as useArcsGeometry,
   useConstraints as useConstraintsGeometry,
   useConstraintsIncrement as useConstraintsIncrementGeometry,
+  useIncrement as useIncrementGeometry,
   usePlanesHash as usePlanesHashGeometry,
   usePointsHash as usePointsHashGeometry,
   useLinesHash as useLinesHashGeometry,
@@ -169,7 +170,7 @@ export function usePlanes() {
   let planesEntitie = usePlanesEntitie()
   return {
     add(normal, constant) {
-      let plane = { normal, constant, visible: false, active: false, id: nanoid() }
+      let plane = { normal, constant, visible: false, active: false, id: nanoid(), type: 'plane' }
       // let system = systemsGCSManager.add()
       // plane.system = system.id
       // planes.value.push(plane)
@@ -275,6 +276,7 @@ export function usePoints() {
         id: nanoid(),
         // planes: [planesManager?.active?.id],
         plane: planesGeometryQuery?.active?.id,
+        type: 'point',
       }
       // let pointGCS = pointsGCSManager.add(point)
       // point.gcs = pointGCS.id
@@ -428,8 +430,20 @@ export function usePoints() {
       let [u, v] = worldCoords2planeCoords(position, plane)
 
       let stables = unknownsSetGCSQuery.stable()
+      // console.log(stables, unknownsSetGCSManager.has(numeralCurrentU), numeralCurrentU)
 
       // console.log(stables.includes(numeralCurrentU), stables.includes(numeralCurrentV))
+
+      if (!unknownsSetGCSManager.has(numeralCurrentU)) {
+        let [x, y, z] = planeCoords2worldCoords([u, numeralCurrentV.handle.value], plane)
+        this.updatePure(index, [x, y, z])
+        // this.updatePure(index, [position[0], pointCurrentGeometry.y, position[2]])
+      }
+      if (!unknownsSetGCSManager.has(numeralCurrentV)) {
+        let [x, y, z] = planeCoords2worldCoords([numeralCurrentU.handle.value, v], plane)
+        this.updatePure(index, [x, y, z])
+        // this.updatePure(index, [pointCurrentGeometry.x, position[1], position[2]])
+      }
 
       if (unknownsSetGCSManager.has(numeralCurrentU) && !stables.includes(numeralCurrentU)) {
         numeralCurrentU.handle.set(u)
@@ -460,7 +474,6 @@ export function usePoints() {
     updateApply(numerals) {
       let result = systemsGCSManager.solver()
       let { dependentsGroups, dependents, status, redundants } = result
-      // console.log(dependentsGroups, dependents, status)
       // console.log(result)
       let updatedPoints = new Set()
       dependentsGroups.forEach((rows) => {
@@ -523,7 +536,13 @@ export function useLines() {
   let pointsGeometryUpdater = usePointsGeometryUpdater()
   return {
     add(start, end) {
-      let line = { start, end, id: nanoid(), planes: [planesGeometryQuery?.active?.id] }
+      let line = {
+        start,
+        end,
+        id: nanoid(),
+        planes: [planesGeometryQuery?.active?.id],
+        type: 'line',
+      }
       // linesGeometry.value.push(line) //我们的架构是否一定两个点在同一plane？
       // linesHashGeometry.value[line.id] = line
       return this.attach(line)
@@ -630,7 +649,12 @@ export function usePolylines() {
   let linesGeometryQuery = useLinesGeometryQuery()
   return {
     add(lines) {
-      let polyline = { lines, id: nanoid(), planes: [planesGeometryQuery?.active?.id] }
+      let polyline = {
+        lines,
+        id: nanoid(),
+        planes: [planesGeometryQuery?.active?.id],
+        type: 'polyline',
+      }
       // polylinesGeometry.value.push(polyline)
       // polylinesHashGeometry.value[polyline.id] = polyline
       return this.attach(polyline)
@@ -684,7 +708,15 @@ export function useArcs() {
   let arcsGeometryQuery = useArcsGeometryQuery()
   return {
     add(center, start, end, ccw) {
-      let arc = { center, start, end, ccw, id: nanoid(), plane: planesGeometryQuery?.active?.id }
+      let arc = {
+        center,
+        start,
+        end,
+        ccw,
+        id: nanoid(),
+        plane: planesGeometryQuery?.active?.id,
+        type: 'arc',
+      }
       // arcsGeometry.value.push(arc)
       // arcsHashGeometry.value[arc.id] = arc
       this.attach(arc)
@@ -1057,6 +1089,15 @@ export function useConstraintsIncrement() {
   return {
     set(number) {
       constraintsIncrementGeometry.value = number
+    },
+  }
+}
+
+export function useIncrement() {
+  let incrementGeometry = useIncrementGeometry()
+  return {
+    set(number) {
+      incrementGeometry.value = number
     },
   }
 }

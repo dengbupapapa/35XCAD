@@ -15,7 +15,7 @@ import {
   FrontSide,
   BackSide,
 } from 'three'
-import config from '../config.json'
+import config from '../config-gl-style.json'
 
 export class Plane {
   impl

@@ -42,9 +42,9 @@ import Toolbar from './toolbar.vue'
 import Graphbar from './graphbar.vue'
 import Sidebar from './sidebar.vue'
 import Viewport from './viewport.vue'
-import TestModesInteractionButton from './test-modes-interaction-button.vue'
-import TestConstraintsButton from './test-constraints-button.vue'
-import TestLocalStorage from './test-local-storage.vue'
+// import TestModesInteractionButton from './test-modes-interaction-button.vue'
+// import TestConstraintsButton from './test-constraints-button.vue'
+// import TestLocalStorage from './test-local-storage.vue'
 import useRegistryGeometryProvideContext from './hooks/geometry-provide-context.js'
 import useRegistryViewportProvideContext from './hooks/viewport-provide-context.js'
 import useRegistryModesProvideContext from './hooks/modes-provide-context.js'
@@ -142,21 +142,6 @@ function onReload() {
   .graphbar {
     height: 50px;
     background-color: #ccc;
-    display: flex;
-    align-items: center;
-    padding-left: 10px;
-    > * {
-      margin: 0 2px;
-      padding: 2px;
-      line-height: 30px;
-      cursor: pointer;
-      &:hover {
-        background-color: #eee;
-      }
-      &:active {
-        background-color: #ddd;
-      }
-    }
   }
   .body {
     display: flex;

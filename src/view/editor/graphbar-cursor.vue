@@ -7,14 +7,14 @@ import iconfont from "@/assets/iconfont/iconfont.js?url"
 const Icon = createFromIconfontCN({
   scriptUrl: iconfont, // 在 iconfont.cn 上生成
 });
-import useInteractions from './hooks/modes-manager-interactions.js'
-const interactionsManager = useInteractions()
 /*
  * 事件
  */
+import useModesInteractionsManager from './hooks/modes-manager-interactions.js'
+let modesInteractionsManager = useModesInteractionsManager()
 function onClick(){
-  interactionsManager.activator.entitieSelect();
-  interactionsManager.activator.entitieTranslation();
+  modesInteractionsManager.activator.entitieSelect();
+  modesInteractionsManager.activator.entitieTranslation();
 }
 import hotkeys from 'hotkeys-js';
 hotkeys('esc', function(event, handler){

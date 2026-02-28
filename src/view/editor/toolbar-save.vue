@@ -42,12 +42,12 @@ let constraintsQuery = useConstraintsQuery()
 // let constraintsIncrementQuery = useConstraintsIncrementQuery()
 
 function onSave() {
-  data.value.planes = toRaw(planesQuery.all())
-  data.value.points = toRaw(pointsQuery.all())
-  data.value.lines = toRaw(linesQuery.all())
-  data.value.polylines = toRaw(polylinesQuery.all())
-  data.value.arcs = toRaw(arcsQuery.all())
-  data.value.constraints = toRaw(constraintsQuery.all())
+  data.value.planes = [...toRaw(planesQuery.all())]
+  data.value.points = [...toRaw(pointsQuery.all())]
+  data.value.lines = [...toRaw(linesQuery.all())]
+  data.value.polylines = [...toRaw(polylinesQuery.all())]
+  data.value.arcs = [...toRaw(arcsQuery.all())]
+  data.value.constraints = [...toRaw(constraintsQuery.all())]
   //   data.value.constraintsIncrement = toRaw(constraintsIncrementQuery.get())
 }
 
