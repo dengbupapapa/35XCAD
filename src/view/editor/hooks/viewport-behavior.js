@@ -553,7 +553,7 @@ const THRESHOLD = 5
 const CLICK_TIME = 200
 /* [问题]
  * 重合项选中时怎么让选中项在最上方（边框？选中规则顺序问题？）
- * 先选线再选线上的点好像有点逻辑问题
+ * 选线后再选点如何做视觉交互（直接选择和间接选择颜色区分？）
  */
 function useSelectPoints() {
   const raycaster = useRaycaster()
@@ -589,12 +589,12 @@ function useSelectPoints() {
         }
         selectGeometrysInteractionDispatch.push(point.id)
       } else {
-        if (!selectPointsInteractionQuery.includes(point.id)) {
+        if (!selectPointsInteractionQuery.includes(point)) {
           selectGeometrysInteractionDispatch.set(point.id)
           selectPointsStrictInteractionManager.add(point.id)
         }
       }
-      return true
+      return true 
     },
     onMousemove(state, event) {
       if (!activeted) return
