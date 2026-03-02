@@ -159,6 +159,9 @@ export function useAddLineClick() {
     canvas.removeEventListener('mousedown', onMousedown)
   })
 }
+
+
+import { ConstraintResolver } from '../core/solver-gcs.js'
 export function useAddPolylineClick() {
   const camera = useCamera()
   const renderer = useRenderer()
@@ -170,6 +173,7 @@ export function useAddPolylineClick() {
   const constraintsManager = useConstraintsManager()
   const modesManagerInteractions = useModesManagerInteractions()
   const canvas = renderer.element()
+  const constraintResolver = new ConstraintResolver()
 
   let pointsAnchor = []
   let polylineByLineIds = []
@@ -191,7 +195,8 @@ export function useAddPolylineClick() {
         //画第二跟线就要拷贝前面的了
         let pointReferenceClone = pointsGeometryManager.clone(pointReference.id)
         pointsGeometryManager.attach(pointReferenceClone)
-        constraintsManager.addConstraintP2PCoincident(pointReferenceClone.id, pointReference.id)
+        // constraintsManager.addConstraintP2PCoincident(pointReferenceClone.id, pointReference.id)
+        constraintResolver.solverAttach("addConstraintP2PCoincident",[pointReferenceClone, pointReference])
         pointReference = pointReferenceClone
       }
       let line = linesGeometryManager.add(pointReference.id, pointCurrent.id)

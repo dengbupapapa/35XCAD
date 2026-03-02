@@ -1,5 +1,6 @@
 <template>
   <div class="editor" v-if="status === 'resolve'">
+    <ContextRegistryToExternal/>
     <!-- <TestLocalStorage /> -->
     <!-- <TestModesInteractionButton /> -->
     <div class="head">
@@ -42,6 +43,7 @@ import Toolbar from './toolbar.vue'
 import Graphbar from './graphbar.vue'
 import Sidebar from './sidebar.vue'
 import Viewport from './viewport.vue'
+import ContextRegistryToExternal from './context-registry-to-external.vue'
 // import TestModesInteractionButton from './test-modes-interaction-button.vue'
 // import TestConstraintsButton from './test-constraints-button.vue'
 // import TestLocalStorage from './test-local-storage.vue'

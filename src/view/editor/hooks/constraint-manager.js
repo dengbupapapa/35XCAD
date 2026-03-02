@@ -316,7 +316,7 @@ export function useConstraintsRelation() {
     clear() {
       ;[...constraintsRelationProvideContext.value].forEach((constraintRelation) => {
         constraintsRelationProvideContext.value.shift()
-        delete pointsHashGeometry.value[constraintRelation.id]
+        delete constraintsRelationHashProvideContext.value[constraintRelation.id]
       })
     },
     load(constraintsRelation) {
