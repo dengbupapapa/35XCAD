@@ -1,8 +1,8 @@
 <template>
-    <div @click="onSave">
-        <SaveTwoTone  style="font-size: 24px; " />
-        <div>保存</div>
-    </div>
+  <div @click="onSave">
+    <SaveTwoTone style="font-size: 24px" />
+    <div>保存</div>
+  </div>
 </template>
 <script setup>
 import { SaveTwoTone } from '@ant-design/icons-vue'
@@ -18,6 +18,7 @@ function empty() {
     arcs: [],
     constraints: [],
     constraintsIncrement: 0,
+    constraintsRelation: [],
   }
 }
 
@@ -29,11 +30,11 @@ import {
   useLines as useLinesQuery,
   usePolylines as usePolylinesQuery,
   useArcs as useArcsQuery,
-  //   useConstraintsIncrement as useConstraintsIncrementQuery,
 } from './hooks/geometry-query'
 import {
   useConstraints as useConstraintsQuery,
-  //   useConstraintsIncrement as useConstraintsIncrementQuery,
+  useConstraintsIncrement as useConstraintsIncrementQuery,
+  useConstraintsRelation as useConstraintsRelationQuery,
 } from './hooks/constraint-query'
 // storage
 let planesQuery = usePlanesQuery()
@@ -42,7 +43,8 @@ let linesQuery = useLinesQuery()
 let polylinesQuery = usePolylinesQuery()
 let arcsQuery = useArcsQuery()
 let constraintsQuery = useConstraintsQuery()
-// let constraintsIncrementQuery = useConstraintsIncrementQuery()
+let constraintsIncrementQuery = useConstraintsIncrementQuery()
+let constraintsRelationQuery = useConstraintsRelationQuery()
 
 function onSave() {
   data.value.planes = [...toRaw(planesQuery.all())]
@@ -51,7 +53,8 @@ function onSave() {
   data.value.polylines = [...toRaw(polylinesQuery.all())]
   data.value.arcs = [...toRaw(arcsQuery.all())]
   data.value.constraints = [...toRaw(constraintsQuery.all())]
-  //   data.value.constraintsIncrement = toRaw(constraintsIncrementQuery.get())
+  data.value.constraintsIncrement = toRaw(constraintsIncrementQuery.get())
+  data.value.constraintsRelation = [...toRaw(constraintsRelationQuery.all())]
 }
 
 let saving = ref(false)

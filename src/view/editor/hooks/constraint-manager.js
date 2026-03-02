@@ -1,17 +1,20 @@
 import {
-  useConstraints as useConstraintsGeometry,
-  useConstraintsIncrement as useConstraintsIncrementGeometry,
-  useConstraintsHash as useConstraintsHashGeometry,
-  useConstraintsPlaneHash as useConstraintsPlaneHashGeometry,
+  useConstraints as useConstraintsProvideContext,
+  useConstraintsHash as useConstraintsHashProvideContext,
+  useConstraintsPlaneHash as useConstraintsPlaneHashProvideContext,
+  useConstraintsIncrement as useConstraintsIncrementProvideContext,
+  useConstraintsRelation as useConstraintsRelationProvideContext,
+  useConstraintsRelationHash as useConstraintsRelationHashProvideContext,
 } from './constraint-provide-context.js'
 import {
   usePlanes as usePlanesGeometryQuery,
   usePoints as usePointsGeometryQuery,
 } from './geometry-query.js'
-import {usePoints as usePointsGeometryManager} from "./geometry-manager.js"
+import { usePoints as usePointsGeometryManager } from './geometry-manager.js'
 import {
-  useConstraints as useConstraintsGeometryQuery,
-  useConstraintsIncrement as useConstraintsIncrementGeometryQuery,
+  useConstraints as useConstraintsQuery,
+  useConstraintsIncrement as useConstraintsIncrementQuery,
+  useConstraintsRelation as useConstraintsRelationQuery,
 } from './constraint-query.js'
 import {
   useToolTemp as useToolTempGCSManager,
@@ -25,23 +28,22 @@ import {
   useResults as useResultsGCSQuery,
   useSystems as useSystemsGCSQuery,
 } from './solver-gcs-query.js'
-import {
-  useArcs as useArcsGCSMapper,
-} from './solver-gcs-mapper.js'
+import { useArcs as useArcsGCSMapper } from './solver-gcs-mapper.js'
 import {
   nanoid,
+  assertIndexFormList,
 } from '../utils/simple'
-import { debounce} from 'lodash-es'
+import { debounce } from 'lodash-es'
 export function useConstraints() {
-  let constraintsGeometry = useConstraintsGeometry()
-  let constraintsHashGeometry = useConstraintsHashGeometry()
-  let constraintsPlaneHashGeometry = useConstraintsPlaneHashGeometry()
-  let constraintsIncrementGeometryQuery = useConstraintsIncrementGeometryQuery()
+  let constraintsProvideContext = useConstraintsProvideContext()
+  let constraintsHashProvideContext = useConstraintsHashProvideContext()
+  let constraintsPlaneHashProvideContext = useConstraintsPlaneHashProvideContext()
+  let constraintsIncrementQuery = useConstraintsIncrementQuery()
   let constraintsGCSManager = useConstraintsGCSManager()
   let planesGeometryQuery = usePlanesGeometryQuery()
   let pointsGeometryManager = usePointsGeometryManager()
   let pointsGeometryQuery = usePointsGeometryQuery()
-  let constraintsGeometryQuery = useConstraintsGeometryQuery()
+  let constraintsQuery = useConstraintsQuery()
   let systemsGCSManager = useSystemsGCSManager()
   let systemsGCSQuery = useSystemsGCSQuery()
   let unknownsSetGCSQuery = useUnknownsSetGCSQuery()
@@ -151,7 +153,7 @@ export function useConstraints() {
 
   return {
     updateNumerals(id, numerals) {
-      let constraint = constraintsGeometryQuery.get(id)
+      let constraint = constraintsQuery.get(id)
       // if (constraint.numerals.length !== numerals.length) {
       //   throw new Error('constraint.numerals.length !== numerals.length!')
       // }
@@ -162,7 +164,7 @@ export function useConstraints() {
       // effect()
     },
     add(constraint) {
-      let tag = constraintsIncrementGeometryQuery.get()
+      let tag = constraintsIncrementQuery.get()
       constraint.tag = tag
       constraint.id = nanoid()
       constraint.args.push(tag, true)
@@ -174,40 +176,40 @@ export function useConstraints() {
       let constraintGCS = constraintsGCSManager.add(constraint)
       constraintGCS.creator = constraint.id
       constraint.gcs = constraintGCS.id
-      constraintsGeometry.value.push(constraint)
-      constraintsHashGeometry.value[constraint.id] = constraint
-      if (!(constraintsPlaneHashGeometry.value[constraint.plane] instanceof Array)) {
-        constraintsPlaneHashGeometry.value[constraint.plane] = []
+      constraintsProvideContext.value.push(constraint)
+      constraintsHashProvideContext.value[constraint.id] = constraint
+      if (!(constraintsPlaneHashProvideContext.value[constraint.plane] instanceof Array)) {
+        constraintsPlaneHashProvideContext.value[constraint.plane] = []
       }
-      constraintsPlaneHashGeometry.value[constraint.plane].push(constraint)
+      constraintsPlaneHashProvideContext.value[constraint.plane].push(constraint)
       constraintsBatch.push(constraint)
       effect()
     },
-    load(constraintsGeometry) {
-      constraintsGeometry.forEach((constraint) => {
+    load(constraintsProvideContext) {
+      constraintsProvideContext.forEach((constraint) => {
         this.attach(constraint)
       })
     },
     removeByIndex(index) {
-      let constraint = constraintsGeometry.value.splice(index, 1)[0]
-      delete constraintsHashGeometry.value[constraint.id]
-      let constraintsPlaneHashItem = constraintsPlaneHashGeometry.value[constraint.plane]
+      let constraint = constraintsProvideContext.value.splice(index, 1)[0]
+      delete constraintsHashProvideContext.value[constraint.id]
+      let constraintsPlaneHashItem = constraintsPlaneHashProvideContext.value[constraint.plane]
       let indexForConstraintsPlaneHash = constraintsPlaneHashItem.indexOf(constraint)
       constraintsPlaneHashItem.splice(indexForConstraintsPlaneHash, 1)
       constraintsGCSManager.removeById(constraint.gcs)
     },
     remove(constraint) {
-      let index = constraintsGeometry.value.indexOf(constraint)
+      let index = constraintsProvideContext.value.indexOf(constraint)
       this.removeByIndex(index)
     },
     clear() {
       constraintsGCSManager.clear()
-      ;[...constraintsGeometry.value].forEach((constraint) => {
-        constraintsGeometry.value.shift()
-        delete constraintsHashGeometry.value[constraint.id]
+      ;[...constraintsProvideContext.value].forEach((constraint) => {
+        constraintsProvideContext.value.shift()
+        delete constraintsHashProvideContext.value[constraint.id]
       })
-      Object.keys(constraintsPlaneHashGeometry.value).forEach((plane) => {
-        delete constraintsPlaneHashGeometry.value[plane]
+      Object.keys(constraintsPlaneHashProvideContext.value).forEach((plane) => {
+        delete constraintsPlaneHashProvideContext.value[plane]
       })
     },
     addConstraintP2PDistance(p1, p2, distance) {
@@ -222,12 +224,13 @@ export function useConstraints() {
         ],
       }
       this.add(constraint)
+      return constraint
     },
     addConstraintHorizontal() {},
-    addConstraintCoordinate(p, { x, y }) {
-      this.addConstraintCoordinateX(p, x)
-      this.addConstraintCoordinateY(p, y)
-    },
+    // addConstraintCoordinate(p, { x, y }) {
+    //   this.addConstraintCoordinateX(p, x)
+    //   this.addConstraintCoordinateY(p, y)
+    // },
     addConstraintCoordinateX(p, x) {
       let constraint = {
         type: 'addConstraintCoordinateX',
@@ -237,6 +240,7 @@ export function useConstraints() {
         unknowns: [['x']],
       }
       this.add(constraint)
+      return constraint
     },
     addConstraintCoordinateY(p, y) {
       let constraint = {
@@ -247,6 +251,7 @@ export function useConstraints() {
         unknowns: [['y']],
       }
       this.add(constraint)
+      return constraint
     },
     addConstraintP2PCoincident(p1, p2) {
       let constraint = {
@@ -259,6 +264,7 @@ export function useConstraints() {
         ],
       }
       this.add(constraint)
+      return constraint
     },
     addConstraintArcRules(arc) {
       let constraint = {
@@ -267,15 +273,58 @@ export function useConstraints() {
         arcs: [0],
       }
       this.add(constraint)
+      return constraint
     },
   }
 }
 
 export function useConstraintsIncrement() {
-  let constraintsIncrementGeometry = useConstraintsIncrementGeometry()
+  let constraintsIncrementProvideContext = useConstraintsIncrementProvideContext()
   return {
     set(number) {
-      constraintsIncrementGeometry.value = number
+      constraintsIncrementProvideContext.value = number
     },
   }
 }
+
+export function useConstraintsRelation() {
+  let constraintsRelationProvideContext = useConstraintsRelationProvideContext()
+  let constraintsRelationHashProvideContext = useConstraintsRelationHashProvideContext()
+  return {
+    add(type, geometrys, constraints) {
+      let constraintRelation = { type, geometrys, constraints, id: nanoid() }
+      this.attach(constraintRelation)
+    },
+    attach(constraintRelation) {
+      constraintsRelationProvideContext.value.push(constraintRelation)
+      constraintsRelationHashProvideContext.value[constraintRelation.id] = constraintRelation
+    },
+    removeByIndex(index) {
+      assertIndexFormList(constraintsRelationProvideContext.value, index, 'constraintsRelation:removeByIndex')
+      let constraintRelation = constraintsRelationProvideContext.value.splice(index, 1)[0]
+      delete constraintsRelationHashProvideContext.value[constraintRelation.id]
+    },
+    remove(constraintRelation) {
+      let index = constraintsRelationProvideContext.value.indexOf(constraintRelation)
+      this.removeByIndex(index)
+    },
+    removeById(id) {
+      let index = constraintsRelationProvideContext.value.findIndex((point) => point.id === id)
+      this.removeByIndex(index)
+    },
+    clear() {
+      ;[...constraintsRelationProvideContext.value].forEach((constraintRelation) => {
+        constraintsRelationProvideContext.value.shift()
+        delete pointsHashGeometry.value[constraintRelation.id]
+      })
+    },
+    load(constraintsRelation) {
+      constraintsRelation.forEach((constraintRelation) => {
+        this.attach(constraintRelation)
+      })
+    },
+  }
+}
+/*
+ * 收集几何和约束需要细化到一对一的关系吗
+ */

@@ -9,12 +9,18 @@ export default function useRegistry() {
   provide(constraintsHashSymbol, constraintsHash)
   provide(constraintsPlaneHashSymbol, constraintsPlaneHash)
   provide(constraintsIncrementSymbol, constraintsIncrement)
+  const constraintsRelation = ref([])
+  const constraintsRelationHash = ref({})
+  provide(constraintsRelationSymbol, constraintsRelation)
+  provide(constraintsRelationHashSymbol, constraintsRelationHash)
 }
 
 const constraintsSymbol = Symbol('constraints')
 const constraintsHashSymbol = Symbol('constraintsHash')
 const constraintsPlaneHashSymbol = Symbol('constraintsPlaneHash')
 const constraintsIncrementSymbol = Symbol('constraintsIncrement')
+const constraintsRelationSymbol = Symbol('constraintsRelation')
+const constraintsRelationHashSymbol = Symbol('constraintsRelationHash')
 export function useConstraints() {
   return inject(constraintsSymbol)
 }
@@ -26,4 +32,10 @@ export function useConstraintsPlaneHash() {
 }
 export function useConstraintsIncrement() {
   return inject(constraintsIncrementSymbol)
+}
+export function useConstraintsRelation() {
+  return inject(constraintsRelationSymbol)
+}
+export function useConstraintsRelationHash() {
+  return inject(constraintsRelationHashSymbol)
 }

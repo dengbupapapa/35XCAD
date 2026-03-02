@@ -3,6 +3,7 @@ import {
   useConstraints as useConstraintsProvideContext,
   useConstraintsHash as useConstraintsHashProvideContext,
   useConstraintsIncrement as useConstraintsIncrementProvideContext,
+  useConstraintsRelation as useConstraintsRelationProvideContext,
 } from './constraint-provide-context.js'
 export function useConstraint(id) {
   let constraintsProvideContext = useConstraintsHashProvideContext()
@@ -20,5 +21,11 @@ export function useConstraintsIncrement() {
   let constraintsIncrementProvideContext = useConstraintsIncrementProvideContext()
   return computed(() => {
     return constraintsIncrementProvideContext.value
+  })
+}
+export function useConstraintsRelation() {
+  let constraintsRelationProvideContext = useConstraintsRelationProvideContext()
+  return computed(() => {
+    return constraintsRelationProvideContext.value
   })
 }

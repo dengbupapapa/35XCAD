@@ -1,32 +1,32 @@
-export class ConstraintAvailabilityResolver {
+export class ConstraintUsableResolver {
   constructor() {}
   static rules = new Map()
   static registryRule(name, fn) {
-    ConstraintAvailabilityResolver.rules.set(fn, name)
+    ConstraintUsableResolver.rules.set(fn, name)
   }
   solver(selects) {
-    return ConstraintAvailabilityResolver.rules
+    return ConstraintUsableResolver.rules
       .keys()
       .filter((fn) => {
         return fn(selects)
       })
-      .map((fn) => ConstraintAvailabilityResolver.rules.get(fn))
+      .map((fn) => ConstraintUsableResolver.rules.get(fn))
   }
 }
 
-// ConstraintAvailabilityResolver.registryRule('addConstraintP2PDistance', (selects) => {
+// ConstraintUsableResolver.registryRule('addConstraintP2PDistance', (selects) => {
 //   return selects.length === 2 && selects.every(({type}) => type === 'point')
 // })
 
-ConstraintAvailabilityResolver.registryRule('addConstraintCoordinateX', (selects) => {
+ConstraintUsableResolver.registryRule('addConstraintCoordinateX', (selects) => {
   return selects.length !== 0 && selects.every(({ type }) => type === 'point')
 })
 
-ConstraintAvailabilityResolver.registryRule('addConstraintCoordinateY', (selects) => {
+ConstraintUsableResolver.registryRule('addConstraintCoordinateY', (selects) => {
   return selects.length !== 0 && selects.every(({ type }) => type === 'point')
 })
 
-ConstraintAvailabilityResolver.registryRule('addConstraintP2PCoincident', (selects) => {
+ConstraintUsableResolver.registryRule('addConstraintP2PCoincident', (selects) => {
   return selects.length !== 0 && selects.every(({ type }) => type === 'point')
 })
 
@@ -46,17 +46,17 @@ export class ConstraintResolver {
   static setContext(key, object) {
     ConstraintResolver.context.set(key, object)
   }
-  solverAvailability(selects) {
+  solverUsable(selects) {
     return ConstraintResolver.rulers
       .filter((ruler, index) => {
-        return ruler.applyAvailability(selects)
+        return ruler.applyUsable(selects)
       })
       .map((ruler) => ConstraintResolver.names[ConstraintResolver.rulers.indexOf(ruler)])
   }
-  solverExecutor(name, selects) {
+  solverAttach(name, selects) {
     let index = ConstraintResolver.names.indexOf(name)
     let ruler = ConstraintResolver.rulers[index]
-    ruler.applyExecutor(name, selects)
+    return ruler.applyAttach(name, selects)
   }
 }
 
@@ -69,64 +69,107 @@ class ConstraintResolverRuler {
   getContext() {
     return this.#context
   }
-  #availability = () => {}
-  availability(fn) {
-    this.#availability = fn
+  #usable = () => {}
+  usable(fn) {
+    this.#usable = fn
     return this
   }
-  applyAvailability(...args) {
-    return this.#availability.apply(this, args)
+  applyUsable(...args) {
+    return this.#usable.apply(this, args)
   }
-  #executor = () => {}
-  executor(fn) {
-    this.#executor = fn
+  #attach = () => {}
+  attach(fn) {
+    this.#attach = fn
     return this
   }
-  applyExecutor(...args) {
-    return this.#executor.apply(this, args)
+  applyAttach(...args) {
+    return this.#attach.apply(this, args)
   }
 }
 
 ConstraintResolver.registryRuler('addConstraintP2PCoincident')
-  .availability((selects) => {
+  .usable((selects) => {
     return selects.length > 1 && selects.every(({ type }) => type === 'point')
   })
-  .executor(function(name, selects){
+  .attach(function(name, selects){
     let context = this.getContext()
-    let constraintsGeometryManager = context.get('constraintsGeometryManager')
+    let constraintsManager = context.get('constraintsManager')
+    let constraintsRelationManager = context.get('constraintsRelationManager')
+    let geometrys = [];
+    let constraints = [];
     for (let i = 0; i < selects.length - 1; i++) {
       let current = selects[i]
       let next = selects[i + 1]
-      constraintsGeometryManager[name].apply(constraintsGeometryManager, [current.id, next.id])
+      let constraint = constraintsManager[name].apply(constraintsManager, [current.id, next.id])
+      geometrys.push([current.id, next.id])
+      constraints.push(constraint.id)
     }
+    constraintsRelationManager.add(name, geometrys, constraints)
   })
 ConstraintResolver.registryRuler('addConstraintCoordinateX')
-  .availability((selects) => {
+  .usable((selects) => {
     return selects.length !== 0 && selects.every(({ type }) => type === 'point')
   })
-  .executor(function (name, selects) {
+  .attach(function (name, selects) {
     let context = this.getContext()
-    let constraintsGeometryManager = context.get('constraintsGeometryManager')
+    let constraintsManager = context.get('constraintsManager')
+    let constraintsRelationManager = context.get('constraintsRelationManager')
     let planesGeometryQuery = context.get('planesGeometryQuery')
+    let geometrys = [];
+    let constraints = [];
     for (let i = 0; i < selects.length; i++) {
       let point = selects[i]
       let plane = planesGeometryQuery.get(point.plane)
       let [u, v] = worldCoords2planeCoords([point.x, point.y, point.z], plane)
-      constraintsGeometryManager[name].apply(constraintsGeometryManager, [point.id, u])
+      let constraint = constraintsManager[name].apply(constraintsManager, [point.id, u])
+      geometrys.push([point.id])
+      constraints.push(constraint.id)
     }
+    constraintsRelationManager.add(name, geometrys, constraints)
   })
 ConstraintResolver.registryRuler('addConstraintCoordinateY')
-  .availability((selects) => {
+  .usable((selects) => {
     return selects.length !== 0 && selects.every(({ type }) => type === 'point')
   })
-  .executor(function (name, selects) {
+  .attach(function (name, selects) {
     let context = this.getContext()
-    let constraintsGeometryManager = context.get('constraintsGeometryManager')
+    let constraintsManager = context.get('constraintsManager')
+    let constraintsRelationManager = context.get('constraintsRelationManager')
     let planesGeometryQuery = context.get('planesGeometryQuery')
+    let geometrys = [];
+    let constraints = [];
     for (let i = 0; i < selects.length; i++) {
       let point = selects[i]
       let plane = planesGeometryQuery.get(point.plane)
       let [u, v] = worldCoords2planeCoords([point.x, point.y, point.z], plane)
-      constraintsGeometryManager[name].apply(constraintsGeometryManager, [point.id, v])
+      let constraint = constraintsManager[name].apply(constraintsManager, [point.id, v])
+      geometrys.push([point.id])
+      constraints.push(constraint.id)
     }
+    constraintsRelationManager.add(name, geometrys, constraints)
+  })
+
+ConstraintResolver.registryRuler('addConstraintCoordinate')
+  .usable((selects) => {
+    return selects.length !== 0 && selects.every(({ type }) => type === 'point')
+  })
+  .attach(function (name, selects) {
+    let context = this.getContext()
+    let constraintsManager = context.get('constraintsManager')
+    let constraintsRelationManager = context.get('constraintsRelationManager')
+    let planesGeometryQuery = context.get('planesGeometryQuery')
+    let geometrys = [];
+    let constraints = [];
+    for (let i = 0; i < selects.length; i++) {
+      let point = selects[i]
+      let plane = planesGeometryQuery.get(point.plane)
+      let [u, v] = worldCoords2planeCoords([point.x, point.y, point.z], plane)
+      let constraintX = constraintsManager['addConstraintCoordinateX'].apply(constraintsManager, [point.id, u])
+      geometrys.push([point.id])
+      constraints.push(constraintX.id)
+      let constraintY = constraintsManager['addConstraintCoordinateY'].apply(constraintsManager, [point.id, v])
+      geometrys.push([point.id])
+      constraints.push(constraintY.id)
+    }
+    constraintsRelationManager.add(name, geometrys, constraints)
   })

@@ -1,37 +1,58 @@
 import {
-  useConstraints as useConstraintsGeometry,
-  useConstraintsHash as useConstraintsHashGeometry,
-  useConstraintsPlaneHash as useConstraintsPlaneHashGeometry,
-  useConstraintsIncrement as useConstraintsIncrementGeometry,
+  useConstraints as useConstraintsProvideContext,
+  useConstraintsHash as useConstraintsHashProvideContext,
+  useConstraintsPlaneHash as useConstraintsPlaneHashProvideContext,
+  useConstraintsIncrement as useConstraintsIncrementProvideContext,
+  useConstraintsRelation as useConstraintsRelationProvideContext,
+  useConstraintsRelationHash as useConstraintsRelationHashProvideContext,
 } from './constraint-provide-context.js'
 
 export function useConstraints() {
-  let constraintsGeometry = useConstraintsGeometry()
-  let constraintsHashGeometry = useConstraintsHashGeometry()
-  let constraintsPlaneHashGeometry = useConstraintsPlaneHashGeometry()
+  let constraintsProvideContext = useConstraintsProvideContext()
+  let constraintsHashProvideContext = useConstraintsHashProvideContext()
+  let constraintsPlaneHashProvideContext = useConstraintsPlaneHashProvideContext()
   return {
     get(id) {
-      return constraintsHashGeometry.value[id]
+      return constraintsHashProvideContext.value[id]
     },
     getByIndex(index) {
-      return constraintsGeometry.value[index]
+      return constraintsProvideContext.value[index]
     },
     getByPlane(plane) {
-      return constraintsPlaneHashGeometry.value[plane]
+      return constraintsPlaneHashProvideContext.value[plane]
     },
     indexOf(constraint) {
-      return constraintsGeometry.value.indexOf(constraint)
+      return constraintsProvideContext.value.indexOf(constraint)
     },
     all() {
-      return constraintsGeometry.value
+      return constraintsProvideContext.value
     },
   }
 }
 export function useConstraintsIncrement() {
-  let constraintsIncrementGeometry = useConstraintsIncrementGeometry()
+  let constraintsIncrementProvideContext = useConstraintsIncrementProvideContext()
   return {
     get() {
-      return ++constraintsIncrementGeometry.value
+      return ++constraintsIncrementProvideContext.value
+    },
+  }
+}
+
+export function useConstraintsRelation() {
+  let constraintsRelationProvideContext = useConstraintsRelationProvideContext()
+  let constraintsRelationHashProvideContext = useConstraintsRelationHashProvideContext()
+  return {
+    get(id) {
+      return constraintsRelationHashProvideContext.value[id]
+    },
+    getByIndex(index) {
+      return constraintsRelationProvideContext.value[index]
+    },
+    indexOf(constraint) {
+      return constraintsRelationProvideContext.value.indexOf(constraint)
+    },
+    all() {
+      return constraintsRelationProvideContext.value
     },
   }
 }
