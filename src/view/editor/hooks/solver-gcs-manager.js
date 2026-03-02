@@ -34,9 +34,7 @@ import {
   usePlanes as usePlanesGeometryQuery,
   useArcs as useArcsGeometryQuery,
 } from './geometry-query.js'
-import {
-  useConstraints as useConstraintsDataQuery,
-} from './constraint-query.js'
+import { useConstraints as useConstraintsDataQuery } from './constraint-query.js'
 import { Vector2, Vector3 } from '../core/gl-math'
 import { nanoid, assertIndexFormList, worldCoords2planeCoords } from '../utils/simple'
 import { upperFirst, throttle } from 'lodash-es'

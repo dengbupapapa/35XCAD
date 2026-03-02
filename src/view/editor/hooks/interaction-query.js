@@ -1,4 +1,8 @@
-import { useSelectPoints as useSelectPointsInteraction, useSelectPointsStrict as useSelectPointsStrictInteraction, useSelectLines as useSelectLinesInteraction } from './interaction-provide-context'
+import {
+  useSelectPoints as useSelectPointsInteraction,
+  useSelectPointsStrict as useSelectPointsStrictInteraction,
+  useSelectLines as useSelectLinesInteraction,
+} from './interaction-provide-context'
 
 export function useSelectPoints() {
   let selectsPoints = useSelectPointsInteraction()

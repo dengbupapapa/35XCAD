@@ -132,8 +132,8 @@ useAddLineClick()
 
 useAddPolylineClick()
 useAddArcClick()
-useSelect();
-useMove();
+useSelect()
+useMove()
 
 useControls()
 </script>

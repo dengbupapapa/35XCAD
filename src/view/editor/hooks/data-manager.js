@@ -22,10 +22,19 @@ export function useLoader() {
   let arcsGeometryManager = useArcsGeometryManager()
   let constraintsManager = useConstraintsManager()
   let constraintsIncrementManager = useConstraintsIncrementManager()
-  let constraintsRelationManager = useConstraintsRelationManager();
+  let constraintsRelationManager = useConstraintsRelationManager()
   return {
     json(data) {
-      let { planes, points, lines, polylines, arcs, constraints, constraintsIncrement, constraintsRelation } = data
+      let {
+        planes,
+        points,
+        lines,
+        polylines,
+        arcs,
+        constraints,
+        constraintsIncrement,
+        constraintsRelation,
+      } = data
       let index = planes.findIndex(({ active }) => active) || 0
       planesGeometryManager.load(cloneDeep(planes))
       planesGeometryManager.active(index)
@@ -54,7 +63,7 @@ export function useClear() {
   let arcsGeometryManager = useArcsGeometryManager()
   let constraintsManager = useConstraintsManager()
   let constraintsIncrementManager = useConstraintsIncrementManager()
-  let constraintsRelationManager = useConstraintsRelationManager();
+  let constraintsRelationManager = useConstraintsRelationManager()
 
   let selectPoints = useSelectPoints()
   let selectPointsStrict = useSelectPointsStrict()

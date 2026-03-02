@@ -29,10 +29,7 @@ import {
   useSystems as useSystemsGCSQuery,
 } from './solver-gcs-query.js'
 import { useArcs as useArcsGCSMapper } from './solver-gcs-mapper.js'
-import {
-  nanoid,
-  assertIndexFormList,
-} from '../utils/simple'
+import { nanoid, assertIndexFormList } from '../utils/simple'
 import { debounce } from 'lodash-es'
 export function useConstraints() {
   let constraintsProvideContext = useConstraintsProvideContext()
@@ -300,7 +297,11 @@ export function useConstraintsRelation() {
       constraintsRelationHashProvideContext.value[constraintRelation.id] = constraintRelation
     },
     removeByIndex(index) {
-      assertIndexFormList(constraintsRelationProvideContext.value, index, 'constraintsRelation:removeByIndex')
+      assertIndexFormList(
+        constraintsRelationProvideContext.value,
+        index,
+        'constraintsRelation:removeByIndex',
+      )
       let constraintRelation = constraintsRelationProvideContext.value.splice(index, 1)[0]
       delete constraintsRelationHashProvideContext.value[constraintRelation.id]
     },

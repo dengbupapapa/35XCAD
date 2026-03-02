@@ -16,18 +16,21 @@
 <script setup>
 import { computed } from 'vue'
 import { DownloadOutlined } from '@ant-design/icons-vue'
-import {  ConstraintResolver } from './core/solver-gcs.js'
+import { ConstraintResolver } from './core/solver-gcs.js'
 import { useSelectGeometrysStrict } from './hooks/select-derived'
-import { useConstraints as useConstraintsManager, useConstraintsRelation as useConstraintsRelationManager } from './hooks/constraint-manager'
-import { usePlanes as usePlanesGeometryQuery } from "./hooks/geometry-query"
+import {
+  useConstraints as useConstraintsManager,
+  useConstraintsRelation as useConstraintsRelationManager,
+} from './hooks/constraint-manager'
+import { usePlanes as usePlanesGeometryQuery } from './hooks/geometry-query'
 import { labelConstraintMap } from './locales/zh-CN/displayMap.js'
 
 let constraintsManager = useConstraintsManager()
-let constraintsRelationManager = useConstraintsRelationManager();
+let constraintsRelationManager = useConstraintsRelationManager()
 let planesGeometryQuery = usePlanesGeometryQuery()
-ConstraintResolver.setContext('constraintsManager',constraintsManager)
-ConstraintResolver.setContext('constraintsRelationManager',constraintsRelationManager)
-ConstraintResolver.setContext('planesGeometryQuery',planesGeometryQuery)
+ConstraintResolver.setContext('constraintsManager', constraintsManager)
+ConstraintResolver.setContext('constraintsRelationManager', constraintsRelationManager)
+ConstraintResolver.setContext('planesGeometryQuery', planesGeometryQuery)
 let constraintResolver = new ConstraintResolver()
 /*
  * 获取可用的约束

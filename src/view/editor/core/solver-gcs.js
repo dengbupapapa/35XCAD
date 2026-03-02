@@ -91,12 +91,12 @@ ConstraintResolver.registryRuler('addConstraintP2PCoincident')
   .usable((selects) => {
     return selects.length > 1 && selects.every(({ type }) => type === 'point')
   })
-  .attach(function(name, selects){
+  .attach(function (name, selects) {
     let context = this.getContext()
     let constraintsManager = context.get('constraintsManager')
     let constraintsRelationManager = context.get('constraintsRelationManager')
-    let geometrys = [];
-    let constraints = [];
+    let geometrys = []
+    let constraints = []
     for (let i = 0; i < selects.length - 1; i++) {
       let current = selects[i]
       let next = selects[i + 1]
@@ -115,8 +115,8 @@ ConstraintResolver.registryRuler('addConstraintCoordinateX')
     let constraintsManager = context.get('constraintsManager')
     let constraintsRelationManager = context.get('constraintsRelationManager')
     let planesGeometryQuery = context.get('planesGeometryQuery')
-    let geometrys = [];
-    let constraints = [];
+    let geometrys = []
+    let constraints = []
     for (let i = 0; i < selects.length; i++) {
       let point = selects[i]
       let plane = planesGeometryQuery.get(point.plane)
@@ -136,8 +136,8 @@ ConstraintResolver.registryRuler('addConstraintCoordinateY')
     let constraintsManager = context.get('constraintsManager')
     let constraintsRelationManager = context.get('constraintsRelationManager')
     let planesGeometryQuery = context.get('planesGeometryQuery')
-    let geometrys = [];
-    let constraints = [];
+    let geometrys = []
+    let constraints = []
     for (let i = 0; i < selects.length; i++) {
       let point = selects[i]
       let plane = planesGeometryQuery.get(point.plane)
@@ -158,16 +158,22 @@ ConstraintResolver.registryRuler('addConstraintCoordinate')
     let constraintsManager = context.get('constraintsManager')
     let constraintsRelationManager = context.get('constraintsRelationManager')
     let planesGeometryQuery = context.get('planesGeometryQuery')
-    let geometrys = [];
-    let constraints = [];
+    let geometrys = []
+    let constraints = []
     for (let i = 0; i < selects.length; i++) {
       let point = selects[i]
       let plane = planesGeometryQuery.get(point.plane)
       let [u, v] = worldCoords2planeCoords([point.x, point.y, point.z], plane)
-      let constraintX = constraintsManager['addConstraintCoordinateX'].apply(constraintsManager, [point.id, u])
+      let constraintX = constraintsManager['addConstraintCoordinateX'].apply(constraintsManager, [
+        point.id,
+        u,
+      ])
       geometrys.push([point.id])
       constraints.push(constraintX.id)
-      let constraintY = constraintsManager['addConstraintCoordinateY'].apply(constraintsManager, [point.id, v])
+      let constraintY = constraintsManager['addConstraintCoordinateY'].apply(constraintsManager, [
+        point.id,
+        v,
+      ])
       geometrys.push([point.id])
       constraints.push(constraintY.id)
     }

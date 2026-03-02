@@ -4,7 +4,7 @@ import {
   WebGLRenderer as ImplRenderer,
   Vector3,
   Vector2,
-  MOUSE as ImplMOUSE
+  MOUSE as ImplMOUSE,
 } from 'three'
 import { OrbitControls as ImplOrbitControls } from '../lib/OrbitControls'
 
@@ -76,16 +76,24 @@ export class Controls {
   impl
   constructor(camera, element) {
     //禁用掉浏览器缩放
-    window.addEventListener('mousewheel', function(event){
-      if (event.ctrlKey === true || event.metaKey) {
-          event.preventDefault();
-      }
-    },{ passive: false});
-    window.addEventListener('DOMMouseScroll', function(event){
+    window.addEventListener(
+      'mousewheel',
+      function (event) {
         if (event.ctrlKey === true || event.metaKey) {
-            event.preventDefault();
+          event.preventDefault()
         }
-    },{ passive: false});
+      },
+      { passive: false },
+    )
+    window.addEventListener(
+      'DOMMouseScroll',
+      function (event) {
+        if (event.ctrlKey === true || event.metaKey) {
+          event.preventDefault()
+        }
+      },
+      { passive: false },
+    )
     camera = camera.impl
     this.impl = new ImplOrbitControls(camera, element)
     this.impl.enablePan = false
@@ -94,8 +102,8 @@ export class Controls {
     this.impl.mouseButtons = {
       LEFT: -1,
       MIDDLE: ImplMOUSE.PAN,
-      RIGHT: -1
-    };
+      RIGHT: -1,
+    }
   }
   set enablePan(state) {
     this.impl.enablePan = state

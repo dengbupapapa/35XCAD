@@ -1,6 +1,6 @@
 <template>
   <SidebaProperty v-if="hasSelect" />
-  <SidebarFeature v-else/>
+  <SidebarFeature v-else />
 </template>
 <script setup>
 import SidebarFeature from './sidebar-feature.vue'

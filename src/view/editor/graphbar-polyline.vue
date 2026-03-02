@@ -1,19 +1,23 @@
 <template>
-    <Icon type="icon-Sketcher_Sketcher_CreatePolyline_Constr" style="font-size: 30px;" @click="onClick"/>
+  <Icon
+    type="icon-Sketcher_Sketcher_CreatePolyline_Constr"
+    style="font-size: 30px"
+    @click="onClick"
+  />
 </template>
 <script setup>
-import { createFromIconfontCN } from '@ant-design/icons-vue';
-import iconfont from "@/assets/iconfont/iconfont.js?url"
+import { createFromIconfontCN } from '@ant-design/icons-vue'
+import iconfont from '@/assets/iconfont/iconfont.js?url'
 const Icon = createFromIconfontCN({
   scriptUrl: iconfont, // 在 iconfont.cn 上生成
-});
+})
 
 import useInteractions from './hooks/modes-manager-interactions.js'
 const interactionsManager = useInteractions()
 /*
  * 事件
  */
-function onClick(){
-  interactionsManager.activator.polylinesAdd();
+function onClick() {
+  interactionsManager.activator.polylinesAdd()
 }
 </script>

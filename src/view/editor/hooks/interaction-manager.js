@@ -3,8 +3,14 @@ import {
   useSelectPointsStrict as useSelectPointsStrictInteraction,
   useSelectLines as useSelectLinesInteraction,
 } from './interaction-provide-context'
-import { usePoints as usePointsEntitie, useLines as useLinesEntitie } from './viewport-provide-context'
-import { usePoints as usePointsGeometryQuery, useLines as useLinesGeometryQuery } from './geometry-query'
+import {
+  usePoints as usePointsEntitie,
+  useLines as useLinesEntitie,
+} from './viewport-provide-context'
+import {
+  usePoints as usePointsGeometryQuery,
+  useLines as useLinesGeometryQuery,
+} from './geometry-query'
 import {
   useSelectPoints as useSelectPointsInteractionQuery,
   useSelectPointsStrict as useSelectPointsStrictInteractionQuery,
@@ -48,10 +54,10 @@ export function useSelectPoints() {
         }
       })
     },
-    remove(ids){
+    remove(ids) {
       if (!(ids instanceof Array)) {
         ids = [ids]
-      }      
+      }
       ids = ids.filter((id) => {
         return selectPointsInteractionQuery.check(id)
       })
@@ -114,10 +120,10 @@ export function useSelectPointsStrict() {
         }
       })
     },
-    remove(ids){
+    remove(ids) {
       if (!(ids instanceof Array)) {
         ids = [ids]
-      }      
+      }
       ids = ids.filter((id) => {
         return selectPointsStrictInteractionQuery.check(id)
       })
@@ -139,7 +145,7 @@ export function useSelectPointsStrict() {
 }
 
 export function useSelectLines() {
-  let selectsLines= useSelectLinesInteraction()
+  let selectsLines = useSelectLinesInteraction()
   let selectLinesInteractionQuery = useSelectLinesInteractionQuery()
   let linesEntitie = useLinesEntitie()
   let linesGeometryQuery = useLinesGeometryQuery()
@@ -174,10 +180,10 @@ export function useSelectLines() {
         }
       })
     },
-    remove(ids){
+    remove(ids) {
       if (!(ids instanceof Array)) {
         ids = [ids]
-      }      
+      }
       ids = ids.filter((id) => {
         return selectLinesInteractionQuery.check(id)
       })

@@ -1,12 +1,13 @@
 @font-face {
-  font-family: "iconfont"; /* Project id 5126319 */
-  src: url('iconfont.woff2?t=1770868696113') format('woff2'),
-       url('iconfont.woff?t=1770868696113') format('woff'),
-       url('iconfont.ttf?t=1770868696113') format('truetype');
+  font-family: 'iconfont'; /* Project id 5126319 */
+  src:
+    url('iconfont.woff2?t=1770868696113') format('woff2'),
+    url('iconfont.woff?t=1770868696113') format('woff'),
+    url('iconfont.ttf?t=1770868696113') format('truetype');
 }
 
 .iconfont {
-  font-family: "iconfont" !important;
+  font-family: 'iconfont' !important;
   font-size: 16px;
   font-style: normal;
   -webkit-font-smoothing: antialiased;
@@ -14,34 +15,33 @@
 }
 
 .icon-zhizhen-cai:before {
-  content: "\e621";
+  content: '\e621';
 }
 
 .icon-dian:before {
-  content: "\ec1e";
+  content: '\ec1e';
 }
 
 .icon-yuanhu:before {
-  content: "\e689";
+  content: '\e689';
 }
 
 .icon-Sketcher_Sketcher_CreatePolyline_Constr:before {
-  content: "\e801";
+  content: '\e801';
 }
 
 .icon-xian5:before {
-  content: "\e628";
+  content: '\e628';
 }
 
 .icon-zuobiao:before {
-  content: "\e8fd";
+  content: '\e8fd';
 }
 
 .icon-jizhunmian:before {
-  content: "\e76f";
+  content: '\e76f';
 }
 
 .icon-chuangjiancaotu:before {
-  content: "\e7af";
+  content: '\e7af';
 }
-

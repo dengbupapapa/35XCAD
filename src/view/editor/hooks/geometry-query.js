@@ -14,7 +14,7 @@ import {
   // useConstraintsHash as useConstraintsHashGeometry,
   // useConstraintsPlaneHash as useConstraintsPlaneHashGeometry,
   // useConstraintsIncrement as useConstraintsIncrementGeometry,
-  useIncrement as useIncrementGeometry
+  useIncrement as useIncrementGeometry,
 } from './geometry-provide-context.js'
 
 export function usePlanes() {
@@ -51,15 +51,15 @@ export function usePoints() {
     indexOf(point) {
       return points.value.indexOf(point)
     },
-    has(point){
+    has(point) {
       return points.value.includes(point)
     },
-    hasById(id){
+    hasById(id) {
       return !!this.get(id)
     },
     all() {
       return points.value
-    }
+    },
   }
 }
 export function useLines() {
@@ -75,10 +75,10 @@ export function useLines() {
     indexOf(point) {
       return lines.value.indexOf(point)
     },
-    has(line){
+    has(line) {
       return lines.value.includes(line)
     },
-    hasById(id){
+    hasById(id) {
       return !!this.get(id)
     },
     all() {
@@ -179,11 +179,11 @@ export function useArcs() {
 //   }
 // }
 
-export function useIncrement(){
+export function useIncrement() {
   let incrementGeometry = useIncrementGeometry()
   return {
     get() {
       return ++incrementGeometry.value
     },
-  }  
+  }
 }

@@ -21,7 +21,11 @@ export default function useGeometry() {
           prev.push(...pointsGeometryUpdater.updateCommit(index, position))
           return prev
         }
-        if (Object.keys(position).length === 2 && position.start instanceof Array && position.end instanceof Array) {
+        if (
+          Object.keys(position).length === 2 &&
+          position.start instanceof Array &&
+          position.end instanceof Array
+        ) {
           prev.push(...linesGeometryUpdater.updateCommit(index, position))
           return prev
         }

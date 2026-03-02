@@ -216,7 +216,7 @@ export class Lines {
     this.impl = new InstancedMesh(geometry, material, this.#MAX_LINES)
     this.impl.count = 0
     this.impl.frustumCulled = false
-  }  
+  }
   active(index, enabled = true) {
     const actived = this.impl.geometry.attributes.actived
     if (enabled) {

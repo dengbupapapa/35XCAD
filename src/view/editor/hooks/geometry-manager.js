@@ -24,9 +24,7 @@ import {
   // useConstraintsIncrement as useConstraintsIncrementGeometryQuery,
 } from './geometry-query.js'
 import { useArcs as useArcsGeometryMapper } from './geometry-mapper'
-import {
-  useConstraints as useConstraintsManager
-} from './constraint-manager.js'
+import { useConstraints as useConstraintsManager } from './constraint-manager.js'
 import {
   useToolTemp as useToolTempGCSManager,
   usePoints as usePointsGCSManager,
