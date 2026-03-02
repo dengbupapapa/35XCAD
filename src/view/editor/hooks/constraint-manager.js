@@ -287,9 +287,10 @@ export function useConstraintsIncrement() {
 export function useConstraintsRelation() {
   let constraintsRelationProvideContext = useConstraintsRelationProvideContext()
   let constraintsRelationHashProvideContext = useConstraintsRelationHashProvideContext()
+  let constraintsIncrementQuery = useConstraintsIncrementQuery()
   return {
     add(type, geometrys, constraints) {
-      let constraintRelation = { type, geometrys, constraints, id: nanoid() }
+      let constraintRelation = { type, geometrys, constraints, id: nanoid(), tag: constraintsIncrementQuery.get() }
       this.attach(constraintRelation)
     },
     attach(constraintRelation) {

@@ -7,10 +7,10 @@
           <SidebarPropertyGeometrys />
         </a-collapse-panel>
         <a-collapse-panel key="2" header="现有几何关系">
-          <SidebarPropertyConstraints />
+          <SidebarPropertyConstraintsRelation />
         </a-collapse-panel>
         <a-collapse-panel key="3" header="添加几何关系">
-          <SidebarPropertyConstraintAdd />
+          <SidebarPropertyConstraintsAdd />
         </a-collapse-panel>
       </a-collapse>
     </div>
@@ -21,8 +21,8 @@ import { ref } from 'vue'
 import { ProfileTwoTone } from '@ant-design/icons-vue'
 import { useSelectGeometrysStrict } from './hooks/select-derived'
 import SidebarPropertyGeometrys from './sidebar-property-geometrys.vue'
-import SidebarPropertyConstraints from './sidebar-property-constraints.vue'
-import SidebarPropertyConstraintAdd from './sidebar-property-constraint-add.vue'
+import SidebarPropertyConstraintsRelation from './sidebar-property-constraints-relation.vue'
+import SidebarPropertyConstraintsAdd from './sidebar-property-constraints-add.vue'
 let activeKey = ref([1, 2, 3])
 let selectGeometrysStrict = useSelectGeometrysStrict()
 </script>
