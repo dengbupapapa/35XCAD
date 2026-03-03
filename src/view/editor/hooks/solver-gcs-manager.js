@@ -537,6 +537,7 @@ export function useConstraints() {
       return constraint
     },
     removeById(id) {
+      let constraint = constraintsHashGCS[id]
       //删除tag
       let constraintData = constraintsDataQuery.get(constraint.creator)
       systems.active.handle.clearByTag(constraintData.tag)
@@ -547,7 +548,6 @@ export function useConstraints() {
           numeralsGCSManager.removeById(arg)
         }
       })
-      let constraint = constraintsHashGCS[id]
       let index = constraintsGCS.indexOf(constraint)
       constraintsGCS.splice(index, 1)
       delete constraintsHashGCS[id]

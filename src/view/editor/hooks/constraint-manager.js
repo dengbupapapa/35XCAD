@@ -189,14 +189,20 @@ export function useConstraints() {
     },
     removeByIndex(index) {
       let constraint = constraintsProvideContext.value.splice(index, 1)[0]
+      constraintsGCSManager.removeById(constraint.gcs)
       delete constraintsHashProvideContext.value[constraint.id]
       let constraintsPlaneHashItem = constraintsPlaneHashProvideContext.value[constraint.plane]
       let indexForConstraintsPlaneHash = constraintsPlaneHashItem.indexOf(constraint)
       constraintsPlaneHashItem.splice(indexForConstraintsPlaneHash, 1)
-      constraintsGCSManager.removeById(constraint.gcs)
+      effect()
     },
     remove(constraint) {
       let index = constraintsProvideContext.value.indexOf(constraint)
+      this.removeByIndex(index)
+    },
+    removeById(id) {
+      let constraint = constraintsHashProvideContext.value[id]
+      let index = constraintsQuery.indexOf(constraint)
       this.removeByIndex(index)
     },
     clear() {
@@ -290,7 +296,13 @@ export function useConstraintsRelation() {
   let constraintsIncrementQuery = useConstraintsIncrementQuery()
   return {
     add(type, geometrys, constraints) {
-      let constraintRelation = { type, geometrys, constraints, id: nanoid(), tag: constraintsIncrementQuery.get() }
+      let constraintRelation = {
+        type,
+        geometrys,
+        constraints,
+        id: nanoid(),
+        tag: constraintsIncrementQuery.get(),
+      }
       this.attach(constraintRelation)
     },
     attach(constraintRelation) {

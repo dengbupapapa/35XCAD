@@ -923,6 +923,15 @@ function useMovePoints() {
   }
 }
 
+/*
+ * 删除
+ */
+export function useDelete(){
+
+}
+function useDeletePoints(){
+  
+}
 //视图控制器
 export function useControls() {
   const controls = useControlsImpl()

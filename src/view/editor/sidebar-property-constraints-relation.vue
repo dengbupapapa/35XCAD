@@ -1,24 +1,63 @@
 <template>
-  <select :size="constraints.length > 1 ? constraints.length : 2" class="select">
-    <option :key="constraint.id" :value="constraint.id" v-for="constraint in constraints">
-      {{ labelConstraintMap[constraint.type] }}{{ constraint.tag }}
-    </option>
+  <select :size="constraints.length > 1 ? constraints.length : 2" class="select" v-model="selected">
+    <a-dropdown :trigger="['contextmenu']" :key="constraint.id" v-for="constraint in constraints">
+      <option :value="constraint.id" @contextmenu="onContextmenuOption(constraint)">
+        {{ labelConstraintMap[constraint.type] }}{{ constraint.tag }}
+      </option>
+      <template #overlay>
+        <a-menu @click="onMenuClick">
+          <a-menu-item key="delete">删除</a-menu-item>
+          <!-- <a-menu-divider /> -->
+        </a-menu>
+      </template>
+    </a-dropdown>
   </select>
 </template>
 <script setup>
-import { computed } from 'vue'
+import { computed, watch, ref } from 'vue'
 import { useConstraintsRelation as useConstraintsRelationDerived } from './hooks/constraint-derived'
 import { useSelectGeometrysStrict as useSelectGeometrysStrictInteractionDerived } from './hooks/interaction-derived'
+import { useConstraints as useConstraintsDispatch} from './hooks/constraint-dispatch'
 import { labelConstraintMap } from './locales/zh-CN/displayMap.js'
+/*
+ * 列表逻辑
+ */
 let constraintsRelationDerived = useConstraintsRelationDerived()
 let selectGeometrysStrictInteractionDerived = useSelectGeometrysStrictInteractionDerived()
 let constraints = computed(() => {
-  return constraintsRelationDerived.value.filter(({ geometrys }) => {
+  return constraintsRelationDerived.value.filter(({ geometrys, type }) => {
     return selectGeometrysStrictInteractionDerived.value.every((geometry) => {
       return geometrys.flat().includes(geometry)
     })
   })
 })
+let selected = ref()
+watch(
+  () => constraints.value,
+  (constraints) => {
+    if (constraints.length > 0) {
+      if(constraints.some(({id})=>id===selected.value)) return
+      selected.value = constraints[0].id
+    }
+  },
+  { immediate: true },
+)
+/*
+ * 右键菜单
+ */
+ function onMenuClick({ key }) {
+  if(key==='delete'){
+    onDelete()
+  }
+}
+let constraintsDispatch = useConstraintsDispatch()
+function onDelete(){
+  constraintsDispatch.removeById(selected.value)
+}
+//兼容右键选中
+function onContextmenuOption(constraint) {
+  selected.value = constraint.id
+}
 </script>
 <style scoped lang="less">
 .select {
