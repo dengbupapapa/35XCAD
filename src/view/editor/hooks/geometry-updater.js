@@ -5,7 +5,7 @@ import {
 } from './geometry-manager'
 import { useArcs as useArcsGeometryMapper } from './geometry-mapper'
 import { throttle } from 'lodash-es'
-export default function useGeometry() {
+export default function useGeometrys() {
   let pointsGeometryUpdater = usePoints()
   let linesGeometryUpdater = useLines()
   return {

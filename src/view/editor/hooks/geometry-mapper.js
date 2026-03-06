@@ -2,8 +2,100 @@ import {
   useArcs as useArcsGeometryQuery,
   useLines as useLinesGeometryQuery,
   usePoints as usePointsGeometryQuery,
+  usePolylines as usePolylinesGeometryQuery,
 } from './geometry-query.js'
 
+export function usePoints() {
+  let linesGeometryQuery = useLinesGeometryQuery()
+  let arcsGeometryQuery = useArcsGeometryQuery()
+  let pointsGeometryQuery = usePointsGeometryQuery()
+  return {
+    superior(batch) {
+      if (!(batch instanceof Array)) {
+        batch = [batch]
+      }
+      return batch.reduce(
+        (prev, id) => {
+          let point = pointsGeometryQuery.get(id)
+          if (arcsGeometryQuery.hasFormPoint(point)) {
+            let arc = arcsGeometryQuery.getFormPoint(point)
+            prev.arcs.push(arc.id)
+          }
+          if (linesGeometryQuery.hasFormPoint(point)) {
+            let line = linesGeometryQuery.getFormPoint(point)
+            prev.lines.push(line.id)
+          }
+          return prev
+        },
+        {
+          arcs: [],
+          lines: [],
+        },
+      )
+    },
+  }
+}
+export function useLines() {
+  let linesGeometryQuery = useLinesGeometryQuery()
+  let pointsGeometryQuery = usePointsGeometryQuery()
+  return {
+    getFormPointIndex(index) {
+      let point = pointsGeometryQuery.getByIndex(index)
+      let line = linesGeometryQuery.getFormPoint(point)
+      return line
+    },
+    subordinate(batch) {
+      if (!(batch instanceof Array)) {
+        batch = [batch]
+      }
+      return batch.reduce(
+        (prev, id) => {
+          let line = linesGeometryQuery.get(id)
+          prev.points.push(line.start, line.end)
+          return prev
+        },
+        { points: [] },
+      )
+    },
+    superior(batch){
+      if (!(batch instanceof Array)) {
+        batch = [batch]
+      }
+      return batch.reduce(
+        (prev, id) => {
+          let line = linesGeometryQuery.get(id)
+          prev.polylines.push(line.creator)
+          return prev
+        },
+        { polylines: [] },
+      )
+    }
+      
+  }
+}
+export function usePolylines() {
+  let linesGeometryQuery = useLinesGeometryQuery()
+  let polylinesGeometryQuery = usePolylinesGeometryQuery()
+  return {
+    subordinate(batch) {
+      if (!(batch instanceof Array)) {
+        batch = [batch]
+      }
+      return batch.reduce(
+        (prev, id) => {
+          let polyline = polylinesGeometryQuery.get(id)
+          polyline.lines.forEach((id) => {
+            let line = linesGeometryQuery.get(id)
+            prev.points.push(line.start, line.end)
+          })
+          prev.lines.push(...polyline.lines)
+          return prev
+        },
+        { points: [], lines: [] },
+      )
+    },
+  }
+}
 export function useArcs() {
   let arcsGeometryQuery = useArcsGeometryQuery()
   let pointsGeometryQuery = usePointsGeometryQuery()
@@ -13,17 +105,18 @@ export function useArcs() {
       let arc = arcsGeometryQuery.getFormPoint(point)
       return arc
     },
-  }
-}
-
-export function useLines() {
-  let linesGeometryQuery = useLinesGeometryQuery()
-  let pointsGeometryQuery = usePointsGeometryQuery()
-  return {
-    getFormPointIndex(index) {
-      let point = pointsGeometryQuery.getByIndex(index)
-      let line = linesGeometryQuery.getFormPoint(point)
-      return line
+    subordinate(batch) {
+      if (!(batch instanceof Array)) {
+        batch = [batch]
+      }
+      return batch.reduce(
+        (prev, id) => {
+          let arc = arcsGeometryQuery.get(id)
+          prev.points.push(arc.center, arc.start, arc.end)
+          return prev
+        },
+        { points: [] },
+      )
     },
   }
 }

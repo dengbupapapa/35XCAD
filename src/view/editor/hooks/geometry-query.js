@@ -84,9 +84,12 @@ export function useLines() {
     all() {
       return lines.value
     },
-    getFormPoint(line) {
-      let arc = this.get(line.creator)
-      return arc
+    getFormPoint(point) {
+      let line = this.get(point.creator)
+      return line
+    },
+    hasFormPoint(point) {
+      return !!this.getFormPoint(point)
     },
   }
 }
@@ -100,11 +103,24 @@ export function usePolylines() {
     getByIndex(index) {
       return polylines.value[index]
     },
-    indexOf(point) {
-      return polylines.value.indexOf(point)
+    indexOf(polyline) {
+      return polylines.value.indexOf(polyline)
+    },
+    has(polyline) {
+      return polylines.value.includes(polyline)
+    },
+    hasById(id) {
+      return !!this.get(id)
     },
     all() {
       return polylines.value
+    },
+    getFormPoint(point) {
+      let line = this.get(point.creator)
+      return line
+    },
+    hasFormPoint(point) {
+      return !!this.getFormPoint(point)
     },
   }
 }
@@ -123,6 +139,12 @@ export function useArcs() {
     },
     all() {
       return arcs.value
+    },
+    has(arc) {
+      return arcs.value.includes(arc)
+    },
+    hasById(id) {
+      return !!this.get(id)
     },
     getFormPoint(point) {
       let arc = this.get(point.creator)
@@ -145,6 +167,18 @@ export function useArcs() {
       if (arc.end === point.id) {
         return arc
       }
+    },
+    hasFormPoint(point) {
+      return !!this.getFormPoint(point)
+    },
+    hasFormCenter(point){
+      return !!this.getFormCenter(point)
+    },
+    hasFormStart(point){
+      return !!this.getFormStart(point)
+    },
+    hasFormEnd(point){
+      return !!this.getFormEnd(point)
     },
   }
 }

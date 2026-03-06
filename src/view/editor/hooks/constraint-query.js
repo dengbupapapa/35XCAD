@@ -54,5 +54,27 @@ export function useConstraintsRelation() {
     all() {
       return constraintsRelationProvideContext.value
     },
+    hash() {
+      return constraintsRelationHashProvideContext.value
+    },
+    getConstraintsByGeometry(geometry) {
+      let constraints = []
+      constraintsRelationProvideContext.value.forEach((constraintRelation) => {
+        constraintRelation.geometrys.forEach((items, index) => {
+          if (items.includes(geometry)) {
+            let constraint = constraintRelation.constraints[index]
+            constraints.push(constraint)
+          }
+        })
+      })
+      return constraints
+    },
+    getByGeometry(geometry) {
+      return constraintsRelationProvideContext.value.filter((constraintRelation) => {
+        return constraintRelation.geometrys.some((items) => {
+          return items.includes(geometry)
+        })
+      })
+    },
   }
 }

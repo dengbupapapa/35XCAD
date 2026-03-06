@@ -16,11 +16,16 @@ const linesEntitie = useLinesEntitie()
 /*
  * 操作
  */
-//新增
-onMounted(() => {
-  let [start, end] = linePoints.value
-  linesEntitie.add([start.x, start.y, start.z], [end.x, end.y, end.z])
-})
+// //新增
+// onMounted(() => {
+//   let [start, end] = linePoints.value
+//   linesEntitie.add([start.x, start.y, start.z], [end.x, end.y, end.z])
+// })
+
+/*
+ * [说明]
+ * 基于points驱动保留这个watch
+ */
 //更新实体
 watch(
   linePoints,
@@ -31,9 +36,9 @@ watch(
   },
   { deep: true },
 )
-//删除
-onUnmounted(() => {
-  linesEntitie.remove(props.index)
-})
+// //删除
+// onUnmounted(() => {
+//   linesEntitie.remove(props.index)
+// })
 </script>
 <template></template>

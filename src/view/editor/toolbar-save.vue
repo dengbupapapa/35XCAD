@@ -9,6 +9,8 @@ import { SaveTwoTone } from '@ant-design/icons-vue'
 
 import { toRaw, ref } from 'vue'
 import { useStorage } from '@vueuse/core'
+import { cloneDeep } from 'lodash-es'
+
 function empty() {
   return {
     planes: [],
@@ -47,14 +49,14 @@ let constraintsIncrementQuery = useConstraintsIncrementQuery()
 let constraintsRelationQuery = useConstraintsRelationQuery()
 
 function onSave() {
-  data.value.planes = [...toRaw(planesQuery.all())]
-  data.value.points = [...toRaw(pointsQuery.all())]
-  data.value.lines = [...toRaw(linesQuery.all())]
-  data.value.polylines = [...toRaw(polylinesQuery.all())]
-  data.value.arcs = [...toRaw(arcsQuery.all())]
-  data.value.constraints = [...toRaw(constraintsQuery.all())]
+  data.value.planes = cloneDeep(toRaw(planesQuery.all()))
+  data.value.points = cloneDeep(toRaw(pointsQuery.all()))
+  data.value.lines = cloneDeep(toRaw(linesQuery.all()))
+  data.value.polylines =cloneDeep(toRaw(polylinesQuery.all()))
+  data.value.arcs = cloneDeep(toRaw(arcsQuery.all()))
+  data.value.constraints = cloneDeep(toRaw(constraintsQuery.all()))
   data.value.constraintsIncrement = toRaw(constraintsIncrementQuery.get())
-  data.value.constraintsRelation = [...toRaw(constraintsRelationQuery.all())]
+  data.value.constraintsRelation = cloneDeep(toRaw(constraintsRelationQuery.all()))
 }
 
 let saving = ref(false)
@@ -77,7 +79,7 @@ onMounted(function load() {
   if (planes.length === 0) {
     loader.empty()
   } else {
-    loader.json(data.value)
+    loader.json(cloneDeep(data.value))
   }
 })
 </script>

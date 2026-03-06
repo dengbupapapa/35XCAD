@@ -412,24 +412,28 @@ export function useArcs() {
     },
     remove(data) {
       let arcGCS = arcsGCSQuery.get(data.gcs)
-      let pointGCSCenter = pointsGCSQuery.get(arcGCS.center)
-      let pointGCSStart = pointsGCSQuery.get(arcGCS.start)
-      let pointGCSEnd = pointsGCSQuery.get(arcGCS.end)
 
-      numeralsGCSManager.removeById(pointGCSCenter.u)
-      numeralsGCSManager.removeById(pointGCSCenter.v)
-      numeralsGCSManager.removeById(pointGCSStart.u)
-      numeralsGCSManager.removeById(pointGCSStart.v)
-      numeralsGCSManager.removeById(pointGCSEnd.u)
-      numeralsGCSManager.removeById(pointGCSEnd.v)
+      /* [记录]
+       * 这里移除圆不需要移除点，因为在geometry-dispatch中有统一逻辑，是否可靠？
+       */
+      // let pointGCSCenter = pointsGCSQuery.get(arcGCS.center)
+      // let pointGCSStart = pointsGCSQuery.get(arcGCS.start)
+      // let pointGCSEnd = pointsGCSQuery.get(arcGCS.end)
 
-      numeralsGCSManager.removeById(arcGCS.angleStart)
-      numeralsGCSManager.removeById(arcGCS.angleEnd)
-      numeralsGCSManager.removeById(arcGCS.radius)
+      // numeralsGCSManager.removeById(pointGCSCenter.u)
+      // numeralsGCSManager.removeById(pointGCSCenter.v)
+      // numeralsGCSManager.removeById(pointGCSStart.u)
+      // numeralsGCSManager.removeById(pointGCSStart.v)
+      // numeralsGCSManager.removeById(pointGCSEnd.u)
+      // numeralsGCSManager.removeById(pointGCSEnd.v)
 
-      pointsGCSManager.remove(pointGCSCenter)
-      pointsGCSManager.remove(pointGCSStart)
-      pointsGCSManager.remove(pointGCSEnd)
+      // numeralsGCSManager.removeById(arcGCS.angleStart)
+      // numeralsGCSManager.removeById(arcGCS.angleEnd)
+      // numeralsGCSManager.removeById(arcGCS.radius)
+
+      // pointsGCSManager.remove(pointGCSCenter)
+      // pointsGCSManager.remove(pointGCSStart)
+      // pointsGCSManager.remove(pointGCSEnd)
 
       let index = arcsGCSQuery.indexOf(arcGCS)
       arcsGCS.splice(index, 1)
@@ -541,9 +545,57 @@ export function useConstraints() {
       //删除tag
       let constraintData = constraintsDataQuery.get(constraint.creator)
       systems.active.handle.clearByTag(constraintData.tag)
-      //删除相关数值
-      let { args, numerals } = constraint
+      let { args } = constraint
+      let { points, arcs, unknowns, numerals } = constraintData
+      //删除相关数值和变量
       args.forEach((arg, index) => {
+        if (points instanceof Array && points.includes(index)) {
+          let pointGCS = pointsGCSQuery.get(arg)
+          let unknown = unknowns[index]
+          if (!(unknown instanceof Array)) return
+          if (unknown.includes('x')) {
+            let numeralU = numeralsGCSQuery.get(pointGCS.u)
+            unknownsSetManager.unnumeral(numeralU)
+          }
+          if (unknown.includes('y')) {
+            let numeralV = numeralsGCSQuery.get(pointGCS.v)
+            unknownsSetManager.unnumeral(numeralV)
+          }
+          return
+        }
+        if (arcs instanceof Array && arcs.includes(index)) {
+          let arcsGCS = arcsGCSQuery.get(arg)
+
+          let pointGCSCenter = pointsGCSQuery.get(arcsGCS.center)
+          let pointGCSStart = pointsGCSQuery.get(arcsGCS.start)
+          let pointGCSEnd = pointsGCSQuery.get(arcsGCS.end)
+
+          let numeralCenterU = numeralsGCSQuery.get(pointGCSCenter.u)
+          let numeralCenterV = numeralsGCSQuery.get(pointGCSCenter.v)
+          unknownsSetManager.unnumeral(numeralCenterU)
+          unknownsSetManager.unnumeral(numeralCenterV)
+          let numeralStartU = numeralsGCSQuery.get(pointGCSStart.u)
+          let numeralStartV = numeralsGCSQuery.get(pointGCSStart.v)
+          unknownsSetManager.unnumeral(numeralStartU)
+          unknownsSetManager.unnumeral(numeralStartV)
+          let numeralEndU = numeralsGCSQuery.get(pointGCSEnd.u)
+          let numeralEndV = numeralsGCSQuery.get(pointGCSEnd.v)
+          unknownsSetManager.unnumeral(numeralEndU)
+          unknownsSetManager.unnumeral(numeralEndV)
+
+          let numeralAngleStart = numeralsGCSQuery.get(arcsGCS.angleStart)
+          let numeralAngleEnd = numeralsGCSQuery.get(arcsGCS.angleEnd)
+          let numeralRadius = numeralsGCSQuery.get(arcsGCS.radius)
+
+          unknownsSetManager.unnumeral(numeralAngleStart)
+          unknownsSetManager.unnumeral(numeralAngleEnd)
+          unknownsSetManager.unnumeral(numeralRadius)
+
+          // console.log(numeralAngleStart, numeralAngleEnd, numeralRadius)
+
+          return
+        }
+
         if (numerals instanceof Array && numerals.includes(index)) {
           numeralsGCSManager.removeById(arg)
         }
@@ -863,6 +915,13 @@ export function useUnknownsSet() {
       if (unknownsSetJSONGCS.value[unknowns.id].includes(n.id)) return
       unknownsSetJSONGCS.value[unknowns.id].push(n.id)
       unknownsSetGCSQuery.active.handle.push(n.handle)
+    },
+    unnumeral(n) {
+      let unknowns = unknownsSetGCSQuery.active
+      if (!unknownsSetJSONGCS.value[unknowns.id].includes(n.id)) return
+      let index = unknownsSetJSONGCS.value[unknowns.id].indexOf(n.id)
+      unknownsSetJSONGCS.value[unknowns.id].splice(index, 1)
+      unknownsSetGCSQuery.active.handle.remove(n.handle)
     },
     active(index) {
       assertIndexFormList(unknownsSet, index, 'unknownsSet:active')

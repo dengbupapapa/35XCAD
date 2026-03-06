@@ -1,6 +1,6 @@
 <template>
   <div ref="viewport" style="width: 100%; height: 100%">
-    <points />
+    <!-- <points /> -->
     <!-- <planes /> -->
     <lines />
     <arcs />
@@ -34,6 +34,7 @@ import {
   // useMoveLineClick,
   useSelect,
   useMove,
+  useDelete,
   useControls,
 } from './hooks/viewport-behavior'
 import {
@@ -134,6 +135,7 @@ useAddPolylineClick()
 useAddArcClick()
 useSelect()
 useMove()
+useDelete()
 
 useControls()
 </script>

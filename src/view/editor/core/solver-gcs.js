@@ -85,6 +85,14 @@ class ConstraintResolverRuler {
   applyAttach(...args) {
     return this.#attach.apply(this, args)
   }
+  #unattach = () => {}
+  unattach(fn) {
+    this.#unattach = fn
+    return this
+  }
+  applyUnattach(...args) {
+    return this.#unattach.apply(this, args)
+  }
 }
 
 ConstraintResolver.registryRuler('addConstraintP2PCoincident')
@@ -179,3 +187,22 @@ ConstraintResolver.registryRuler('addConstraintCoordinate')
     }
     constraintsRelationManager.add(name, geometrys, constraints)
   })
+
+ConstraintResolver.registryRuler('addConstraintArcRules').attach(function (name, selects) {
+  let context = this.getContext()
+  let constraintsManager = context.get('constraintsManager')
+  let constraintsRelationManager = context.get('constraintsRelationManager')
+  let arc = selects[0]
+  let constraint = constraintsManager[name].apply(constraintsManager, [arc.id])
+  let geometrys = [[arc.id]]
+  let constraints = [constraint.id]
+  constraintsRelationManager.add(name, geometrys, constraints)
+})
+
+
+
+/* [问题]
+ * 删除约束需要在这里定义unattach来实现逻辑细节，并提供solverUnattach。比如：取消重合的地方可能需要处理polyline
+ * 将调用方法放到constraint-dispatch去使用
+ * 文件名称改为data-onstraint
+ */

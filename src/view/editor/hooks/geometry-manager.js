@@ -20,6 +20,7 @@ import {
   usePoints as usePointsGeometryQuery,
   useLines as useLinesGeometryQuery,
   useArcs as useArcsGeometryQuery,
+  usePolylines as usePolylinesGeometryQuery,
   // useConstraints as useConstraintsGeometryQuery,
   // useConstraintsIncrement as useConstraintsIncrementGeometryQuery,
 } from './geometry-query.js'
@@ -46,7 +47,12 @@ import {
 } from './solver-gcs-mapper.js'
 import { usePoints as usePointsGeometryUpdater } from './geometry-updater.js'
 import { useSelectPoints as useSelectPointsInteractioManager } from './interaction-manager.js'
-import { usePlanes as usePlanesEntitie } from './viewport-provide-context'
+import {
+  usePlanes as usePlanesEntitie,
+  usePoints as usePointsEntitie,
+  useLines as useLinesEntitie,
+  useArcs as useArcsEntitie
+} from './viewport-provide-context'
 import {
   nanoid,
   assertIndexFormList,
@@ -267,6 +273,7 @@ export function usePoints() {
   let unknownsSetGCSManager = useUnknownsSetGCSManager()
   let toolTempGCSManager = useToolTempGCSManager()
   let unknownsSetGCSQuery = useUnknownsSetGCSQuery()
+  let pointsEntitie = usePointsEntitie()
   return {
     add(position) {
       let [x, y, z] = position
@@ -293,6 +300,7 @@ export function usePoints() {
       pointsGeometry.value.push(point)
       pointsHashGeometry.value[point.id] = point
       // selectPointsInteractioManager.push(point.id)
+      pointsEntitie.add([point.x, point.y, point.z])
       return point
     },
     load(pointsGeometry) {
@@ -310,12 +318,14 @@ export function usePoints() {
       assertIndexFormList(pointsGeometry.value, index, 'pointsGeometry:removeByIndex')
       let last = pointsGeometry.value.length - 1
       let point = pointsGeometry.value[index]
+      // console.log(index)
       if (index !== last) {
         pointsGeometry.value[index] = pointsGeometry.value[last]
       }
       pointsGeometry.value.pop()
       delete pointsHashGeometry.value[point.id]
       pointsGCSManager.removeById(point.gcs)
+      pointsEntitie.remove(index)
     },
     remove(point) {
       let index = pointsGeometry.value.indexOf(point)
@@ -524,6 +534,7 @@ export function usePoints() {
       pointsGeometry.value[index].y = y
       pointsGeometry.value[index].z = z
       pointsGCSManager.update(pointsGeometry.value[index])
+      pointsEntitie.translation(index, position)
     },
   }
 }
@@ -535,6 +546,7 @@ export function useLines() {
   let pointsGeometryManager = usePoints()
   let pointsGeometryQuery = usePointsGeometryQuery()
   let pointsGeometryUpdater = usePointsGeometryUpdater()
+  let linesEntitie = useLinesEntitie()
   return {
     add(start, end) {
       let line = {
@@ -555,6 +567,7 @@ export function useLines() {
       end.creator = line.id
       linesGeometry.value.push(line) //我们的架构是否一定两个点在同一plane？
       linesHashGeometry.value[line.id] = line
+      linesEntitie.add([start.x, start.y, start.z], [end.x, end.y, end.z])
       return line
     },
     load(lines) {
@@ -571,8 +584,9 @@ export function useLines() {
       }
       linesGeometry.value.pop()
       delete linesHashGeometry.value[line.id]
-      if (pointsGeometryQuery.get(line.start)) pointsGeometryManager.removeById(line.start)
-      if (pointsGeometryQuery.get(line.end)) pointsGeometryManager.removeById(line.end)
+      linesEntitie.remove(index)
+      // if (pointsGeometryQuery.get(line.start)) pointsGeometryManager.removeById(line.start)
+      // if (pointsGeometryQuery.get(line.end)) pointsGeometryManager.removeById(line.end)
     },
     remove(line) {
       let index = linesGeometry.value.indexOf(line)
@@ -648,6 +662,8 @@ export function usePolylines() {
   let planesGeometryQuery = usePlanesGeometryQuery()
   let linesGeometryManager = useLines()
   let linesGeometryQuery = useLinesGeometryQuery()
+  let polylinesGeometryQuery = usePolylinesGeometryQuery()
+  let pointsGeometryQuery = usePointsGeometryQuery()
   return {
     add(lines) {
       let polyline = {
@@ -661,6 +677,10 @@ export function usePolylines() {
       return this.attach(polyline)
     },
     attach(polyline) {
+      polyline.lines.forEach((id) => {
+        let line = linesGeometryQuery.get(id)
+        line.creator = polyline.id
+      })
       polylinesGeometry.value.push(polyline)
       polylinesHashGeometry.value[polyline.id] = polyline
       return polyline
@@ -674,9 +694,9 @@ export function usePolylines() {
       assertIndexFormList(polylinesGeometry.value, index, 'polylinesGeometry:removeByIndex')
       let polyline = polylinesGeometry.value.splice(index, 1)[0]
       delete polylinesHashGeometry.value[polyline.id]
-      polyline.lines.forEach((line) => {
-        if (linesGeometryQuery.get(line)) linesGeometryManager.removeById(line)
-      })
+      // polyline.lines.forEach((line) => {
+      //   if (linesGeometryQuery.get(line)) linesGeometryManager.removeById(line)
+      // })
     },
     remove(polyline) {
       let index = polylinesGeometry.value.indexOf(polyline)
@@ -693,8 +713,78 @@ export function usePolylines() {
         delete polylinesHashGeometry.value[polyline.id]
       })
     },
+    splitByPoint(id) {
+      let point = pointsGeometryQuery.get(id)
+      let line = linesGeometryQuery.get(point.creator)
+      let polyline = polylinesGeometryQuery.get(line.creator)
+
+      if (!polyline.lines.includes(line.id)) return
+      let index = polyline.lines.indexOf(line.id)
+      let front
+      let back
+      if (line.start === id) {
+        front = polyline.lines.slice(0, index)
+        back = polyline.lines.slice(index)
+      }
+      if (line.end === id) {
+        front = polyline.lines.slice(0, index + 1)
+        back = polyline.lines.slice(index + 1)
+      }
+
+      if (front.length > 1) {
+        this.add(front)
+      } else {
+        front.forEach((id) => {
+          let line = linesGeometryQuery.get(id)
+          delete line.creator
+        })
+      }
+      if (back.length > 1) {
+        this.add(back)
+      } else {
+        front.forEach((id) => {
+          let line = linesGeometryQuery.get(id)
+          delete line.creator
+        })
+      }
+      this.remove(polyline)
+    },
+    splitByLine(id) {
+      let line = linesGeometryQuery.get(id)
+      let polyline = polylinesGeometryQuery.get(line.creator)
+      let lines = polyline.lines
+      if (!lines.includes(id)) return
+      let index = lines.indexOf(id)
+      let front = lines.slice(0, index)
+      let back = lines.slice(index + 1)
+      if (front.length > 1) {
+        this.add(front)
+      } else {
+        front.forEach((id) => {
+          let line = linesGeometryQuery.get(id)
+          delete line.creator
+        })
+      }
+      if (back.length > 1) {
+        this.add(back)
+      } else {
+        back.forEach((id) => {
+          let line = linesGeometryQuery.get(id)
+          delete line.creator
+        })
+      }
+      this.remove(polyline)
+    },
+    append(polylineId, lineId) {
+      let polyline = polylinesGeometryQuery.get(polylineId)
+      let line = linesGeometryQuery.get(lineId)
+      polyline.lines.push(lineId)
+      line.creator = polylineId
+    },
   }
 }
+
+import { ConstraintResolver } from '../core/solver-gcs.js'
 export function useArcs() {
   let arcsGeometry = useArcsGeometry()
   let arcsHashGeometry = useArcsHashGeometry()
@@ -707,6 +797,8 @@ export function useArcs() {
   let pointsGCSMapper = usePointsGCSMapper()
   let toolTempGCSManager = useToolTempGCSManager()
   let arcsGeometryQuery = useArcsGeometryQuery()
+  let constraintResolver = new ConstraintResolver()
+  let arcsEntitie = useArcsEntitie()
   return {
     add(center, start, end, ccw) {
       let arc = {
@@ -725,7 +817,9 @@ export function useArcs() {
       let pointCenterGeometry = pointsGeometryQuery.get(arc.center)
       toolTempGCSManager.addConstraintCoordinateLock(pointCenterGeometry)
 
-      constraintsManager.addConstraintArcRules(arc.id)
+      // constraintsManager.addConstraintArcRules(arc.id)
+
+      constraintResolver.solverAttach('addConstraintArcRules', [arc])
 
       return arc
     },
@@ -741,6 +835,15 @@ export function useArcs() {
       let arcGCS = arcsGCSManager.add(arc)
       arcGCS.creator = arc.id
       arc.gcs = arcGCS.id
+
+      let plane = planesGeometryQuery.get(arc.plane)
+      arcsEntitie.add(
+        [center.x, center.y, center.z],
+        [start.x, start.y, start.z],
+        [end.x, end.y, end.z],
+        plane.normal,
+        arc.ccw,
+      )
       return arc
     },
     load(arcsGeometry) {
@@ -758,9 +861,10 @@ export function useArcs() {
       arcsGCSManager.remove(arc)
       arcsGeometry.value.pop()
       delete arcsHashGeometry.value[arc.id]
-      if (pointsGeometryQuery.get(arc.center)) pointsGeometryManager.removeById(arc.center)
-      if (pointsGeometryQuery.get(arc.end)) pointsGeometryManager.removeById(arc.end)
-      if (pointsGeometryQuery.get(arc.end)) pointsGeometryManager.removeById(arc.end)
+      // if (pointsGeometryQuery.get(arc.center)) pointsGeometryManager.removeById(arc.center)
+      // if (pointsGeometryQuery.get(arc.end)) pointsGeometryManager.removeById(arc.end)
+      // if (pointsGeometryQuery.get(arc.end)) pointsGeometryManager.removeById(arc.end)
+      arcsEntitie.remove(index)
     },
     remove(arc) {
       let index = arcsGeometry.value.indexOf(arc)

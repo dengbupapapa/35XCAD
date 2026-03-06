@@ -31,19 +31,23 @@ const arcsEntitie = useArcsEntitie()
 //   return Math.atan2(dir.y, dir.x)
 // }
 //新增
-onMounted(() => {
-  let [center, start, end] = arcPoints.value
-  // let radius = centerAndStart2Radius(center, start)
-  // let angleStart = points2angle(center, start)
-  // let angleEnd = points2angle(center, end)
-  arcsEntitie.add(
-    [center.x, center.y, center.z],
-    [start.x, start.y, start.z],
-    [end.x, end.y, end.z],
-    plane.value.normal,
-    arc.value.ccw,
-  )
-})
+// onMounted(() => {
+//   let [center, start, end] = arcPoints.value
+//   // let radius = centerAndStart2Radius(center, start)
+//   // let angleStart = points2angle(center, start)
+//   // let angleEnd = points2angle(center, end)
+//   arcsEntitie.add(
+//     [center.x, center.y, center.z],
+//     [start.x, start.y, start.z],
+//     [end.x, end.y, end.z],
+//     plane.value.normal,
+//     arc.value.ccw,
+//   )
+// })
+/*
+ * [说明]
+ * 基于points驱动保留这个watch
+ */
 //更新实体
 watch(
   arcPoints,
@@ -60,9 +64,9 @@ watch(
   },
   { deep: true },
 )
-//删除
-onUnmounted(() => {
-  arcsEntitie.remove(props.index)
-})
+// //删除
+// onUnmounted(() => {
+//   arcsEntitie.remove(props.index)
+// })
 </script>
 <template></template>

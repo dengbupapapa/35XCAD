@@ -18,10 +18,7 @@ import {
   useLines as useLinesGeometryQuery,
 } from './geometry-query.js'
 import { useArcs as useArcsGeometryMapper } from './geometry-mapper'
-import {
-  useLines as useLinesGeometryDerived,
-  usePointsHash as usePointsHashGeometryDerived,
-} from './geometry-derived'
+import { useGeometrys as useGeometrysDispatch } from './geometry-dispatch.js'
 import useGeometryUpdater from './geometry-updater'
 import useModesManagerInteractions from './modes-manager-interactions.js'
 import {
@@ -33,6 +30,7 @@ import {
   useSelectPoints as useSelectPointsInteractionQuery,
   useSelectPointsStrict as useSelectPointsStrictInteractionQuery,
   useSelectLines as useSelectLinesInteractionQuery,
+  useSelectGeometrys as useSelectGeometrysInteractionQuery,
 } from './interaction-query'
 import { useSelectGeometrys as useSelectGeometrysInteractionDispatch } from './interaction-dispatch'
 import { Vector3 } from '../core/gl-math'
@@ -160,7 +158,6 @@ export function useAddLineClick() {
   })
 }
 
-
 import { ConstraintResolver } from '../core/solver-gcs.js'
 export function useAddPolylineClick() {
   const camera = useCamera()
@@ -177,6 +174,7 @@ export function useAddPolylineClick() {
 
   let pointsAnchor = []
   let polylineByLineIds = []
+  let polyline = null
   function onMousedown(event) {
     const plane = planesEntitie.active
     if (event.button !== 0 || !plane) return
@@ -196,11 +194,22 @@ export function useAddPolylineClick() {
         let pointReferenceClone = pointsGeometryManager.clone(pointReference.id)
         pointsGeometryManager.attach(pointReferenceClone)
         // constraintsManager.addConstraintP2PCoincident(pointReferenceClone.id, pointReference.id)
-        constraintResolver.solverAttach("addConstraintP2PCoincident",[pointReferenceClone, pointReference])
+        constraintResolver.solverAttach('addConstraintP2PCoincident', [
+          pointReferenceClone,
+          pointReference,
+        ])
         pointReference = pointReferenceClone
+
       }
       let line = linesGeometryManager.add(pointReference.id, pointCurrent.id)
       polylineByLineIds.push(line.id)
+
+      if(!polyline && polylineByLineIds.length===2){
+        polyline = polylinesGeometryManager.add([...polylineByLineIds])
+      }else if(polylineByLineIds.length>2){
+        polylinesGeometryManager.append(polyline.id, line.id)
+      }
+
     }
   }
 
@@ -216,11 +225,12 @@ export function useAddPolylineClick() {
           let point = pointsAnchor[0]
           pointsGeometryManager.removeById(point.id)
         }
-        if (polylineByLineIds.length > 1) {
-          polylinesGeometryManager.add(polylineByLineIds)
-        }
+        // if (polylineByLineIds.length > 1) {
+        //   polylinesGeometryManager.add(polylineByLineIds)
+        // }
         pointsAnchor = []
         polylineByLineIds = []
+        polyline = null
       }
     },
     { immediate: true },
@@ -555,6 +565,7 @@ const CLICK_TIME = 200
  * 重合项选中时怎么让选中项在最上方（边框？选中规则顺序问题？）
  * 选线后再选点如何做视觉交互（直接选择和间接选择颜色区分？）
  */
+
 function useSelectPoints() {
   const raycaster = useRaycaster()
   const pointsGeometryQuery = usePointsGeometryQuery()
@@ -594,7 +605,7 @@ function useSelectPoints() {
           selectPointsStrictInteractionManager.add(point.id)
         }
       }
-      return true 
+      return true
     },
     onMousemove(state, event) {
       if (!activeted) return
@@ -926,11 +937,17 @@ function useMovePoints() {
 /*
  * 删除
  */
-export function useDelete(){
-
-}
-function useDeletePoints(){
-  
+import hotkeys from 'hotkeys-js'
+export function useDelete() {
+  let selectGeometrysInteractionQuery = useSelectGeometrysInteractionQuery()
+  let selectGeometrysInteractionDispatch = useSelectGeometrysInteractionDispatch()
+  let geometrysDispatch = useGeometrysDispatch()
+  hotkeys('del', function (event, handler) {
+    event.preventDefault()
+    let selectGeometrys = selectGeometrysInteractionQuery.get()
+    selectGeometrysInteractionDispatch.clear()
+    geometrysDispatch.remove(selectGeometrys)
+  })
 }
 //视图控制器
 export function useControls() {
