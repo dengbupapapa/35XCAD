@@ -6,6 +6,7 @@ import {
   useConstraints as useConstraintsQuery,
   useConstraintsRelation as useConstraintsRelationQuery,
 } from './constraint-query.js'
+import { ConstraintResolver } from '../core/data-constraint.js'
 
 /*
  * 删除重合约束如果是polylines创建的还要想办法更新polylines
@@ -15,15 +16,24 @@ export function useConstraints() {
   let constraintsRelationManager = useConstraintsRelationManager()
   let constraintsQuery = useConstraintsQuery()
   let constraintsRelationQuery = useConstraintsRelationQuery()
+
+  let constraintResolver = new ConstraintResolver()
   return {
+    /*
+     * 以下目前适合基于ConstraintResolver逻辑处理的
+     */
     removeById(id) {
-      let constraintRelation = constraintsRelationQuery.get(id)
-      let { constraints } = constraintRelation
-      constraintsRelationManager.removeById(id)
-      constraints.forEach((constraint) => {
-        constraintsManager.removeById(constraint)
-      })
+      constraintResolver.solverUnattach(id)
     },
+    add(name, geometrys) {
+      constraintResolver.solverAttach(name, geometrys)
+    },
+    usable(geometrys) {
+      return constraintResolver.solverUsable(geometrys)
+    },
+    /*
+     * 以下目前适合geometry正确处理完毕的
+     */
     //移除某约束关系中的某一项
     removeItem(id, index) {
       let constraintRelation = constraintsRelationQuery.get(id)
@@ -40,9 +50,12 @@ export function useConstraints() {
         batch = [batch]
       }
       ;[...constraintsRelationQuery.all()].forEach((constraintRelation) => {
-        ;[...constraintRelation.constraints].forEach((relation) => {
-          if (batch.includes(relation)) {
-            this.removeItem(constraintRelation.id, constraintRelation.constraints.indexOf(relation))
+        ;[...constraintRelation.constraints].forEach((constraint) => {
+          if (batch.includes(constraint)) {
+            this.removeItem(
+              constraintRelation.id,
+              constraintRelation.constraints.indexOf(constraint),
+            )
           }
         })
       })

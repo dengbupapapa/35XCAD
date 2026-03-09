@@ -31,7 +31,7 @@ watch(
   linePoints,
   (linePoints) => {
     let [start, end] = linePoints
-    // if (!start || !end) return
+    if (!start || !end) return
     linesEntitie.translation(props.index, [start.x, start.y, start.z], [end.x, end.y, end.z])
   },
   { deep: true },

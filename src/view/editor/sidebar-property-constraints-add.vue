@@ -16,35 +16,24 @@
 <script setup>
 import { computed } from 'vue'
 import { DownloadOutlined } from '@ant-design/icons-vue'
-import { ConstraintResolver } from './core/solver-gcs.js'
-import { useSelectGeometrysStrict } from './hooks/select-derived'
-// import {
-//   useConstraints as useConstraintsManager,
-//   useConstraintsRelation as useConstraintsRelationManager,
-// } from './hooks/constraint-manager'
-// import { usePlanes as usePlanesGeometryQuery } from './hooks/geometry-query'
+import { useSelectGeometrysStrict } from './hooks/interaction-derived'
 import { labelConstraintMap } from './locales/zh-CN/displayMap.js'
+import { useConstraints as useConstraintsDispatch} from "./hooks/constraint-dispatch"
 
-// let constraintsManager = useConstraintsManager()
-// let constraintsRelationManager = useConstraintsRelationManager()
-// let planesGeometryQuery = usePlanesGeometryQuery()
-// ConstraintResolver.setContext('constraintsManager', constraintsManager)
-// ConstraintResolver.setContext('constraintsRelationManager', constraintsRelationManager)
-// ConstraintResolver.setContext('planesGeometryQuery', planesGeometryQuery)
-let constraintResolver = new ConstraintResolver()
+let constraintsDispatch = useConstraintsDispatch();
 /*
  * 获取可用的约束
  */
 let selectGeometrysStrict = useSelectGeometrysStrict()
 let constraintsUsable = computed(() => {
-  return constraintResolver.solverUsable(selectGeometrysStrict.value)
+  return constraintsDispatch.usable(selectGeometrysStrict.value)
 })
 
 /*
  * 添加约束
  */
 function onClick(name) {
-  constraintResolver.solverAttach(name, selectGeometrysStrict.value)
+  constraintsDispatch.add(name, selectGeometrysStrict.value)
 }
 </script>
 <style scoped lang="less">

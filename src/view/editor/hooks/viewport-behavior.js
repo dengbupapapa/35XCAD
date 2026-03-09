@@ -33,6 +33,7 @@ import {
   useSelectGeometrys as useSelectGeometrysInteractionQuery,
 } from './interaction-query'
 import { useSelectGeometrys as useSelectGeometrysInteractionDispatch } from './interaction-dispatch'
+import { useConstraints as useConstraintsDispatch} from "./constraint-dispatch"
 import { Vector3 } from '../core/gl-math'
 import { viewport2ndc } from '../utils/simple'
 import { watch } from 'vue'
@@ -158,7 +159,6 @@ export function useAddLineClick() {
   })
 }
 
-import { ConstraintResolver } from '../core/solver-gcs.js'
 export function useAddPolylineClick() {
   const camera = useCamera()
   const renderer = useRenderer()
@@ -170,7 +170,7 @@ export function useAddPolylineClick() {
   const constraintsManager = useConstraintsManager()
   const modesManagerInteractions = useModesManagerInteractions()
   const canvas = renderer.element()
-  const constraintResolver = new ConstraintResolver()
+  const constraintsDispatch = new useConstraintsDispatch()
 
   let pointsAnchor = []
   let polylineByLineIds = []
@@ -194,9 +194,9 @@ export function useAddPolylineClick() {
         let pointReferenceClone = pointsGeometryManager.clone(pointReference.id)
         pointsGeometryManager.attach(pointReferenceClone)
         // constraintsManager.addConstraintP2PCoincident(pointReferenceClone.id, pointReference.id)
-        constraintResolver.solverAttach('addConstraintP2PCoincident', [
-          pointReferenceClone,
-          pointReference,
+        constraintsDispatch.add('addConstraintP2PCoincident', [
+          pointReferenceClone.id,
+          pointReference.id,
         ])
         pointReference = pointReferenceClone
 

@@ -57,6 +57,7 @@ export function useConstraints() {
       constraint.args.forEach((arg, index) => {
         /* [联动] 1
          * 找出与该约束有关的变量
+         * 为了刷新某些变量
          */
         if (constraint.points instanceof Array && constraint.points.includes(index)) {
           let pointGeometry = pointsGeometryQuery.get(arg)

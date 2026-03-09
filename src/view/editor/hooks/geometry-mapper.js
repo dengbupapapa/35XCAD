@@ -5,6 +5,29 @@ import {
   usePolylines as usePolylinesGeometryQuery,
 } from './geometry-query.js'
 
+export function useGeometry(){
+  let arcsGeometryQuery = useArcsGeometryQuery()
+  let linesGeometryQuery= useLinesGeometryQuery()
+  let pointsGeometryQuery= usePointsGeometryQuery()
+  let polylinesGeometryQuery= usePolylinesGeometryQuery()
+  return {
+    typeById(id){
+      if(arcsGeometryQuery.hasById(id)){
+        return 'arc'
+      }
+      if(linesGeometryQuery.hasById(id)){
+        return 'line'
+      }
+      if(pointsGeometryQuery.hasById(id)){
+        return 'point'
+      }
+      if(polylinesGeometryQuery.hasById(id)){
+        return 'polyline'
+      }
+    }
+  }
+}
+
 export function usePoints() {
   let linesGeometryQuery = useLinesGeometryQuery()
   let arcsGeometryQuery = useArcsGeometryQuery()
@@ -120,3 +143,4 @@ export function useArcs() {
     },
   }
 }
+

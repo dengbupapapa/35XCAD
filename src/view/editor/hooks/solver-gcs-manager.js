@@ -912,7 +912,7 @@ export function useUnknownsSet() {
     },
     numeral(n) {
       let unknowns = unknownsSetGCSQuery.active
-      if (unknownsSetJSONGCS.value[unknowns.id].includes(n.id)) return
+      // if (unknownsSetJSONGCS.value[unknowns.id].includes(n.id)) return //允许重复，防止一个变量对应多个约束，一个约束删除导致其他约束变量失效问题
       unknownsSetJSONGCS.value[unknowns.id].push(n.id)
       unknownsSetGCSQuery.active.handle.push(n.handle)
     },
@@ -921,6 +921,7 @@ export function useUnknownsSet() {
       if (!unknownsSetJSONGCS.value[unknowns.id].includes(n.id)) return
       let index = unknownsSetJSONGCS.value[unknowns.id].indexOf(n.id)
       unknownsSetJSONGCS.value[unknowns.id].splice(index, 1)
+      if (unknownsSetJSONGCS.value[unknowns.id].includes(n.id)) return //如果还存在就不要移除变量，防止一个变量对应多个约束，一个约束删除导致其他约束变量失效问题
       unknownsSetGCSQuery.active.handle.remove(n.handle)
     },
     active(index) {

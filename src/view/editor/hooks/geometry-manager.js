@@ -47,11 +47,12 @@ import {
 } from './solver-gcs-mapper.js'
 import { usePoints as usePointsGeometryUpdater } from './geometry-updater.js'
 import { useSelectPoints as useSelectPointsInteractioManager } from './interaction-manager.js'
+import { useConstraints as useConstraintsDispatch} from "./constraint-dispatch"
 import {
   usePlanes as usePlanesEntitie,
   usePoints as usePointsEntitie,
   useLines as useLinesEntitie,
-  useArcs as useArcsEntitie
+  useArcs as useArcsEntitie,
 } from './viewport-provide-context'
 import {
   nanoid,
@@ -177,7 +178,14 @@ export function usePlanes() {
   let planesEntitie = usePlanesEntitie()
   return {
     add(normal, constant) {
-      let plane = { normal, constant, visible: false, active: false, id: nanoid(), type: 'plane' }
+      let plane = {
+        normal,
+        constant,
+        visible: false,
+        active: false,
+        id: nanoid(),
+        //type: 'plane'
+      }
       // let system = systemsGCSManager.add()
       // plane.system = system.id
       // planes.value.push(plane)
@@ -284,7 +292,7 @@ export function usePoints() {
         id: nanoid(),
         // planes: [planesManager?.active?.id],
         plane: planesGeometryQuery?.active?.id,
-        type: 'point',
+        // type: 'point',
       }
       // let pointGCS = pointsGCSManager.add(point)
       // point.gcs = pointGCS.id
@@ -337,9 +345,10 @@ export function usePoints() {
     },
     clear() {
       pointsGCSManager.clear()
-      ;[...pointsGeometry.value].forEach((point) => {
+      ;[...pointsGeometry.value].forEach((point, index) => {
         pointsGeometry.value.shift()
         delete pointsHashGeometry.value[point.id]
+        pointsEntitie.remove(index)
       })
     },
     // updateById(batch) {
@@ -554,7 +563,7 @@ export function useLines() {
         end,
         id: nanoid(),
         planes: [planesGeometryQuery?.active?.id],
-        type: 'line',
+        // type: 'line',
       }
       // linesGeometry.value.push(line) //我们的架构是否一定两个点在同一plane？
       // linesHashGeometry.value[line.id] = line
@@ -597,10 +606,12 @@ export function useLines() {
       this.removeByIndex(index)
     },
     clear() {
-      pointsGeometryManager.clear()
-      ;[...linesGeometry.value].forEach((line) => {
+      // pointsGeometryManager.clear()
+      ;[...linesGeometry.value].forEach((line, index) => {
         linesGeometry.value.shift()
         delete linesHashGeometry.value[line.id]
+        linesEntitie.remove(index)
+        // this.remove(line)
       })
     },
     updateCommit(index, position) {
@@ -670,7 +681,7 @@ export function usePolylines() {
         lines,
         id: nanoid(),
         planes: [planesGeometryQuery?.active?.id],
-        type: 'polyline',
+        // type: 'polyline',
       }
       // polylinesGeometry.value.push(polyline)
       // polylinesHashGeometry.value[polyline.id] = polyline
@@ -707,7 +718,7 @@ export function usePolylines() {
       this.removeByIndex(index)
     },
     clear() {
-      linesGeometryManager.clear()
+      // linesGeometryManager.clear()
       ;[...polylinesGeometry.value].forEach((polyline) => {
         polylinesGeometry.value.shift()
         delete polylinesHashGeometry.value[polyline.id]
@@ -784,7 +795,6 @@ export function usePolylines() {
   }
 }
 
-import { ConstraintResolver } from '../core/solver-gcs.js'
 export function useArcs() {
   let arcsGeometry = useArcsGeometry()
   let arcsHashGeometry = useArcsHashGeometry()
@@ -797,7 +807,7 @@ export function useArcs() {
   let pointsGCSMapper = usePointsGCSMapper()
   let toolTempGCSManager = useToolTempGCSManager()
   let arcsGeometryQuery = useArcsGeometryQuery()
-  let constraintResolver = new ConstraintResolver()
+  let constraintsDispatch = new useConstraintsDispatch()
   let arcsEntitie = useArcsEntitie()
   return {
     add(center, start, end, ccw) {
@@ -808,7 +818,7 @@ export function useArcs() {
         ccw,
         id: nanoid(),
         plane: planesGeometryQuery?.active?.id,
-        type: 'arc',
+        // type: 'arc',
       }
       // arcsGeometry.value.push(arc)
       // arcsHashGeometry.value[arc.id] = arc
@@ -819,7 +829,7 @@ export function useArcs() {
 
       // constraintsManager.addConstraintArcRules(arc.id)
 
-      constraintResolver.solverAttach('addConstraintArcRules', [arc])
+      constraintsDispatch.add('addConstraintArcRules', [arc.id])
 
       return arc
     },
@@ -876,9 +886,10 @@ export function useArcs() {
     },
     clear() {
       pointsGeometryManager.clear()
-      ;[...arcsGeometry.value].forEach((arc) => {
+      ;[...arcsGeometry.value].forEach((arc,index) => {
         arcsGeometry.value.shift()
         delete arcsHashGeometry.value[arc.id]
+        arcsEntitie.remove(index)
       })
     },
     // update(index, position) {
