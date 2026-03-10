@@ -115,13 +115,6 @@ export function usePolylines() {
     all() {
       return polylines.value
     },
-    getFormPoint(point) {
-      let line = this.get(point.creator)
-      return line
-    },
-    hasFormPoint(point) {
-      return !!this.getFormPoint(point)
-    },
   }
 }
 export function useArcs() {

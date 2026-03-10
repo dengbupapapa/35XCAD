@@ -15,6 +15,9 @@ import {
   useConstraints as useConstraintsQuery,
   useConstraintsRelation as useConstraintsRelationQuery,
 } from './hooks/constraint-query.js'
+ 
+import { usePolylines as usePolylinesGeometryMapper } from "./hooks/geometry-mapper"
+import { usePolylines as usePolylinesGeometryManager} from './hooks/geometry-manager'
 
 let constraintsQuery = useConstraintsQuery()
 let constraintsRelationQuery = useConstraintsRelationQuery()
@@ -23,6 +26,9 @@ let constraintsRelationManager = useConstraintsRelationManager()
 let planesGeometryQuery = usePlanesGeometryQuery()
 let pointsGeometryQuery = usePointsGeometryQuery()
 let arcsGeometryQuery = useArcsGeometryQuery()
+let polylinesGeometryMapper = usePolylinesGeometryMapper()
+let polylinesGeometryManager = usePolylinesGeometryManager()
+
 
 ConstraintResolver.setContext('constraintsQuery', constraintsQuery)
 ConstraintResolver.setContext('constraintsRelationQuery', constraintsRelationQuery)
@@ -31,6 +37,8 @@ ConstraintResolver.setContext('constraintsRelationManager', constraintsRelationM
 ConstraintResolver.setContext('planesGeometryQuery', planesGeometryQuery)
 ConstraintResolver.setContext('pointsGeometryQuery', pointsGeometryQuery)
 ConstraintResolver.setContext('arcsGeometryQuery', arcsGeometryQuery)
+ConstraintResolver.setContext('polylinesGeometryMapper', polylinesGeometryMapper)
+ConstraintResolver.setContext('polylinesGeometryManager', polylinesGeometryManager)
 
 
 

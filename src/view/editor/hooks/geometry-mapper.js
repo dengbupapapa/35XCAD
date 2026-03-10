@@ -5,26 +5,26 @@ import {
   usePolylines as usePolylinesGeometryQuery,
 } from './geometry-query.js'
 
-export function useGeometry(){
+export function useGeometry() {
   let arcsGeometryQuery = useArcsGeometryQuery()
-  let linesGeometryQuery= useLinesGeometryQuery()
-  let pointsGeometryQuery= usePointsGeometryQuery()
-  let polylinesGeometryQuery= usePolylinesGeometryQuery()
+  let linesGeometryQuery = useLinesGeometryQuery()
+  let pointsGeometryQuery = usePointsGeometryQuery()
+  let polylinesGeometryQuery = usePolylinesGeometryQuery()
   return {
-    typeById(id){
-      if(arcsGeometryQuery.hasById(id)){
+    typeById(id) {
+      if (arcsGeometryQuery.hasById(id)) {
         return 'arc'
       }
-      if(linesGeometryQuery.hasById(id)){
+      if (linesGeometryQuery.hasById(id)) {
         return 'line'
       }
-      if(pointsGeometryQuery.hasById(id)){
+      if (pointsGeometryQuery.hasById(id)) {
         return 'point'
       }
-      if(polylinesGeometryQuery.hasById(id)){
+      if (polylinesGeometryQuery.hasById(id)) {
         return 'polyline'
       }
-    }
+    },
   }
 }
 
@@ -80,7 +80,7 @@ export function useLines() {
         { points: [] },
       )
     },
-    superior(batch){
+    superior(batch) {
       if (!(batch instanceof Array)) {
         batch = [batch]
       }
@@ -92,11 +92,11 @@ export function useLines() {
         },
         { polylines: [] },
       )
-    }
-      
+    },
   }
 }
 export function usePolylines() {
+  let pointsGeometryQuery = usePointsGeometryQuery()
   let linesGeometryQuery = useLinesGeometryQuery()
   let polylinesGeometryQuery = usePolylinesGeometryQuery()
   return {
@@ -116,6 +116,35 @@ export function usePolylines() {
         },
         { points: [], lines: [] },
       )
+    },
+    getFormPoint(point) {
+      let line = linesGeometryQuery.get(point?.creator)
+      let polyline = polylinesGeometryQuery.get(line?.creator)
+      return polyline
+    },
+    hasFormPoint(point) {
+      return !!this.getFormPoint(point)
+    },
+    getFormPointId(id) {
+      let point = pointsGeometryQuery.get(id)
+      return this.getFormPoint(point)
+    },
+    hasFormPointId(id) {
+      return !!this.getFormPointId(id)
+    },
+    getFormLine(line) {
+      let polyline = polylinesGeometryQuery.get(line?.creator)
+      return polyline
+    },
+    hasFormLine(line) {
+      return !!this.getFormLine(line)
+    },
+    getFormLineId(id) {
+      let line = linesGeometryQuery.get(id)
+      return this.getFormLine(line)
+    },
+    hasFormLineId(id) {
+      return !!this.getFormLineId(id)
     },
   }
 }
@@ -143,4 +172,3 @@ export function useArcs() {
     },
   }
 }
-

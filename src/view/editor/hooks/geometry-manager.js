@@ -724,7 +724,7 @@ export function usePolylines() {
         delete polylinesHashGeometry.value[polyline.id]
       })
     },
-    splitByPoint(id) {
+    splitByPointId(id) {
       let point = pointsGeometryQuery.get(id)
       let line = linesGeometryQuery.get(point.creator)
       let polyline = polylinesGeometryQuery.get(line.creator)
@@ -760,7 +760,7 @@ export function usePolylines() {
       }
       this.remove(polyline)
     },
-    splitByLine(id) {
+    splitByLineId(id) {
       let line = linesGeometryQuery.get(id)
       let polyline = polylinesGeometryQuery.get(line.creator)
       let lines = polyline.lines

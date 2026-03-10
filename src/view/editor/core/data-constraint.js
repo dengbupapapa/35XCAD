@@ -35,11 +35,15 @@ export class ConstraintResolver {
     let constraintsManager = ConstraintResolver.getContext('constraintsManager')
 
     let constraintRelation = constraintsRelationQuery.get(id)
-    let { constraints } = constraintRelation
+    let { constraints, type } = constraintRelation
     constraintsRelationManager.removeById(id)
     constraints.forEach((constraint) => {
       constraintsManager.removeById(constraint)
     })
+
+    let index = ConstraintResolver.names.indexOf(type)
+    let ruler = ConstraintResolver.rulers[index]
+    return ruler.applyUnattach(constraintRelation)
   }
 }
 
@@ -100,6 +104,20 @@ ConstraintResolver.registryRuler('addConstraintP2PCoincident')
       constraints.push(constraint.id)
     }
     constraintsRelationManager.add(name, geometrys, constraints)
+  })
+  .unattach(function (constraintRelation) {
+    let context = this.getContext()
+    let polylinesGeometryMapper = context.get('polylinesGeometryMapper')
+    let polylinesGeometryManager = context.get('polylinesGeometryManager')
+    let { geometrys } = constraintRelation
+    geometrys.forEach((items) => {
+      items.forEach((id) => {
+        //polyline
+        if (polylinesGeometryMapper.hasFormPointId(id)) {
+          polylinesGeometryManager.splitByPointId(id)
+        }
+      })
+    })
   })
 ConstraintResolver.registryRuler('addConstraintCoordinateX')
   .usable(function (selectGeometrys) {
@@ -203,7 +221,7 @@ ConstraintResolver.registryRuler('addConstraintArcRules').attach(function (name,
 })
 
 /* [下周功能]
- * 删除约束需要在这里定义unattach来实现逻辑细节，并提供solverUnattach。比如：取消重合的地方可能需要处理polyline
+ * 删除约束需要在这里定义unattach来实现逻辑细节，并提供solverUnattach。比如：取消重合的地方可能需要处理polyline ko
  * 将调用方法放到constraint-dispatch去使用 ko
  * 文件名称改为data-constraint ko
  * usable优化 不需要type数据（有上下文功能了）ko

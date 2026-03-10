@@ -139,7 +139,7 @@ function useLines() {
       batch.forEach((id) => {
         let line = linesGeometryQuery.get(id)
         if (polylinesGeometryQuery.hasById(line.creator)) {
-          polylinesGeometryManager.splitByLine(id)
+          polylinesGeometryManager.splitByLineId(id)
         }
         linesGeometryManager.removeById(id)
       })
