@@ -2,6 +2,7 @@ import {
   useSelectPoints as useSelectPointsInteraction,
   useSelectPointsStrict as useSelectPointsStrictInteraction,
   useSelectLines as useSelectLinesInteraction,
+  useActiveElement as useActiveElementInteraction,
 } from './interaction-provide-context'
 
 export function useSelectPoints() {
@@ -75,5 +76,14 @@ export function useSelectGeometrys() {
     check(id) {
       return typeof id === 'string'
     },
+  }
+}
+
+export function useActiveElement(){
+  let activeElementInteraction = useActiveElementInteraction()
+  return {
+    get(){
+      return activeElementInteraction.value
+    }
   }
 }

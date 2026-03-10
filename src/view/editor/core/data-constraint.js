@@ -220,10 +220,3 @@ ConstraintResolver.registryRuler('addConstraintArcRules').attach(function (name,
   constraintsRelationManager.add(name, geometrys, constraints)
 })
 
-/* [下周功能]
- * 删除约束需要在这里定义unattach来实现逻辑细节，并提供solverUnattach。比如：取消重合的地方可能需要处理polyline ko
- * 将调用方法放到constraint-dispatch去使用 ko
- * 文件名称改为data-constraint ko
- * usable优化 不需要type数据（有上下文功能了）ko
- * 基准面交互
- */

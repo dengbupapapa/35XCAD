@@ -1,4 +1,4 @@
-import { provide, inject, ref } from 'vue'
+import { provide, inject, ref, shallowRef, onMounted, onUnmounted } from 'vue'
 
 export default function useRegistry() {
   const selectPoints = ref([])
@@ -10,12 +10,25 @@ export default function useRegistry() {
 
   const selectableConstraints = ref([])
   provide(selectableConstraintsSymbol, selectableConstraints)
+
+  const activeElement = shallowRef();
+  provide(activeElementSymbol, activeElement)
+  function onMousedownSaveActiveElement(event) {
+    activeElement.value = event.target
+  }
+  onMounted(()=>{
+    document.addEventListener('mousedown', onMousedownSaveActiveElement)
+  })
+  onUnmounted(()=>{
+    document.removeEventListener('mousedown', onMousedownSaveActiveElement)
+  })
 }
 
 const selectPointsSymbol = Symbol('selectPoints')
 const selectPointsStrictSymbol = Symbol('selectPointsStrict')
 const selectLinesSymbol = Symbol('selectLines')
 const selectableConstraintsSymbol = Symbol('selectableConstraints')
+const activeElementSymbol = Symbol('activeElement')
 export function useSelectPoints() {
   return inject(selectPointsSymbol)
 }
@@ -27,4 +40,8 @@ export function useSelectLines() {
 }
 export function useSelectableConstraints() {
   return inject(selectableConstraintsSymbol)
+}
+
+export function useActiveElement() {
+  return inject(activeElementSymbol)
 }

@@ -3,6 +3,7 @@ import {
   useSelectPointsStrict as useSelectPointsStrictInteraction,
   useSelectPoints as useSelectPointsInteraction,
   useSelectLines as useSelectLinesInteraction,
+  useActiveElement as useActiveElementInteraction,
 } from './interaction-provide-context'
 
 export function useSelectPointsStrict() {
@@ -44,5 +45,12 @@ export function useSelectGeometrys() {
   let selectLines = useSelectLines()
   return computed(() => {
     return [...selectPoints.value, ...selectLines.value]
+  })
+}
+
+export function useActiveElement() {
+  let activeElementInteraction = useActiveElementInteraction()
+  return computed(() => {
+    return activeElementInteraction.value
   })
 }

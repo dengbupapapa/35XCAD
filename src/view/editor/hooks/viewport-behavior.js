@@ -1,4 +1,4 @@
-import { onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, watch } from 'vue'
 import {
   useCamera,
   useRenderer,
@@ -31,12 +31,12 @@ import {
   useSelectPointsStrict as useSelectPointsStrictInteractionQuery,
   useSelectLines as useSelectLinesInteractionQuery,
   useSelectGeometrys as useSelectGeometrysInteractionQuery,
+  useActiveElement as useActiveElementInteractionQuery,
 } from './interaction-query'
 import { useSelectGeometrys as useSelectGeometrysInteractionDispatch } from './interaction-dispatch'
 import { useConstraints as useConstraintsDispatch} from "./constraint-dispatch"
 import { Vector3 } from '../core/gl-math'
 import { viewport2ndc } from '../utils/simple'
-import { watch } from 'vue'
 
 /* [优化]
  * 后面同一个事件要统一抽离到一个事件里去管理，解决多次计算问题;
@@ -547,12 +547,20 @@ export function useSelect() {
     },
     { immediate: true },
   )
+
+  // function onMousedownCanvasOutside(event) {
+  //   if(canvas!==event.target){
+  //     selectGeometrysInteractionDispatch.clear()
+  //   }
+  // }
   function addEventListener() {
+    // document.addEventListener('mousedown', onMousedownCanvasOutside)
     canvas.addEventListener('mousedown', onMousedown)
     canvas.addEventListener('mousemove', onMousemove)
     canvas.addEventListener('mouseup', onMouseup)
   }
   function removeEventListener() {
+    // document.removeEventListener('mousedown', onMousedownCanvasOutside)
     canvas.removeEventListener('mousedown', onMousedown)
     canvas.removeEventListener('mousemove', onMousemove)
     canvas.removeEventListener('mouseup', onMouseup)
@@ -942,8 +950,15 @@ export function useDelete() {
   let selectGeometrysInteractionQuery = useSelectGeometrysInteractionQuery()
   let selectGeometrysInteractionDispatch = useSelectGeometrysInteractionDispatch()
   let geometrysDispatch = useGeometrysDispatch()
+  let activeElementInteractionQuery = useActiveElementInteractionQuery()
+  let renderer = useRenderer()
+  let canvas = renderer.element()
   hotkeys('del', function (event, handler) {
     event.preventDefault()
+    let activeElement = activeElementInteractionQuery.get()
+    if(canvas !== activeElement){
+      return 
+    }
     let selectGeometrys = selectGeometrysInteractionQuery.get()
     selectGeometrysInteractionDispatch.clear()
     geometrysDispatch.remove(selectGeometrys)
