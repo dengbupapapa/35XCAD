@@ -1,8 +1,14 @@
 <template>
-  <Icon type="icon-tianjiaZpingmian" style="font-size: 16px" @click="onClick" title="正视" />
+  <Icon
+    type="icon-tianjiaZpingmian"
+    style="font-size: 16px"
+    @click="onClick"
+    :title="labelBasicMap['front-view']"
+  />
 </template>
 <script setup>
 import { createFromIconfontCN } from '@ant-design/icons-vue'
+import { labelBasicMap } from './locales/zh-CN/displayMap.js'
 import iconfont from '@/assets/iconfont/iconfont.js?url'
 
 let props = defineProps({ id: { type: String, required: true } })

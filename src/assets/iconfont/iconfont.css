@@ -1,8 +1,8 @@
 @font-face {
   font-family: "iconfont"; /* Project id 5126319 */
-  src: url('iconfont.woff2?t=1773199347519') format('woff2'),
-       url('iconfont.woff?t=1773199347519') format('woff'),
-       url('iconfont.ttf?t=1773199347519') format('truetype');
+  src: url('iconfont.woff2?t=1773221830956') format('woff2'),
+       url('iconfont.woff?t=1773221830956') format('woff'),
+       url('iconfont.ttf?t=1773221830956') format('truetype');
 }
 
 .iconfont {
@@ -11,6 +11,22 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-addConstraintP2PCoincident:before {
+  content: "\e6f8";
+}
+
+.icon-addConstraintCoordinateX:before {
+  content: "\e604";
+}
+
+.icon-addConstraintCoordinateY:before {
+  content: "\e605";
+}
+
+.icon-addConstraintCoordinate:before {
+  content: "\e6cf";
 }
 
 .icon-tianjiaZpingmian:before {

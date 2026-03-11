@@ -5,31 +5,32 @@
     v-model:checkedKeys="checkedKeys"
     :tree-data="treeData"
   >
-    <template #title="{ title, icon, key, id }">
-      <SidebarFeaturePlane v-if="key === 'plane-front'" :id="id">
+    <template #title="{ title, icon,  id }">
+      <SidebarFeaturePlane v-if="title === 'front'" :id="id">
         <Icon :type="icon" />
-        {{ title }}
+        {{ labelPlaneMap[title] }}
       </SidebarFeaturePlane>
     </template>
   </a-tree>
 </template>
 <script setup>
 import { ref, watch, computed } from 'vue'
-import {usePlanes as usePlanesGeometryDerived} from './hooks/geometry-derived'
+import { usePlanes as usePlanesGeometryDerived } from './hooks/geometry-derived'
 import SidebarFeaturePlane from './sidebar-feature-plane.vue'
 import { createFromIconfontCN } from '@ant-design/icons-vue'
+import {labelPlaneMap} from './locales/zh-CN/displayMap.js'
 import iconfont from '@/assets/iconfont/iconfont.js?url'
 let Icon = createFromIconfontCN({
   scriptUrl: iconfont, // 在 iconfont.cn 上生成
 })
 
 let planesGeometryDerived = usePlanesGeometryDerived()
-let treeData = computed(()=>{
-  return planesGeometryDerived.value.map(({normal,constant,id})=>{
-    if(normal[0]===0&&normal[1]===0&&normal[2]===1&&constant===0){
-      return { title: '前视基准面', icon: 'icon-jizhunmian', id,key: "plane-front" }
+let treeData = computed(() => {
+  return planesGeometryDerived.value.map(({ normal, constant, id }) => {
+    if (normal[0] === 0 && normal[1] === 0 && normal[2] === 1 && constant === 0) {
+      return { title: 'front', icon: 'icon-jizhunmian', id }
     }
-    return { title: '基准面', icon: 'icon-jizhunmian', id,key: "plane-front" }
+    return { title: 'default', icon: 'icon-jizhunmian', id }
   })
 })
 

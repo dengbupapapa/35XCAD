@@ -7,7 +7,7 @@
       @click="onClick(constraint)"
     >
       <template #icon>
-        <DownloadOutlined />
+        <Icon :type="`icon-${constraint}`" style="font-size: 16px" />
       </template>
       {{ labelConstraintMap[constraint] }}
     </a-button>
@@ -15,12 +15,16 @@
 </template>
 <script setup>
 import { computed } from 'vue'
-import { DownloadOutlined } from '@ant-design/icons-vue'
+import { createFromIconfontCN } from '@ant-design/icons-vue'
 import { useSelectGeometrysStrict } from './hooks/interaction-derived'
 import { labelConstraintMap } from './locales/zh-CN/displayMap.js'
-import { useConstraints as useConstraintsDispatch} from "./hooks/constraint-dispatch"
+import { useConstraints as useConstraintsDispatch } from './hooks/constraint-dispatch'
+import iconfont from '@/assets/iconfont/iconfont.js?url'
+let Icon = createFromIconfontCN({
+  scriptUrl: iconfont, // 在 iconfont.cn 上生成
+})
 
-let constraintsDispatch = useConstraintsDispatch();
+let constraintsDispatch = useConstraintsDispatch()
 /*
  * 获取可用的约束
  */

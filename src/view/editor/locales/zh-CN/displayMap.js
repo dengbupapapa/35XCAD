@@ -1,3 +1,16 @@
+export const labelBasicMap = {
+  hidden: '隐藏',
+  visible: '显示',
+  'front-view': '正视'
+}
+
+export const labelPlaneMap = {
+  front: '前视基准面',
+  top: '上视基准面',
+  right: '右视基准面',
+  default: '基准面',
+}
+
 export const labelGeometryMap = {
   point: '点',
   line: '线',

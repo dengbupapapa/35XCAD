@@ -15,8 +15,8 @@
     <template #overlay>
       <div class="contextmenu top">
         <div class="display">
-          <EyeInvisibleTwoTone v-if="visibled" @click="onHidden" title="隐藏" />
-          <EyeTwoTone v-else @click="onVisible" title="显示" />
+          <EyeInvisibleTwoTone v-if="visibled" @click="onHidden" :title="labelBasicMap['hidden']" />
+          <EyeTwoTone v-else @click="onVisible" :title="labelBasicMap['visible']" />
         </div>
         <SidebarFeaturePlaneMakeFront :id="id"/>
       </div>
@@ -31,6 +31,7 @@ import { onMounted, onUnmounted, useTemplateRef, ref, watch } from 'vue'
 import { EyeInvisibleTwoTone, EyeTwoTone } from '@ant-design/icons-vue'
 import { usePlanes as usePlanesGeometryManager } from './hooks/geometry-manager'
 import SidebarFeaturePlaneMakeFront from './sidebar-feature-plane-make-front.vue'
+import {labelBasicMap} from './locales/zh-CN/displayMap.js'
 defineProps({ id: { type: String, required: true } })
 
 let planesGeometryManager = usePlanesGeometryManager()

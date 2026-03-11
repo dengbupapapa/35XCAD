@@ -6,6 +6,34 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "35769245",
+      "name": "addConstraintP2PCoincident",
+      "font_class": "addConstraintP2PCoincident",
+      "unicode": "e6f8",
+      "unicode_decimal": 59128
+    },
+    {
+      "icon_id": "36412489",
+      "name": "addConstraintCoordinateX",
+      "font_class": "addConstraintCoordinateX",
+      "unicode": "e604",
+      "unicode_decimal": 58884
+    },
+    {
+      "icon_id": "36412490",
+      "name": "addConstraintCoordinateY",
+      "font_class": "addConstraintCoordinateY",
+      "unicode": "e605",
+      "unicode_decimal": 58885
+    },
+    {
+      "icon_id": "41878456",
+      "name": "addConstraintCoordinate",
+      "font_class": "addConstraintCoordinate",
+      "unicode": "e6cf",
+      "unicode_decimal": 59087
+    },
+    {
       "icon_id": "22865681",
       "name": "添加Z平面",
       "font_class": "tianjiaZpingmian",
