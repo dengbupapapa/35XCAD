@@ -1,5 +1,5 @@
 <template>
-  <a-dropdown :trigger="['contextmenu']" :open="true">
+  <a-dropdown :trigger="['contextmenu']">
     <div
       @click="onClick"
       @mouseenter="onMouseenter"
