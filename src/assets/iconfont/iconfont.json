@@ -6,6 +6,13 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "22865681",
+      "name": "添加Z平面",
+      "font_class": "tianjiaZpingmian",
+      "unicode": "e610",
+      "unicode_decimal": 58896
+    },
+    {
       "icon_id": "4269079",
       "name": "指针-彩",
       "font_class": "zhizhen-cai",

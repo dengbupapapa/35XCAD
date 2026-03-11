@@ -5,14 +5,17 @@
     v-model:checkedKeys="checkedKeys"
     :tree-data="treeData"
   >
-    <template #title="{ title, icon }">
-      <Icon :type="icon" />
-      {{ title }}
+    <template #title="{ title, icon, key }">
+      <SidebarFeaturePlane v-if="key==='plane-front'">
+        <Icon :type="icon" />
+        {{ title }}
+      </SidebarFeaturePlane>
     </template>
   </a-tree>
 </template>
 <script setup>
 import { ref, watch } from 'vue'
+import SidebarFeaturePlane from './sidebar-feature-plane.vue'
 import { nanoid } from './utils/simple'
 import { createFromIconfontCN } from '@ant-design/icons-vue'
 import iconfont from '@/assets/iconfont/iconfont.js?url'
@@ -42,7 +45,7 @@ const treeData = [
   //   ],
   // },
 
-  { title: '前视基准面', icon: 'icon-jizhunmian', key: nanoid() },
+  { title: '前视基准面', icon: 'icon-jizhunmian', key: "plane-front" },
   // { title: '原点', icon:"icon-zuobiao", key: nanoid() },
   // { title: '草图', icon:"icon-chuangjiancaotu", key: nanoid() },
 ]

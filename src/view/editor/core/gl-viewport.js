@@ -55,6 +55,7 @@ export class OrthographicCamera {
   impl
   constructor(...args) {
     this.impl = new ImplOrthographicCamera(...args)
+    console.log(this.impl)
     this.impl.position.z = 5
     // this.impl.position.y = 5
     // this.impl.position.x = 5
@@ -68,6 +69,21 @@ export class OrthographicCamera {
     this.impl.right = viewSize * aspect
     this.impl.top = viewSize
     this.impl.bottom = -viewSize
+    this.updateProjectionMatrix()
+  }
+  get position(){
+    return this.impl.position
+  }
+  get zoom(){
+    return this.impl.zoom
+  }
+  set zoom(value){
+    this.impl.zoom=value
+  }
+  lookAt(...args){
+    this.impl.lookAt(...args)
+  }
+  updateProjectionMatrix(){
     this.impl.updateProjectionMatrix()
   }
 }
@@ -122,5 +138,11 @@ export class Controls {
   }
   get enableZoom() {
     return this.impl.enableZoom
+  }
+  update(){
+    this.impl.update()
+  }
+  get target(){
+    return this.impl.target
   }
 }

@@ -38,7 +38,7 @@ export function useLoader() {
       let index = planes.findIndex(({ active }) => active) || 0
       planesGeometryManager.load(cloneDeep(planes))
       planesGeometryManager.active(index)
-      planesGeometryManager.visible(index)
+      // planesGeometryManager.visible(index)
       pointsGeometryManager.load(cloneDeep(points))
       linesGeometryManager.load(cloneDeep(lines))
       polylinesGeometryManager.load(cloneDeep(polylines))
@@ -50,7 +50,7 @@ export function useLoader() {
     empty() {
       planesGeometryManager.add([0, 0, 1], 0)
       planesGeometryManager.active(0)
-      planesGeometryManager.visible(0)
+      // planesGeometryManager.visible(0)
     },
   }
 }
