@@ -132,3 +132,16 @@ export function useArcsHash() {
     return arcsHash.value
   })
 }
+
+export function usePlaneActivaed() {
+  let planesGeometry = usePlanesGeometry()
+  return computed(() => {
+    return planesGeometry.value.find(({ active }) => active)
+  })
+}
+export function usePlaneByIndex(index) {
+  let planesGeometry = usePlanesGeometry()
+  return computed(() => {
+    return planesGeometry.value[index]
+  })
+}

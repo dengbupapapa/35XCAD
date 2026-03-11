@@ -4,6 +4,9 @@
 <script setup>
 import { createFromIconfontCN } from '@ant-design/icons-vue'
 import iconfont from '@/assets/iconfont/iconfont.js?url'
+
+let props = defineProps({ id: { type: String, required: true } })
+
 const Icon = createFromIconfontCN({
   scriptUrl: iconfont, // 在 iconfont.cn 上生成
 })
@@ -13,23 +16,24 @@ const Icon = createFromIconfontCN({
  */
 import { useCamera, useControls } from './hooks/viewport-provide-context'
 import { usePlanes as usePlanesGeometryQuery } from './hooks/geometry-query'
+import { OrthographicCamera } from './core/gl-viewport'
 let planesGeometryQuery = usePlanesGeometryQuery()
 let camera = useCamera()
 let controls = useControls()
 function onClick() {
-  let { constant, normal } = planesGeometryQuery.getByIndex(0)
+  let { constant, normal } = planesGeometryQuery.get(props.id)
   let center = {
     x: -normal[0] * constant,
     y: -normal[1] * constant,
     z: -normal[2] * constant,
   }
-  let distance = 5
+  let distance = OrthographicCamera.distance
   camera.position.set(
     center.x + normal[0] * distance,
     center.y + normal[1] * distance,
     center.z + normal[2] * distance,
   )
-  camera.zoom=1
+  camera.zoom = 1
   camera.lookAt(center.x, center.y, center.z)
   camera.updateProjectionMatrix()
   controls.target.set(center.x, center.y, center.z)

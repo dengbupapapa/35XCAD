@@ -53,10 +53,10 @@ export class Scene {
 
 export class OrthographicCamera {
   impl
+  static distance = 5
   constructor(...args) {
     this.impl = new ImplOrthographicCamera(...args)
-    console.log(this.impl)
-    this.impl.position.z = 5
+    this.impl.position.z = OrthographicCamera.distance
     // this.impl.position.y = 5
     // this.impl.position.x = 5
     // setTimeout(()=>{

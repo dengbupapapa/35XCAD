@@ -15,10 +15,10 @@
     <template #overlay>
       <div class="contextmenu top">
         <div class="display">
-          <EyeInvisibleTwoTone v-if="visibled" @click="onHidden" title="隐藏"/>
-          <EyeTwoTone v-else @click="onVisible"  title="显示"/>
+          <EyeInvisibleTwoTone v-if="visibled" @click="onHidden" title="隐藏" />
+          <EyeTwoTone v-else @click="onVisible" title="显示" />
         </div>
-        <SidebarFeaturePlaneMakeFront />
+        <SidebarFeaturePlaneMakeFront :id="id"/>
       </div>
       <!-- <a-menu @click="onMenuClick">
         <a-menu-item key="delete">删除</a-menu-item>
@@ -31,8 +31,9 @@ import { onMounted, onUnmounted, useTemplateRef, ref, watch } from 'vue'
 import { EyeInvisibleTwoTone, EyeTwoTone } from '@ant-design/icons-vue'
 import { usePlanes as usePlanesGeometryManager } from './hooks/geometry-manager'
 import SidebarFeaturePlaneMakeFront from './sidebar-feature-plane-make-front.vue'
-let planesGeometryManager = usePlanesGeometryManager()
+defineProps({ id: { type: String, required: true } })
 
+let planesGeometryManager = usePlanesGeometryManager()
 //hover
 let hover = ref(false)
 function onMouseenter() {
@@ -61,7 +62,7 @@ onUnmounted(() => {
   document.removeEventListener('click', onClickOutside)
 })
 //visibled
-let visibled = ref(false)
+let visibled = ref(true)
 function onVisible() {
   visibled.value = true
 }
@@ -78,6 +79,7 @@ watch(
       planesGeometryManager.hidden(0)
     }
   },
+  { immediate: true },
 )
 </script>
 <style scoped lang="less">
