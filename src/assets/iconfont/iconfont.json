@@ -6,6 +6,13 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "18034692",
+      "name": "addConstraintPointOnLine",
+      "font_class": "addConstraintPointOnLine",
+      "unicode": "e68e",
+      "unicode_decimal": 59022
+    },
+    {
       "icon_id": "35769245",
       "name": "addConstraintP2PCoincident",
       "font_class": "addConstraintP2PCoincident",
