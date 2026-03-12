@@ -1,7 +1,7 @@
 export const labelBasicMap = {
   hidden: '隐藏',
   visible: '显示',
-  'front-view': '正视'
+  'front-view': '正视',
 }
 
 export const labelPlaneMap = {
@@ -26,4 +26,6 @@ export const labelConstraintMap = {
   addConstraintCoordinateX: '垂直固定',
   addConstraintCoordinateY: '水平固定',
   addConstraintP2PCoincident: '重合',
+  addConstraintPointOnLine: '点在线上',
+  addConstraintPointOnLine2: '点在线上2',
 }

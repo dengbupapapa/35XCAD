@@ -220,3 +220,66 @@ ConstraintResolver.registryRuler('addConstraintArcRules').attach(function (name,
   constraintsRelationManager.add(name, geometrys, constraints)
 })
 
+ConstraintResolver.registryRuler('addConstraintPointOnLine')
+  .usable(function (selectGeometrys) {
+    let context = this.getContext()
+    let pointsGeometryQuery = context.get('pointsGeometryQuery')
+    let linesGeometryQuery = context.get('linesGeometryQuery')
+    return (
+      selectGeometrys.length > 1 &&
+      selectGeometrys.filter((id) => pointsGeometryQuery.hasById(id)).length > 0 &&
+      selectGeometrys.filter((id) => linesGeometryQuery.hasById(id)).length === 1
+    )
+  })
+  .attach(function (name, selectGeometrys) {
+    let context = this.getContext()
+    let constraintsManager = context.get('constraintsManager')
+    let constraintsRelationManager = context.get('constraintsRelationManager')
+    let pointsGeometryQuery = context.get('pointsGeometryQuery')
+    let linesGeometryQuery = context.get('linesGeometryQuery')
+    let pointsGeometry = selectGeometrys.filter((id) => pointsGeometryQuery.hasById(id))
+    let linesGeometry = selectGeometrys.filter((id) => linesGeometryQuery.hasById(id))
+    let line = linesGeometry[0]
+    let geometrys = []
+    let constraints = []
+    pointsGeometry.forEach((point) => {
+      let constraint = constraintsManager[name].apply(constraintsManager, [point, line])
+      geometrys.push([point, line])
+      constraints.push(constraint.id)
+    })
+    constraintsRelationManager.add(name, geometrys, constraints)
+  })
+
+// ConstraintResolver.registryRuler('addConstraintPointOnLine2')
+//   .usable(function (selectGeometrys) {
+//     let context = this.getContext()
+//     let pointsGeometryQuery = context.get('pointsGeometryQuery')
+//     let linesGeometryQuery = context.get('linesGeometryQuery')
+//     return (
+//       selectGeometrys.length > 1 &&
+//       selectGeometrys.filter((id) => pointsGeometryQuery.hasById(id)).length > 0 &&
+//       selectGeometrys.filter((id) => linesGeometryQuery.hasById(id)).length === 1
+//     )
+//   })
+//   .attach(function (name, selectGeometrys) {
+//     let context = this.getContext()
+//     let constraintsManager = context.get('constraintsManager')
+//     let constraintsRelationManager = context.get('constraintsRelationManager')
+//     let pointsGeometryQuery = context.get('pointsGeometryQuery')
+//     let linesGeometryQuery = context.get('linesGeometryQuery')
+//     let pointsGeometry = selectGeometrys.filter((id) => pointsGeometryQuery.hasById(id))
+//     let linesGeometry = selectGeometrys.filter((id) => linesGeometryQuery.hasById(id))
+//     let line = linesGeometryQuery.get(linesGeometry[0])
+//     let geometrys = []
+//     let constraints = []
+//     pointsGeometry.forEach((point) => {
+//       let constraint = constraintsManager[name].apply(constraintsManager, [
+//         point,
+//         line.start,
+//         line.end,
+//       ])
+//       geometrys.push([point, line])
+//       constraints.push(constraint.id)
+//     })
+//     constraintsRelationManager.add(name, geometrys, constraints)
+//   })

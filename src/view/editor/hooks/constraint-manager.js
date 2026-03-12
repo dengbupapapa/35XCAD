@@ -28,7 +28,7 @@ import {
   useResults as useResultsGCSQuery,
   useSystems as useSystemsGCSQuery,
 } from './solver-gcs-query.js'
-import { useArcs as useArcsGCSMapper } from './solver-gcs-mapper.js'
+import { useArcs as useArcsGCSMapper, useLines as useLinesGCSMapper } from './solver-gcs-mapper.js'
 import { nanoid, assertIndexFormList } from '../utils/simple'
 import { debounce } from 'lodash-es'
 export function useConstraints() {
@@ -47,6 +47,7 @@ export function useConstraints() {
   let resultsGCSQuery = useResultsGCSQuery()
   let numeralsGCSQuery = useNumeralsGCSQuery()
   let pointsGCSQuery = usePointsGCSQuery()
+  let linesGCSMapper = useLinesGCSMapper()
   let arcsGCSMapper = useArcsGCSMapper()
   let toolTempGCSManager = useToolTempGCSManager()
 
@@ -72,6 +73,21 @@ export function useConstraints() {
             let numeralV = numeralsGCSQuery.get(pointGCS.v)
             numerals.push(numeralV)
           }
+          return
+        }
+        if (constraint.lines instanceof Array && constraint.lines.includes(index)) {
+          let lineGCS = linesGCSMapper.getByGeometry(arg)
+          let pointGCSStart = pointsGCSQuery.get(lineGCS.start)
+          let pointGCSEnd = pointsGCSQuery.get(lineGCS.end)
+
+          let numeralStartU = numeralsGCSQuery.get(pointGCSStart.u)
+          let numeralStartV = numeralsGCSQuery.get(pointGCSStart.v)
+          numerals.push(numeralStartU)
+          numerals.push(numeralStartV)
+          let numeralEndU = numeralsGCSQuery.get(pointGCSEnd.u)
+          let numeralEndV = numeralsGCSQuery.get(pointGCSEnd.v)
+          numerals.push(numeralEndU)
+          numerals.push(numeralEndV)
           return
         }
         if (constraint.arcs instanceof Array && constraint.arcs.includes(index)) {
@@ -128,6 +144,7 @@ export function useConstraints() {
     // console.log(resultCurrent, resultBackup)
     // console.log(resultCurrent, numeralsRelated)
     ;[...resultCurrent.dependentsGroups, ...resultBackup.dependentsGroups].forEach((rows) => {
+      // ;[...resultCurrent.dependentsGraph, ...resultBackup.dependentsGraph].forEach((rows) => {
       if (numeralsRelated.some((numeral) => rows.includes(numeral.ptr))) {
         rows.forEach((ptr) => {
           if (updated(ptr)) return
@@ -275,6 +292,31 @@ export function useConstraints() {
         type: 'addConstraintArcRules',
         args: [arc],
         arcs: [0],
+      }
+      this.add(constraint)
+      return constraint
+    },
+    addConstraintPointOnLine(p, l) {
+      let constraint = {
+        type: 'addConstraintPointOnLine',
+        args: [p, l],
+        points: [0],
+        lines: [1],
+        unknowns: [['x', 'y']],
+      }
+      this.add(constraint)
+      return constraint
+    },
+    addConstraintPointOnLine2(p, lp1, lp2) {
+      let constraint = {
+        type: 'addConstraintPointOnLine2',
+        args: [p, lp1, lp2],
+        points: [0, 1, 2],
+        unknowns: [
+          ['x', 'y'],
+          ['x', 'y'],
+          ['x', 'y'],
+        ],
       }
       this.add(constraint)
       return constraint

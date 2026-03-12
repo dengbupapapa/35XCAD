@@ -29,6 +29,7 @@ import { useConstraints as useConstraintsManager } from './constraint-manager.js
 import {
   useToolTemp as useToolTempGCSManager,
   usePoints as usePointsGCSManager,
+  useLines as useLinesGCSManager,
   useArcs as useArcsGCSManager,
   // useConstraints as useConstraintsGCSManager,
   useSystems as useSystemsGCSManager,
@@ -47,7 +48,7 @@ import {
 } from './solver-gcs-mapper.js'
 import { usePoints as usePointsGeometryUpdater } from './geometry-updater.js'
 import { useSelectPoints as useSelectPointsInteractioManager } from './interaction-manager.js'
-import { useConstraints as useConstraintsDispatch} from "./constraint-dispatch"
+import { useConstraints as useConstraintsDispatch } from './constraint-dispatch'
 import {
   usePlanes as usePlanesEntitie,
   usePoints as usePointsEntitie,
@@ -493,12 +494,13 @@ export function usePoints() {
     },
     updateApply(numerals) {
       let result = systemsGCSManager.solver()
-      let { dependentsGroups, dependents, status, redundants } = result
+      let { dependentsGroups, dependents, status, redundants, dependentsGraph } = result
       // console.log(result)
       let updatedPoints = new Set()
-      dependentsGroups.forEach((rows) => {
-        if (numerals.some((numeral) => rows.includes(numeral.ptr))) {
-          rows.forEach((ptr) => {
+      dependentsGraph.forEach((graph) => {
+        // console.log(numerals.some((numeral) => graph.includes(numeral.ptr.toString())))
+        if (numerals.some((numeral) => graph.includes(numeral.ptr.toString()))) {
+          graph.forEach((ptr) => {
             let numeralGCS = numeralsGCSQuery.getByPtr(ptr)
             let pointGCS = pointsGCSQuery.get(numeralGCS.creator)
             if (!pointGCS) return
@@ -513,6 +515,23 @@ export function usePoints() {
           })
         }
       })
+      // dependentsGroups.forEach((rows) => {
+      //   if (numerals.some((numeral) => rows.includes(numeral.ptr)) || true) {
+      //     rows.forEach((ptr) => {
+      //       let numeralGCS = numeralsGCSQuery.getByPtr(ptr)
+      //       let pointGCS = pointsGCSQuery.get(numeralGCS.creator)
+      //       if (!pointGCS) return
+      //       let pointGeometry = pointsGeometryQuery.get(pointGCS.creator)
+      //       // console.log(ptr,pointGeometry.id)
+      //       if (updatedPoints.has(pointGeometry)) {
+      //         // console.log("updatedPoints.has(pointGeometry)", pointGeometry)
+      //         return
+      //       }
+      //       updatedPoints.add(pointGeometry)
+      //       this.updateByNumeralPtr(ptr)
+      //     })
+      //   }
+      // })
 
       systemsGCSQuery.active.handle.clearByTag(-1)
       toolTempGCSManager.clearNumerals()
@@ -534,6 +553,7 @@ export function usePoints() {
 
       let plane = planesGeometryQuery.get(pointGeometry.plane)
       let [x, y, z] = planeCoords2worldCoords([numeralU.handle.value, numeralV.handle.value], plane)
+
       this.updatePure(index, [x, y, z])
     },
     updatePure(index, position) {
@@ -556,6 +576,7 @@ export function useLines() {
   let pointsGeometryQuery = usePointsGeometryQuery()
   let pointsGeometryUpdater = usePointsGeometryUpdater()
   let linesEntitie = useLinesEntitie()
+  let linesGCSManager = useLinesGCSManager()
   return {
     add(start, end) {
       let line = {
@@ -570,6 +591,9 @@ export function useLines() {
       return this.attach(line)
     },
     attach(line) {
+      let lineGCS = linesGCSManager.add(line)
+      lineGCS.creator = line.id
+      line.gcs = lineGCS.id
       let start = pointsGeometryQuery.get(line.start)
       let end = pointsGeometryQuery.get(line.end)
       start.creator = line.id
@@ -592,6 +616,7 @@ export function useLines() {
         linesGeometry.value[index] = linesGeometry.value[last]
       }
       linesGeometry.value.pop()
+      linesGCSManager.remove(line)
       delete linesHashGeometry.value[line.id]
       linesEntitie.remove(index)
       // if (pointsGeometryQuery.get(line.start)) pointsGeometryManager.removeById(line.start)
@@ -886,7 +911,7 @@ export function useArcs() {
     },
     clear() {
       pointsGeometryManager.clear()
-      ;[...arcsGeometry.value].forEach((arc,index) => {
+      ;[...arcsGeometry.value].forEach((arc, index) => {
         arcsGeometry.value.shift()
         delete arcsHashGeometry.value[arc.id]
         arcsEntitie.remove(index)

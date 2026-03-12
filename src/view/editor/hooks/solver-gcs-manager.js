@@ -9,6 +9,8 @@ import {
   useNumeralsTemp as useNumeralsTempGCS,
   usePoints as usePointsGCS,
   usePointsHash as usePointsHashGCS,
+  useLines as useLinesGCS,
+  useLinesHash as useLinesHashGCS,
   useArcs as useArcsGCS,
   useArcsHash as useArcsHashGCS,
   useConstraints as useConstraintsGCS,
@@ -19,6 +21,7 @@ import {
 import {
   useResults as useResultsQuery,
   usePoints as usePointsGCSQuery,
+  useLines as useLinesGCSQuery,
   useArcs as useArcsGCSQuery,
   useNumerals as useNumeralsGCSQuery,
   useSystems as useSystemsGCSQuery,
@@ -27,17 +30,20 @@ import {
 } from './solver-gcs-query.js'
 import {
   usePoints as usePointsGCSMapper,
+  useLines as useLinesGCSMapper,
   useArcs as useArcsGCSMapper,
 } from './solver-gcs-mapper.js'
 import {
-  usePoints as usePointsGeometryQuery,
   usePlanes as usePlanesGeometryQuery,
+  usePoints as usePointsGeometryQuery,
+  useLines as useLinesGeometryQuery,
   useArcs as useArcsGeometryQuery,
 } from './geometry-query.js'
 import { useConstraints as useConstraintsDataQuery } from './constraint-query.js'
 import { Vector2, Vector3 } from '../core/gl-math'
 import { nanoid, assertIndexFormList, worldCoords2planeCoords } from '../utils/simple'
 import { upperFirst, throttle } from 'lodash-es'
+import { Graph, alg } from '@dagrejs/graphlib'
 
 export function useToolTemp() {
   let Module = useModuleGCS()
@@ -322,6 +328,47 @@ export function usePoints() {
     },
   }
 }
+
+export function useLines() {
+  let Module = useModuleGCS()
+  let pointsGCSMapper = usePointsGCSMapper()
+  let linesGCS = useLinesGCS()
+  let linesHashGCS = useLinesHashGCS()
+  let linesGCSQuery = useLinesGCSQuery()
+  return {
+    add(data) {
+      let { start, end, id, planes } = data
+      let line = {
+        handle: new Module.Line(),
+        id: nanoid(),
+      }
+      let pointGCSStart = pointsGCSMapper.getByGeometry(start)
+      let pointGCSEnd = pointsGCSMapper.getByGeometry(end)
+
+      line.handle.start(pointGCSStart.handle)
+      line.handle.end(pointGCSEnd.handle)
+      line.start = pointGCSStart.id
+      line.end = pointGCSEnd.id
+
+      linesGCS.push(line)
+      linesHashGCS[line.id] = line
+      return line
+    },
+    remove(data) {
+      let lineGCS = linesGCSQuery.get(data.gcs)
+      let index = linesGCSQuery.indexOf(lineGCS)
+      linesGCS.splice(index, 1)
+      delete linesHashGCS[lineGCS.id]
+    },
+    clear() {
+      ;[...linesGCS].forEach((line) => {
+        linesGCS.shift()
+        delete linesHashGCS[line.id]
+      })
+    },
+  }
+}
+
 export function useArcs() {
   let Module = useModuleGCS()
   let numeralsGCSManager = useNumerals()
@@ -427,13 +474,13 @@ export function useArcs() {
       // numeralsGCSManager.removeById(pointGCSEnd.u)
       // numeralsGCSManager.removeById(pointGCSEnd.v)
 
-      // numeralsGCSManager.removeById(arcGCS.angleStart)
-      // numeralsGCSManager.removeById(arcGCS.angleEnd)
-      // numeralsGCSManager.removeById(arcGCS.radius)
+      numeralsGCSManager.removeById(arcGCS.angleStart)
+      numeralsGCSManager.removeById(arcGCS.angleEnd)
+      numeralsGCSManager.removeById(arcGCS.radius)
 
-      // pointsGCSManager.remove(pointGCSCenter)
-      // pointsGCSManager.remove(pointGCSStart)
-      // pointsGCSManager.remove(pointGCSEnd)
+      pointsGCSManager.remove(pointGCSCenter)
+      pointsGCSManager.remove(pointGCSStart)
+      pointsGCSManager.remove(pointGCSEnd)
 
       let index = arcsGCSQuery.indexOf(arcGCS)
       arcsGCS.splice(index, 1)
@@ -444,9 +491,13 @@ export function useArcs() {
 
 export function useConstraints() {
   let pointsGeometryQuery = usePointsGeometryQuery()
+  let linesGeometryQuery = useLinesGeometryQuery()
   let arcsGeometryQuery = useArcsGeometryQuery()
+  let pointsGCSMapper = usePointsGCSMapper()
+  let linesGCSMapper = useLinesGCSMapper()
   let arcsGCSMapper = useArcsGCSMapper()
   let pointsGCSQuery = usePointsGCSQuery()
+  let linesGCSQuery = useLinesGCSQuery()
   let arcsGCSQuery = useArcsGCSQuery()
   let numeralsGCSManager = useNumerals()
   let unknownsSetManager = useUnknownsSet()
@@ -457,7 +508,7 @@ export function useConstraints() {
   let constraintsDataQuery = useConstraintsDataQuery()
   return {
     add(data) {
-      let { type, args, points, arcs, unknowns, numerals, id, plane } = data
+      let { type, args, points, lines, arcs, unknowns, numerals, id, plane } = data
       let args2Constraint = []
       let args2System = []
       let idConstraint = nanoid()
@@ -465,7 +516,7 @@ export function useConstraints() {
         /* [联动] 1
          * 创建参数
          * 参数id关联
-         * 创建变量
+         * 创建变量 *******
          */
         if (points instanceof Array && points.includes(index)) {
           let pointGeometry = pointsGeometryQuery.get(arg)
@@ -484,14 +535,33 @@ export function useConstraints() {
           }
           return
         }
-        if (arcs instanceof Array && arcs.includes(index)) {
-          let arcsGCS = arcsGCSMapper.getByGeometry(arg)
-          args2Constraint.push(arcsGCS.id)
-          args2System.push(arcsGCS.handle)
+        if (lines instanceof Array && lines.includes(index)) {
+          let lineGCS = linesGCSMapper.getByGeometry(arg)
+          args2Constraint.push(lineGCS.id)
+          args2System.push(lineGCS.handle)
+          let lineGeometry = linesGeometryQuery.get(arg)
+          let pointStartGCS = pointsGCSMapper.getByGeometry(lineGeometry.start)
+          let pointEndGCS = pointsGCSMapper.getByGeometry(lineGeometry.end)
 
-          let pointGCSCenter = pointsGCSQuery.get(arcsGCS.center)
-          let pointGCSStart = pointsGCSQuery.get(arcsGCS.start)
-          let pointGCSEnd = pointsGCSQuery.get(arcsGCS.end)
+          let numeralStartU = numeralsGCSQuery.get(pointStartGCS.u)
+          let numeralStartV = numeralsGCSQuery.get(pointStartGCS.v)
+          let numeralEndU = numeralsGCSQuery.get(pointEndGCS.u)
+          let numeralEndV = numeralsGCSQuery.get(pointEndGCS.v)
+
+          unknownsSetManager.numeral(numeralStartU)
+          unknownsSetManager.numeral(numeralStartV)
+          unknownsSetManager.numeral(numeralEndU)
+          unknownsSetManager.numeral(numeralEndV)
+          return
+        }
+        if (arcs instanceof Array && arcs.includes(index)) {
+          let arcGCS = arcsGCSMapper.getByGeometry(arg)
+          args2Constraint.push(arcGCS.id)
+          args2System.push(arcGCS.handle)
+
+          let pointGCSCenter = pointsGCSQuery.get(arcGCS.center)
+          let pointGCSStart = pointsGCSQuery.get(arcGCS.start)
+          let pointGCSEnd = pointsGCSQuery.get(arcGCS.end)
 
           let numeralCenterU = numeralsGCSQuery.get(pointGCSCenter.u)
           let numeralCenterV = numeralsGCSQuery.get(pointGCSCenter.v)
@@ -506,9 +576,9 @@ export function useConstraints() {
           unknownsSetManager.numeral(numeralEndU)
           unknownsSetManager.numeral(numeralEndV)
 
-          let numeralAngleStart = numeralsGCSQuery.get(arcsGCS.angleStart)
-          let numeralAngleEnd = numeralsGCSQuery.get(arcsGCS.angleEnd)
-          let numeralRadius = numeralsGCSQuery.get(arcsGCS.radius)
+          let numeralAngleStart = numeralsGCSQuery.get(arcGCS.angleStart)
+          let numeralAngleEnd = numeralsGCSQuery.get(arcGCS.angleEnd)
+          let numeralRadius = numeralsGCSQuery.get(arcGCS.radius)
 
           unknownsSetManager.numeral(numeralAngleStart)
           unknownsSetManager.numeral(numeralAngleEnd)
@@ -541,12 +611,13 @@ export function useConstraints() {
       return constraint
     },
     removeById(id) {
+      /* [联动] 1 */
       let constraint = constraintsHashGCS[id]
       //删除tag
       let constraintData = constraintsDataQuery.get(constraint.creator)
       systems.active.handle.clearByTag(constraintData.tag)
       let { args } = constraint
-      let { points, arcs, unknowns, numerals } = constraintData
+      let { points, lines, arcs, unknowns, numerals } = constraintData
       //删除相关数值和变量
       args.forEach((arg, index) => {
         if (points instanceof Array && points.includes(index)) {
@@ -563,12 +634,27 @@ export function useConstraints() {
           }
           return
         }
-        if (arcs instanceof Array && arcs.includes(index)) {
-          let arcsGCS = arcsGCSQuery.get(arg)
+        if (lines instanceof Array && lines.includes(index)) {
+          let lineGCS = linesGCSQuery.get(arg)
+          let pointGCSStart = pointsGCSQuery.get(lineGCS.start)
+          let pointGCSEnd = pointsGCSQuery.get(lineGCS.end)
 
-          let pointGCSCenter = pointsGCSQuery.get(arcsGCS.center)
-          let pointGCSStart = pointsGCSQuery.get(arcsGCS.start)
-          let pointGCSEnd = pointsGCSQuery.get(arcsGCS.end)
+          let numeralStartU = numeralsGCSQuery.get(pointGCSStart.u)
+          let numeralStartV = numeralsGCSQuery.get(pointGCSStart.v)
+          unknownsSetManager.unnumeral(numeralStartU)
+          unknownsSetManager.unnumeral(numeralStartV)
+          let numeralEndU = numeralsGCSQuery.get(pointGCSEnd.u)
+          let numeralEndV = numeralsGCSQuery.get(pointGCSEnd.v)
+          unknownsSetManager.unnumeral(numeralEndU)
+          unknownsSetManager.unnumeral(numeralEndV)
+          return
+        }
+        if (arcs instanceof Array && arcs.includes(index)) {
+          let arcGCS = arcsGCSQuery.get(arg)
+
+          let pointGCSCenter = pointsGCSQuery.get(arcGCS.center)
+          let pointGCSStart = pointsGCSQuery.get(arcGCS.start)
+          let pointGCSEnd = pointsGCSQuery.get(arcGCS.end)
 
           let numeralCenterU = numeralsGCSQuery.get(pointGCSCenter.u)
           let numeralCenterV = numeralsGCSQuery.get(pointGCSCenter.v)
@@ -583,9 +669,9 @@ export function useConstraints() {
           unknownsSetManager.unnumeral(numeralEndU)
           unknownsSetManager.unnumeral(numeralEndV)
 
-          let numeralAngleStart = numeralsGCSQuery.get(arcsGCS.angleStart)
-          let numeralAngleEnd = numeralsGCSQuery.get(arcsGCS.angleEnd)
-          let numeralRadius = numeralsGCSQuery.get(arcsGCS.radius)
+          let numeralAngleStart = numeralsGCSQuery.get(arcGCS.angleStart)
+          let numeralAngleEnd = numeralsGCSQuery.get(arcGCS.angleEnd)
+          let numeralRadius = numeralsGCSQuery.get(arcGCS.radius)
 
           unknownsSetManager.unnumeral(numeralAngleStart)
           unknownsSetManager.unnumeral(numeralAngleEnd)
@@ -666,6 +752,7 @@ export function useResults() {
       result.hasRedundant = undefined
       result.conflictings = []
       result.redundants = []
+      result.dependentsGraph = []
     },
     update(
       id,
@@ -687,6 +774,17 @@ export function useResults() {
       result.hasRedundant = hasRedundant
       result.conflictings = conflictings
       result.redundants = redundants
+
+      let g = new Graph()
+      dependentsGroups.forEach((items) => {
+        items.forEach((ptr1) => {
+          items.forEach((ptr2) => {
+            if (ptr1 === ptr2) return
+            g.setEdge(ptr1, ptr2)
+          })
+        })
+      })
+      result.dependentsGraph = alg.components(g)
     },
     backup(id) {
       let result = resultsQuery.get(id)

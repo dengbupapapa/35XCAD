@@ -34,7 +34,7 @@ import {
   useActiveElement as useActiveElementInteractionQuery,
 } from './interaction-query'
 import { useSelectGeometrys as useSelectGeometrysInteractionDispatch } from './interaction-dispatch'
-import { useConstraints as useConstraintsDispatch} from "./constraint-dispatch"
+import { useConstraints as useConstraintsDispatch } from './constraint-dispatch'
 import { Vector3 } from '../core/gl-math'
 import { viewport2ndc } from '../utils/simple'
 
@@ -199,17 +199,15 @@ export function useAddPolylineClick() {
           pointReference.id,
         ])
         pointReference = pointReferenceClone
-
       }
       let line = linesGeometryManager.add(pointReference.id, pointCurrent.id)
       polylineByLineIds.push(line.id)
 
-      if(!polyline && polylineByLineIds.length===2){
+      if (!polyline && polylineByLineIds.length === 2) {
         polyline = polylinesGeometryManager.add([...polylineByLineIds])
-      }else if(polylineByLineIds.length>2){
+      } else if (polylineByLineIds.length > 2) {
         polylinesGeometryManager.append(polyline.id, line.id)
       }
-
     }
   }
 
@@ -921,9 +919,7 @@ function useMovePoints() {
       positionFromPlaneCurrent.set(...positionFromPlane)
       let offset = positionFromPlaneCurrent.sub(positionFromPlaneBegin)
 
-      let selectPoints = selectPointsInteractionQuery.get()
-
-      let batch = selectPoints.map((id) => {
+      let batch = Object.keys(selectPointsPositionBegin).map((id) => {
         let point = pointsGeometryQuery.get(id)
         let index = pointsGeometryQuery.indexOf(point)
         let selectPointPositionBegin = selectPointsPositionBegin[id]
@@ -956,8 +952,8 @@ export function useDelete() {
   hotkeys('del', function (event, handler) {
     event.preventDefault()
     let activeElement = activeElementInteractionQuery.get()
-    if(canvas !== activeElement){
-      return 
+    if (canvas !== activeElement) {
+      return
     }
     let selectGeometrys = selectGeometrysInteractionQuery.get()
     selectGeometrysInteractionDispatch.clear()

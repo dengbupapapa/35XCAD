@@ -1,6 +1,8 @@
 import {
   usePoints as usePointsGCS,
   usePointsHash as usePointsHashGCS,
+  useLines as useLinesGCS,
+  useLinesHash as useLinesHashGCS,
   useArcs as useArcsGCS,
   useArcsHash as useArcsHashGCS,
   useNumerals as useNumeralsGCS,
@@ -30,7 +32,21 @@ export function usePoints() {
     },
   }
 }
-
+export function useLines() {
+  let linesHashGCS = useLinesHashGCS()
+  let linesGCS = useLinesGCS()
+  return {
+    get(id) {
+      return linesHashGCS[id]
+    },
+    getByIndex(index) {
+      return linesGCS[index]
+    },
+    indexOf(arc) {
+      return linesGCS.indexOf(arc)
+    },
+  }
+}
 export function useArcs() {
   let arcsHashGCS = useArcsHashGCS()
   let arcsGCS = useArcsGCS()
