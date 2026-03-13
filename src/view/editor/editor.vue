@@ -18,7 +18,7 @@
       </div>
       <div class="viewport">
         <div class="status-solver-alert">
-          <StatusSolverAlert />
+          <SolverResultAlert />
         </div>
         <!-- <TestConstraintsButton /> -->
         <Viewport />
@@ -46,7 +46,7 @@ import Toolbar from './toolbar.vue'
 import Graphbar from './graphbar.vue'
 import Sidebar from './sidebar.vue'
 import Viewport from './viewport.vue'
-import StatusSolverAlert from './status-solver-alert.vue'
+import SolverResultAlert from './solver-result-alert.vue'
 import ContextRegistryToExternal from './context-registry-to-external.vue'
 // import TestModesInteractionButton from './test-modes-interaction-button.vue'
 // import TestConstraintsButton from './test-constraints-button.vue'

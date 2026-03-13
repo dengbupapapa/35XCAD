@@ -15,7 +15,7 @@ import {
   useSystems as useSystemsGCS,
   useUnknownsSet as useUnknownsSetGCS,
   useUnknownsSetJSON as useUnknownsSetJSONGCS,
-  useStatusSolver as useStatusSolverGCS,
+  useSolverResult as useSolverResultGCS,
 } from './solver-gcs-provide-context.js'
 
 export function usePoints() {
@@ -96,6 +96,9 @@ export function useConstraints() {
     indexOf(system) {
       return constraints.indexOf(system)
     },
+    all() {
+      return constraints
+    },
   }
 }
 
@@ -157,11 +160,11 @@ export function useUnknownsSet() {
   }
 }
 
-export function useStatusSolver() {
-  let statusSolverGCS = useStatusSolverGCS()
+export function useSolverResult() {
+  let solverResultGCS = useSolverResultGCS()
   return {
     get() {
-      return statusSolverGCS.value
+      return solverResultGCS.value
     },
   }
 }

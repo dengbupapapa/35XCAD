@@ -33,3 +33,14 @@ export const labelConstraintMap = {
   addConstraintPerpendicular: '线垂直',
   addConstraintEqualLength: '线长度相等',
 }
+
+export const tipSolverResultStatus = {
+  0: '约束求解找到使误差函数最小化为0的解',
+  1: '约束求解找到使误差函数最小化的解,但不是0',
+  2: '约束求解未能找到任何解',
+  3: '约束求解成功但解无效',
+}
+export const tipSolverResultDiagnose = {
+  hasRedundant: '存在求解冗余项',
+  hasConflicting: '存在求解冲突项',
+}

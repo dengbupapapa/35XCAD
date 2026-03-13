@@ -17,7 +17,7 @@ import {
   useConstraintsHash as useConstraintsHashGCS,
   useResults as useResultsGCS,
   useResultsHash as useResultsHashGCS,
-  useStatusSolver as useStatusSolverGCS,
+  useSolverResult as useSolverResultGCS,
 } from './solver-gcs-provide-context.js'
 import {
   useResults as useResultsQuery,
@@ -715,7 +715,7 @@ export function useResults() {
   let results = useResultsGCS()
   let resultsHash = useResultsHashGCS()
   let resultsQuery = useResultsQuery()
-  let statusSolverGCSManager = useStatusSolver()
+  let solverResultGCSManager = useSolverResult()
   return {
     add({ id }) {
       let result = {
@@ -788,7 +788,7 @@ export function useResults() {
       })
       result.dependentsGraph = alg.components(g)
 
-      statusSolverGCSManager.set(status)
+      solverResultGCSManager.set({ status, hasConflicting, hasRedundant, conflictings, redundants })
     },
     backup(id) {
       let result = resultsQuery.get(id)
@@ -879,6 +879,73 @@ export function useSystems() {
       //   systemsGCSQuery.active.handle[type](...args2System)
       // })
     },
+    // solver /*: throttle(function */() {
+    //   let system = systemsGCSQuery.active.handle
+    //   let result = resultsQuery.get(systemsGCSQuery.active.result)
+    //   resultsManager.backup(systemsGCSQuery.active.result)
+    //   // system.declareUnknowns(unknownsSetGCSQuery.active.handle)
+    //   system.initSolution(Algorithm.DogLeg)
+    //   let status = system.solve(true, Algorithm.DogLeg, false)
+    //   if (status != SolveStatus.Success.value && status != SolveStatus.Converged.value) {
+    //     let diagnose = system.diagnose(Algorithm.DogLeg)
+    //     let conflictings = []
+    //     let hasConflicting = system.hasConflicting()
+    //     if (hasConflicting) {
+    //       let tags = new Tags()
+    //       system.getConflicting(tags)
+    //       for (let i = 0; i < tags.size(); i++) {
+    //         conflictings.push(tags.ptr(i))
+    //       }
+    //     }
+    //     let redundants = []
+    //     let hasRedundant = system.hasRedundant()
+    //     if (hasRedundant) {
+    //       let tags = new Tags()
+    //       system.getRedundant(tags)
+    //       for (let i = 0; i < tags.size(); i++) {
+    //         redundants.push(tags.ptr(i))
+    //       }
+    //     }
+    //     resultsManager.update(systemsGCSQuery.active.result, {
+    //       status,
+    //       diagnose,
+    //       conflictings,
+    //       hasConflicting,
+    //       redundants,
+    //       hasRedundant,
+    //     })
+    //     this.reset()
+    //     //undoSolution
+    //     /* [问题]
+    //      * 是利用undoSolution还是直接clear
+    //      */
+    //     return result
+    //   }
+    //   system.applySolution()
+    //   let ds = new Dependents()
+    //   system.getDependentParams(ds)
+    //   let dependents = new Set() //[]
+    //   for (let i = 0; i < ds.size(); i++) {
+    //     dependents.add(ds.ptr(i))
+    //   }
+
+    //   let dgs = new DependentsGroups()
+    //   system.getDependentParamsGroups(dgs)
+    //   let dependentsGroups = []
+    //   for (let r = 0; r < dgs.row(); r++) {
+    //     let column = new Set() //[]
+    //     for (let c = 0; c < dgs.column(r); c++) {
+    //       column.add(dgs.ptr(r, c))
+    //     }
+    //     dependentsGroups.push(column.values().toArray())
+    //   }
+    //   resultsManager.update(systemsGCSQuery.active.result, {
+    //     status,
+    //     dependents: dependents.values().toArray(),
+    //     dependentsGroups,
+    //   })
+    //   return result
+    // } /*, 16)*/,
     solver /*: throttle(function */() {
       let system = systemsGCSQuery.active.handle
       let result = resultsQuery.get(systemsGCSQuery.active.result)
@@ -886,26 +953,27 @@ export function useSystems() {
       // system.declareUnknowns(unknownsSetGCSQuery.active.handle)
       system.initSolution(Algorithm.DogLeg)
       let status = system.solve(true, Algorithm.DogLeg, false)
+      //不论什么情况都要诊断，就算有最优解也有可能冗余
+      let diagnose = system.diagnose(Algorithm.DogLeg)
+      let conflictings = []
+      let hasConflicting = system.hasConflicting()
+      if (hasConflicting) {
+        let tags = new Tags()
+        system.getConflicting(tags)
+        for (let i = 0; i < tags.size(); i++) {
+          conflictings.push(tags.ptr(i))
+        }
+      }
+      let redundants = []
+      let hasRedundant = system.hasRedundant()
+      if (hasRedundant) {
+        let tags = new Tags()
+        system.getRedundant(tags)
+        for (let i = 0; i < tags.size(); i++) {
+          redundants.push(tags.ptr(i))
+        }
+      }
       if (status != SolveStatus.Success.value && status != SolveStatus.Converged.value) {
-        let diagnose = system.diagnose(Algorithm.DogLeg)
-        let conflictings = []
-        let hasConflicting = system.hasConflicting()
-        if (hasConflicting) {
-          let tags = new Tags()
-          system.getConflicting(tags)
-          for (let i = 0; i < tags.size(); i++) {
-            conflictings.push(tags.ptr(i))
-          }
-        }
-        let redundants = []
-        let hasRedundant = system.hasRedundant()
-        if (hasRedundant) {
-          let tags = new Tags()
-          system.getRedundant(tags)
-          for (let i = 0; i < tags.size(); i++) {
-            redundants.push(tags.ptr(i))
-          }
-        }
         resultsManager.update(systemsGCSQuery.active.result, {
           status,
           diagnose,
@@ -943,6 +1011,11 @@ export function useSystems() {
         status,
         dependents: dependents.values().toArray(),
         dependentsGroups,
+        diagnose,
+        conflictings,
+        hasConflicting,
+        redundants,
+        hasRedundant,
       })
       return result
     } /*, 16)*/,
@@ -1052,11 +1125,11 @@ export function useUnknownsSet() {
   }
 }
 
-export function useStatusSolver() {
-  let statusSolverGCS = useStatusSolverGCS()
+export function useSolverResult() {
+  let solverResultGCS = useSolverResultGCS()
   return {
-    set(state) {
-      statusSolverGCS.value = state
+    set(result) {
+      solverResultGCS.value = result
     },
   }
 }

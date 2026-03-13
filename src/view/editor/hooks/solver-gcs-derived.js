@@ -1,5 +1,5 @@
 import { computed } from 'vue'
-import { useStatusSolver as useStatusSolverGCS } from './solver-gcs-provide-context.js'
+import { useSolverResult as useSolverResultGCS } from './solver-gcs-provide-context.js'
 export {
   useModule,
   useNumerals,
@@ -8,9 +8,9 @@ export {
   useSystems,
 } from './solver-gcs-provide-context.js'
 
-export function useStatusSolver() {
-  let statusSolverGCS = useStatusSolverGCS()
+export function useSolverResult() {
+  let solverResultGCS = useSolverResultGCS()
   return computed(() => {
-    return statusSolverGCS.value
+    return solverResultGCS.value
   })
 }
