@@ -359,8 +359,56 @@ export function useConstraints() {
       this.add(constraint)
       return constraint
     },
+    addConstraintHorizontal(line) {
+      let constraint = {
+        type: 'addConstraintHorizontal',
+        args: [line],
+        lines: [0],
+      }
+      this.add(constraint)
+      return constraint
+    },
+    addConstraintVertical(line) {
+      let constraint = {
+        type: 'addConstraintVertical',
+        args: [line],
+        lines: [0],
+      }
+      this.add(constraint)
+      return constraint
+    },
+    addConstraintHorizontal2(p1, p2) {
+      let constraint = {
+        type: 'addConstraintHorizontal2',
+        args: [p1, p2],
+        points: [0, 1],
+        unknowns: [
+          ['x', 'y'],
+          ['x', 'y'],
+        ],
+      }
+      this.add(constraint)
+      return constraint
+    },
+    addConstraintVertical2(p1, p2) {
+      let constraint = {
+        type: 'addConstraintVertical2',
+        args: [p1, p2],
+        points: [0, 1],
+        unknowns: [
+          ['x', 'y'],
+          ['x', 'y'],
+        ],
+      }
+      this.add(constraint)
+      return constraint
+    },
   }
 }
+
+/* [问题]
+ * 使用点在线上或者点在平分线上，对应的线过于小时会出现求解出错的情况
+ */
 
 export function useConstraintsIncrement() {
   let constraintsIncrementProvideContext = useConstraintsIncrementProvideContext()

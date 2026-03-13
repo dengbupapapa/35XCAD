@@ -53,7 +53,7 @@ export class Scene {
 
 export class OrthographicCamera {
   impl
-  static distance = 5
+  static distance = 1000
   constructor(...args) {
     this.impl = new ImplOrthographicCamera(...args)
     this.impl.position.z = OrthographicCamera.distance
@@ -71,19 +71,19 @@ export class OrthographicCamera {
     this.impl.bottom = -viewSize
     this.updateProjectionMatrix()
   }
-  get position(){
+  get position() {
     return this.impl.position
   }
-  get zoom(){
+  get zoom() {
     return this.impl.zoom
   }
-  set zoom(value){
-    this.impl.zoom=value
+  set zoom(value) {
+    this.impl.zoom = value
   }
-  lookAt(...args){
+  lookAt(...args) {
     this.impl.lookAt(...args)
   }
-  updateProjectionMatrix(){
+  updateProjectionMatrix() {
     this.impl.updateProjectionMatrix()
   }
 }
@@ -139,10 +139,10 @@ export class Controls {
   get enableZoom() {
     return this.impl.enableZoom
   }
-  update(){
+  update() {
     this.impl.update()
   }
-  get target(){
+  get target() {
     return this.impl.target
   }
 }

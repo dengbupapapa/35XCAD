@@ -32,6 +32,10 @@ export const labelConstraintMap = {
   addConstraintParallel: '线平行',
   addConstraintPerpendicular: '线垂直',
   addConstraintEqualLength: '线长度相等',
+  addConstraintHorizontal: '线水平',
+  addConstraintHorizontal2: '点集合水平',
+  addConstraintVertical: '线垂直',
+  addConstraintVertical2: '点集合垂直',
 }
 
 export const tipSolverResultStatus = {
