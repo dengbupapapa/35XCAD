@@ -30,9 +30,9 @@ A browser-based CAD software. online preview - [https://dengbupapapa.github.io/3
     - Perpendicular ✅
     - L2LAngle
     - EqualLength ✅
-    - Horizontal ⏳
-    - Vertical ⏳
-    - MidpointOnLine
+    - Horizontal ✅
+    - Vertical ✅
+    - MidpointOnLine ✅
     - CircleRadius
     - CircleDiameter
     - PointOnCircle

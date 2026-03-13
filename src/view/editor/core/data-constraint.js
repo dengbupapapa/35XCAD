@@ -475,3 +475,45 @@ ConstraintResolver.registryRuler('addConstraintVertical2')
     }
     constraintsRelationManager.add(name, geometrys, constraints)
   })
+
+ConstraintResolver.registryRuler('addConstraintMidpointOnLine')
+  .usable(function (selectGeometrys) {
+    let context = this.getContext()
+    let linesGeometryQuery = context.get('linesGeometryQuery')
+    return (
+      selectGeometrys.length === 2 && selectGeometrys.every((id) => linesGeometryQuery.hasById(id))
+    )
+  })
+  .attach(function (name, selectGeometrys) {
+    let context = this.getContext()
+    let constraintsManager = context.get('constraintsManager')
+    let constraintsRelationManager = context.get('constraintsRelationManager')
+    let line1 = selectGeometrys[0]
+    let line2 = selectGeometrys[1]
+    let constraint = constraintsManager[name].apply(constraintsManager, [line1, line2])
+    constraintsRelationManager.add(name, [[line1, line2]], [constraint])
+  })
+ConstraintResolver.registryRuler('addConstraintMidpointOnLine2')
+  .usable(function (selectGeometrys) {
+    let context = this.getContext()
+    let pointsGeometryQuery = context.get('pointsGeometryQuery')
+    return (
+      selectGeometrys.length === 4 && selectGeometrys.every((id) => pointsGeometryQuery.hasById(id))
+    )
+  })
+  .attach(function (name, selectGeometrys) {
+    let context = this.getContext()
+    let constraintsManager = context.get('constraintsManager')
+    let constraintsRelationManager = context.get('constraintsRelationManager')
+    let point1 = selectGeometrys[0]
+    let point2 = selectGeometrys[1]
+    let point3 = selectGeometrys[2]
+    let point4 = selectGeometrys[3]
+    let constraint = constraintsManager[name].apply(constraintsManager, [
+      point1,
+      point2,
+      point3,
+      point4,
+    ])
+    constraintsRelationManager.add(name, [[point1, point2, point3, point4]], [constraint])
+  })

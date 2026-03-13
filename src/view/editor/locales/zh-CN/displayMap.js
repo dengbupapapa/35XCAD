@@ -36,6 +36,8 @@ export const labelConstraintMap = {
   addConstraintHorizontal2: '点集合水平',
   addConstraintVertical: '线垂直',
   addConstraintVertical2: '点集合垂直',
+  addConstraintMidpointOnLine: '线A中点在线B上',
+  addConstraintMidpointOnLine2: '两点中点在另两点路径上',
 }
 
 export const tipSolverResultStatus = {

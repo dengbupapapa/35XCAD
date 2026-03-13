@@ -6,6 +6,20 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "9036707",
+      "name": "addConstraintMidpointOnLine",
+      "font_class": "addConstraintMidpointOnLine",
+      "unicode": "e615",
+      "unicode_decimal": 58901
+    },
+    {
+      "icon_id": "25688442",
+      "name": "addConstraintMidpointOnLine2",
+      "font_class": "addConstraintMidpointOnLine2",
+      "unicode": "e607",
+      "unicode_decimal": 58887
+    },
+    {
       "icon_id": "22273677",
       "name": "addConstraintHorizontal",
       "font_class": "addConstraintHorizontal",

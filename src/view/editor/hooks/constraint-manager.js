@@ -403,6 +403,30 @@ export function useConstraints() {
       this.add(constraint)
       return constraint
     },
+    addConstraintMidpointOnLine(l1, l2) {
+      let constraint = {
+        type: 'addConstraintMidpointOnLine',
+        args: [l1, l2],
+        lines: [0, 1],
+      }
+      this.add(constraint)
+      return constraint
+    },
+    addConstraintMidpointOnLine2(l1p1, l1p2, l2p1, l2p2) {
+      let constraint = {
+        type: 'addConstraintMidpointOnLine2',
+        args: [l1p1, l1p2, l2p1, l2p2],
+        points: [0, 1, 2, 3],
+        unknowns: [
+          ['x', 'y'],
+          ['x', 'y'],
+          ['x', 'y'],
+          ['x', 'y'],
+        ],
+      }
+      this.add(constraint)
+      return constraint
+    },
   }
 }
 
