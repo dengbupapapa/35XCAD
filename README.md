@@ -24,10 +24,10 @@ A browser-based CAD software. online preview - [https://dengbupapapa.github.io/3
     - CoordinateY ✅
     - Coordinate ✅
     - P2PDistance
-    - PointOnLine ⏳
-    - PointOnPerpBisector
-    - Parallel
-    - Perpendicular
+    - PointOnLine ✅
+    - PointOnPerpBisector ✅
+    - Parallel ✅
+    - Perpendicular ✅
     - L2LAngle
     - EqualLength
     - Horizontal

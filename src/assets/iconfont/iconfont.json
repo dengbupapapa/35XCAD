@@ -6,11 +6,32 @@
   "description": "",
   "glyphs": [
     {
-      "icon_id": "18034692",
+      "icon_id": "40614626",
+      "name": "addConstraintPerpendicular",
+      "font_class": "addConstraintPerpendicular",
+      "unicode": "e6b5",
+      "unicode_decimal": 59061
+    },
+    {
+      "icon_id": "40614643",
+      "name": "addConstraintParallel",
+      "font_class": "addConstraintParallel",
+      "unicode": "e6b7",
+      "unicode_decimal": 59063
+    },
+    {
+      "icon_id": "21855639",
+      "name": "addConstraintPointOnPerpBisector",
+      "font_class": "addConstraintPointOnPerpBisector",
+      "unicode": "e61d",
+      "unicode_decimal": 58909
+    },
+    {
+      "icon_id": "31028416",
       "name": "addConstraintPointOnLine",
       "font_class": "addConstraintPointOnLine",
-      "unicode": "e68e",
-      "unicode_decimal": 59022
+      "unicode": "e60a",
+      "unicode_decimal": 58890
     },
     {
       "icon_id": "35769245",

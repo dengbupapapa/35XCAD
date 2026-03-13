@@ -25,6 +25,8 @@ export default function useRegistry() {
   const constraintsHash = {}
   const results = ref([])
   const resultsHash = ref({})
+  const statusSolver = ref()
+
   provide(moduleSymbol, ModuleCallback)
   provide(systemsSymbol, systems)
   provide(unknownsSetSymbol, unknownsSet)
@@ -43,6 +45,7 @@ export default function useRegistry() {
   provide(constraintsHashSymbol, constraintsHash)
   provide(resultsSymbol, results)
   provide(resultsHashSymbol, resultsHash)
+  provide(statusSolverSymbol, statusSolver)
   gcs()
     .then((M) => {
       Module = M
@@ -76,6 +79,7 @@ const constraintsSymbol = Symbol('constraints')
 const constraintsHashSymbol = Symbol('constraintsHash')
 const resultsHashSymbol = Symbol('resultsHash')
 const resultsSymbol = Symbol('results')
+const statusSolverSymbol = Symbol('statusSolver')
 export function useStatus() {
   return inject(statusSymbol)
 }
@@ -132,4 +136,7 @@ export function useResults() {
 }
 export function useResultsHash() {
   return inject(resultsHashSymbol)
+}
+export function useStatusSolver() {
+  return inject(statusSolverSymbol)
 }

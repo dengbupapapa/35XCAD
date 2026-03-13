@@ -143,9 +143,9 @@ export function useConstraints() {
     let resultBackup = resultsGCSQuery.backup(systemsGCSQuery.active.result)
     // console.log(resultCurrent, resultBackup)
     // console.log(resultCurrent, numeralsRelated)
-    ;[...resultCurrent.dependentsGroups, ...resultBackup.dependentsGroups].forEach((rows) => {
-      // ;[...resultCurrent.dependentsGraph, ...resultBackup.dependentsGraph].forEach((rows) => {
-      if (numeralsRelated.some((numeral) => rows.includes(numeral.ptr))) {
+    // ;[...resultCurrent.dependentsGroups, ...resultBackup.dependentsGroups].forEach((rows) => {
+    ;[...resultCurrent.dependentsGraph, ...resultBackup.dependentsGraph].forEach((rows) => {
+      if (numeralsRelated.some((numeral) => rows.includes(numeral.ptr.toString()))) {
         rows.forEach((ptr) => {
           if (updated(ptr)) return
           pointsGeometryManager.updateByNumeralPtr(ptr)
@@ -317,6 +317,35 @@ export function useConstraints() {
           ['x', 'y'],
           ['x', 'y'],
         ],
+      }
+      this.add(constraint)
+      return constraint
+    },
+    addConstraintPointOnPerpBisector(p, l) {
+      let constraint = {
+        type: 'addConstraintPointOnPerpBisector',
+        args: [p, l],
+        points: [0],
+        lines: [1],
+        unknowns: [['x', 'y']],
+      }
+      this.add(constraint)
+      return constraint
+    },
+    addConstraintParallel(l1, l2) {
+      let constraint = {
+        type: 'addConstraintParallel',
+        args: [l1, l2],
+        lines: [0, 1],
+      }
+      this.add(constraint)
+      return constraint
+    },
+    addConstraintPerpendicular(l1, l2) {
+      let constraint = {
+        type: 'addConstraintPerpendicular',
+        args: [l1, l2],
+        lines: [0, 1],
       }
       this.add(constraint)
       return constraint

@@ -28,4 +28,7 @@ export const labelConstraintMap = {
   addConstraintP2PCoincident: '重合',
   addConstraintPointOnLine: '点在线上',
   addConstraintPointOnLine2: '点在线上2',
+  addConstraintPointOnPerpBisector: '点在线垂直平分线上',
+  addConstraintParallel: '线平行',
+  addConstraintPerpendicular: '线垂直',
 }

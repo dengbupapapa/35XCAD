@@ -1,6 +1,6 @@
 <template>
   <div class="editor" v-if="status === 'resolve'">
-    <ContextRegistryToExternal/>
+    <ContextRegistryToExternal />
     <!-- <TestLocalStorage /> -->
     <!-- <TestModesInteractionButton /> -->
     <div class="head">
@@ -17,6 +17,9 @@
         <Sidebar />
       </div>
       <div class="viewport">
+        <div class="status-solver-alert">
+          <StatusSolverAlert />
+        </div>
         <!-- <TestConstraintsButton /> -->
         <Viewport />
       </div>
@@ -43,6 +46,7 @@ import Toolbar from './toolbar.vue'
 import Graphbar from './graphbar.vue'
 import Sidebar from './sidebar.vue'
 import Viewport from './viewport.vue'
+import StatusSolverAlert from './status-solver-alert.vue'
 import ContextRegistryToExternal from './context-registry-to-external.vue'
 // import TestModesInteractionButton from './test-modes-interaction-button.vue'
 // import TestConstraintsButton from './test-constraints-button.vue'
@@ -165,6 +169,12 @@ function onReload() {
       overflow: hidden;
       background-color: #eee;
       display: flex;
+      position: relative;
+      .status-solver-alert {
+        position: absolute;
+        bottom: 10px;
+        right: 5px;
+      }
     }
   }
 }

@@ -17,6 +17,7 @@ import {
   useConstraintsHash as useConstraintsHashGCS,
   useResults as useResultsGCS,
   useResultsHash as useResultsHashGCS,
+  useStatusSolver as useStatusSolverGCS,
 } from './solver-gcs-provide-context.js'
 import {
   useResults as useResultsQuery,
@@ -714,6 +715,7 @@ export function useResults() {
   let results = useResultsGCS()
   let resultsHash = useResultsHashGCS()
   let resultsQuery = useResultsQuery()
+  let statusSolverGCSManager = useStatusSolver()
   return {
     add({ id }) {
       let result = {
@@ -785,6 +787,8 @@ export function useResults() {
         })
       })
       result.dependentsGraph = alg.components(g)
+
+      statusSolverGCSManager.set(status)
     },
     backup(id) {
       let result = resultsQuery.get(id)
@@ -1045,5 +1049,14 @@ export function useUnknownsSet() {
     // get active() {
     //   return unknownsSet.find(({ active }) => active)
     // },
+  }
+}
+
+export function useStatusSolver() {
+  let statusSolverGCS = useStatusSolverGCS()
+  return {
+    set(state) {
+      statusSolverGCS.value = state
+    },
   }
 }

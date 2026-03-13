@@ -495,7 +495,7 @@ export function usePoints() {
     updateApply(numerals) {
       let result = systemsGCSManager.solver()
       let { dependentsGroups, dependents, status, redundants, dependentsGraph } = result
-      // console.log(result)
+      // console.log(result, numerals)
       let updatedPoints = new Set()
       dependentsGraph.forEach((graph) => {
         // console.log(numerals.some((numeral) => graph.includes(numeral.ptr.toString())))
