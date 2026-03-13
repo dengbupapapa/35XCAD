@@ -1,8 +1,8 @@
 @font-face {
   font-family: "iconfont"; /* Project id 5126319 */
-  src: url('iconfont.woff2?t=1773366819098') format('woff2'),
-       url('iconfont.woff?t=1773366819098') format('woff'),
-       url('iconfont.ttf?t=1773366819098') format('truetype');
+  src: url('iconfont.woff2?t=1773371922772') format('woff2'),
+       url('iconfont.woff?t=1773371922772') format('woff'),
+       url('iconfont.ttf?t=1773371922772') format('truetype');
 }
 
 .iconfont {
@@ -15,6 +15,10 @@
 
 .icon-addConstraintPerpendicular:before {
   content: "\e6b5";
+}
+
+.icon-addConstraintEqualLength:before {
+  content: "\e6b6";
 }
 
 .icon-addConstraintParallel:before {

@@ -13,6 +13,13 @@
       "unicode_decimal": 59061
     },
     {
+      "icon_id": "40614640",
+      "name": "addConstraintEqualLength",
+      "font_class": "addConstraintEqualLength",
+      "unicode": "e6b6",
+      "unicode_decimal": 59062
+    },
+    {
       "icon_id": "40614643",
       "name": "addConstraintParallel",
       "font_class": "addConstraintParallel",

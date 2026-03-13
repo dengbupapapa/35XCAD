@@ -31,4 +31,5 @@ export const labelConstraintMap = {
   addConstraintPointOnPerpBisector: '点在线垂直平分线上',
   addConstraintParallel: '线平行',
   addConstraintPerpendicular: '线垂直',
+  addConstraintEqualLength: '线长度相等',
 }

@@ -350,6 +350,15 @@ export function useConstraints() {
       this.add(constraint)
       return constraint
     },
+    addConstraintEqualLength(l1, l2) {
+      let constraint = {
+        type: 'addConstraintEqualLength',
+        args: [l1, l2],
+        lines: [0, 1],
+      }
+      this.add(constraint)
+      return constraint
+    },
   }
 }
 

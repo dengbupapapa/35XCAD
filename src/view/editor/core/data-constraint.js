@@ -358,3 +358,27 @@ ConstraintResolver.registryRuler('addConstraintPerpendicular')
     let constraints = [constraint]
     constraintsRelationManager.add(name, geometrys, constraints)
   })
+
+ConstraintResolver.registryRuler('addConstraintEqualLength')
+  .usable(function (selectGeometrys) {
+    let context = this.getContext()
+    let linesGeometryQuery = context.get('linesGeometryQuery')
+    return (
+      selectGeometrys.length > 1 && selectGeometrys.every((id) => linesGeometryQuery.hasById(id))
+    )
+  })
+  .attach(function (name, selectGeometrys) {
+    let context = this.getContext()
+    let constraintsManager = context.get('constraintsManager')
+    let constraintsRelationManager = context.get('constraintsRelationManager')
+    let geometrys = []
+    let constraints = []
+    for (let i = 0; i < selectGeometrys.length - 1; i++) {
+      let current = selectGeometrys[i]
+      let next = selectGeometrys[i + 1]
+      let constraint = constraintsManager[name].apply(constraintsManager, [current, next])
+      geometrys.push([current, next])
+      constraints.push(constraint.id)
+    }
+    constraintsRelationManager.add(name, geometrys, constraints)
+  })
