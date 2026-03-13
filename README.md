@@ -18,6 +18,13 @@ A browser-based CAD software. online preview - [https://dengbupapapa.github.io/3
     - Polygon
     - B-spline
     - Font
+  - Behavior
+    - Select point ✅
+    - Select line ✅
+    - Select arc ⏳
+    - Move point ✅
+    - Move line ✅
+    - Move arc ⏳
   - Constraint
     - P2PCoincident ✅
     - CoordinateX ✅
