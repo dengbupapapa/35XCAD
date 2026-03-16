@@ -44,7 +44,7 @@ A browser-based CAD software. online preview - [https://dengbupapapa.github.io/3
     - CircleDiameter
     - PointOnCircle
     - Tangent
-    - P2PSymmetric
+    - P2PSymmetric ✅
     - EqualRadius
     - C2CDistance
     - ArcLength

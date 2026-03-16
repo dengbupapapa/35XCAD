@@ -517,3 +517,45 @@ ConstraintResolver.registryRuler('addConstraintMidpointOnLine2')
     ])
     constraintsRelationManager.add(name, [[point1, point2, point3, point4]], [constraint])
   })
+
+ConstraintResolver.registryRuler('addConstraintP2PSymmetric')
+  .usable(function (selectGeometrys) {
+    let context = this.getContext()
+    let pointsGeometryQuery = context.get('pointsGeometryQuery')
+    return (
+      selectGeometrys.length === 3 && selectGeometrys.every((id) => pointsGeometryQuery.hasById(id))
+    )
+  })
+  .attach(function (name, selectGeometrys) {
+    let context = this.getContext()
+    let constraintsManager = context.get('constraintsManager')
+    let constraintsRelationManager = context.get('constraintsRelationManager')
+    let point1 = selectGeometrys[0]
+    let point2 = selectGeometrys[1]
+    let point = selectGeometrys[2]
+    let constraint = constraintsManager[name].apply(constraintsManager, [point1, point2, point])
+    constraintsRelationManager.add(name, [[point1, point2, point]], [constraint])
+  })
+
+ConstraintResolver.registryRuler('addConstraintP2PSymmetric2')
+  .usable(function (selectGeometrys) {
+    let context = this.getContext()
+    let pointsGeometryQuery = context.get('pointsGeometryQuery')
+    let linesGeometryQuery = context.get('linesGeometryQuery')
+    return (
+      selectGeometrys.length === 3 &&
+      selectGeometrys.filter((id) => pointsGeometryQuery.hasById(id)).length === 2 &&
+      selectGeometrys.filter((id) => linesGeometryQuery.hasById(id)).length === 1
+    )
+  })
+  .attach(function (name, selectGeometrys) {
+    let context = this.getContext()
+    let constraintsManager = context.get('constraintsManager')
+    let constraintsRelationManager = context.get('constraintsRelationManager')
+    let pointsGeometryQuery = context.get('pointsGeometryQuery')
+    let linesGeometryQuery = context.get('linesGeometryQuery')
+    let points = selectGeometrys.filter((id) => pointsGeometryQuery.hasById(id))
+    let line = selectGeometrys.filter((id) => linesGeometryQuery.hasById(id))[0]
+    let constraint = constraintsManager[name].apply(constraintsManager, [...points, line])
+    constraintsRelationManager.add(name, [[...points, line]], [constraint])
+  })

@@ -427,6 +427,34 @@ export function useConstraints() {
       this.add(constraint)
       return constraint
     },
+    addConstraintP2PSymmetric(p1, p2, p) {
+      let constraint = {
+        type: 'addConstraintP2PSymmetric',
+        args: [p1, p2, p],
+        points: [0, 1, 2],
+        unknowns: [
+          ['x', 'y'],
+          ['x', 'y'],
+          ['x', 'y'],
+        ],
+      }
+      this.add(constraint)
+      return constraint
+    },
+    addConstraintP2PSymmetric2(p1, p2, l) {
+      let constraint = {
+        type: 'addConstraintP2PSymmetric2',
+        args: [p1, p2, l],
+        points: [0, 1],
+        lines: [2],
+        unknowns: [
+          ['x', 'y'],
+          ['x', 'y'],
+        ],
+      }
+      this.add(constraint)
+      return constraint
+    },
   }
 }
 

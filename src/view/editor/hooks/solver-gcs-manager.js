@@ -744,6 +744,7 @@ export function useResults() {
         results.value.splice(0, 1)
         delete resultsHash.value[result.id]
       })
+      solverResultGCSManager.clear()
     },
     initial(id) {
       let result = resultsQuery.get(id)
@@ -1130,6 +1131,9 @@ export function useSolverResult() {
   return {
     set(result) {
       solverResultGCS.value = result
+    },
+    clear() {
+      solverResultGCS.value = {}
     },
   }
 }

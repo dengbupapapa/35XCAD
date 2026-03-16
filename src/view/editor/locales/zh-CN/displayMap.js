@@ -34,10 +34,12 @@ export const labelConstraintMap = {
   addConstraintEqualLength: '线长度相等',
   addConstraintHorizontal: '线水平',
   addConstraintHorizontal2: '点集合水平',
-  addConstraintVertical: '线垂直',
-  addConstraintVertical2: '点集合垂直',
+  addConstraintVertical: '线竖直',
+  addConstraintVertical2: '点集合竖直',
   addConstraintMidpointOnLine: '线A中点在线B上',
   addConstraintMidpointOnLine2: '两点中点在另两点路径上',
+  addConstraintP2PSymmetric: '点对称于点',
+  addConstraintP2PSymmetric2: '点对称于线',
 }
 
 export const tipSolverResultStatus = {
