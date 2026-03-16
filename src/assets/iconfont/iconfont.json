@@ -6,6 +6,13 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "18034693",
+      "name": "addConstraintP2PSymmetric2",
+      "font_class": "addConstraintP2PSymmetric2",
+      "unicode": "e690",
+      "unicode_decimal": 59024
+    },
+    {
       "icon_id": "9036707",
       "name": "addConstraintMidpointOnLine",
       "font_class": "addConstraintMidpointOnLine",
@@ -18,6 +25,13 @@
       "font_class": "addConstraintMidpointOnLine2",
       "unicode": "e607",
       "unicode_decimal": 58887
+    },
+    {
+      "icon_id": "47078558",
+      "name": "addConstraintP2PSymmetric",
+      "font_class": "addConstraintP2PSymmetric",
+      "unicode": "ec1f",
+      "unicode_decimal": 60447
     },
     {
       "icon_id": "22273677",
