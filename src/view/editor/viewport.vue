@@ -37,6 +37,7 @@ import {
   useDelete,
   useControls,
 } from './hooks/viewport-behavior'
+import { useDimension } from './hooks/viewport-behavior-dimension'
 import {
   usePointsHash,
   useLinesHash,
@@ -138,5 +139,7 @@ useMove()
 useDelete()
 
 useControls()
+
+useDimension()
 </script>
 <style lang="less" scoped></style>

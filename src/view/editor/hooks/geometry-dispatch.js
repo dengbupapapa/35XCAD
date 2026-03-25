@@ -3,12 +3,15 @@ import {
   useLines as useLinesGeometryManager,
   usePolylines as usePolylinesGeometryManager,
   useArcs as useArcsGeometryManager,
+  useDimensionDistances as useDimensionDistancesGeometryManager,
 } from './geometry-manager'
 import {
+  usePlanes as usePlanesGeometryQuery,
   usePoints as usePointsGeometryQuery,
   useLines as useLinesGeometryQuery,
   usePolylines as usePolylinesGeometryQuery,
   useArcs as useArcsGeometryQuery,
+  useDimensionDistances as useDimensionDistancesGeometryQuery,
 } from './geometry-query'
 import {
   usePoints as usePointsGeometryMapper,
@@ -16,18 +19,19 @@ import {
   usePolylines as usePolylinesGeometryMapper,
   useArcs as useArcsGeometryMapper,
 } from './geometry-mapper'
-import { useConstraintsRelation as useConstraintsRelationQuery } from './constraint-query'
 import { useConstraints as useConstraintsDispatch } from './constraint-dispatch'
+import { useToolTemp as useToolTempGCSManager } from './solver-gcs-manager.js'
 export function useGeometrys() {
   let pointsGeometryQuery = usePointsGeometryQuery()
   let linesGeometryQuery = useLinesGeometryQuery()
   let polylinesGeometryQuery = usePolylinesGeometryQuery()
   let arcsGeometryQuery = useArcsGeometryQuery()
-  let constraintsRelationQuery = useConstraintsRelationQuery()
+  let dimensionDistancesGeometryQuery = useDimensionDistancesGeometryQuery()
 
   let pointsGeometryMapper = usePointsGeometryMapper()
   let linesGeometryMapper = useLinesGeometryMapper()
   let polylinesGeometryMapper = usePolylinesGeometryMapper()
+  let dimensionDistancesGeometryMapper = useDimensionDistancesGeometryMapper()
   let arcsGeometryMapper = useArcsGeometryMapper()
 
   let constraintsDispatch = useConstraintsDispatch()
@@ -36,6 +40,7 @@ export function useGeometrys() {
   // let polylinesGeometryDispatch = usePolylines()
   let linesGeometryDispatch = useLines()
   let pointsGeometryDispatch = usePoints()
+  let dimensionDistancesGeometryDispatch = useDimensionDistances()
 
   return {
     remove(batch) {
@@ -56,9 +61,12 @@ export function useGeometrys() {
           if (arcsGeometryQuery.hasById(id)) {
             prev.arcs.push(id)
           }
+          if (dimensionDistancesGeometryQuery.hasById(id)) {
+            prev.dimensionDistances.push(id)
+          }
           return prev
         },
-        { points: [], lines: [], polylines: [], arcs: [] },
+        { points: [], lines: [], polylines: [], arcs: [], dimensionDistances: [] },
       )
 
       /*
@@ -67,52 +75,80 @@ export function useGeometrys() {
       //收集points所属
       let { lines: linesSuperiorFromPoints, arcs: arcsSuperiorFromPoints } =
         pointsGeometryMapper.superior(geometryMap.points)
+      //收集lines所属
+      let {
+        // polylines: polylinesSuperiorFromLines,
+        dimensionDistances: dimensionDistancesSuperiorFromLines,
+      } = linesGeometryMapper.superior([...geometryMap.lines, ...linesSuperiorFromPoints])
+
+      //反过来收集相关所从lines
+      let { lines: linesSubordinateFromDimensionDistances } =
+        dimensionDistancesGeometryMapper.subordinate([
+          ...geometryMap.dimensionDistances,
+          ...dimensionDistancesSuperiorFromLines,
+        ])
+      //多段线不用反向收集了，因为他不是单纯得一次性所有删除
+      // let { lines: linesSubordinateFromPolylines } =polylinesGeometryMapper.subordinate([
+      //   ...geometryMap.polylines,
+      //   ...polylinesSuperiorFromLines,
+      // ])
+
       //反过来收集相关所从points
       let { points: pointsSubordinateFromLines } = linesGeometryMapper.subordinate([
         ...geometryMap.lines,
         ...linesSuperiorFromPoints,
+        ...linesSubordinateFromDimensionDistances,
       ])
       let { points: pointsSubordinateFromArcs } = arcsGeometryMapper.subordinate([
         ...geometryMap.arcs,
         ...arcsSuperiorFromPoints,
       ])
-      //polylines 不用直接移除，在移除line时去计算是否移除polyline
-      let { points: pointsSubordinateFromPolylines, lines: linesSubordinateFromPolylines } =
-        polylinesGeometryMapper.subordinate(geometryMap.polylines)
+
+      // //polylines 不用直接移除，在移除line时去计算是否移除polyline
+      // let { points: pointsSubordinateFromPolylines, lines: linesSubordinateFromPolylines } =
+      //   polylinesGeometryMapper.subordinate(geometryMap.polylines)
 
       let points = new Set([
         ...geometryMap.points,
         ...pointsSubordinateFromLines,
         ...pointsSubordinateFromArcs,
-        ...pointsSubordinateFromPolylines,
+        // ...pointsSubordinateFromPolylines,
       ])
       let lines = new Set([
         ...geometryMap.lines,
-        ...linesSubordinateFromPolylines,
+        // ...linesSubordinateFromPolylines,
         ...linesSuperiorFromPoints,
+        ...linesSubordinateFromDimensionDistances,
       ])
-      let polylines = new Set([...geometryMap.polylines])
+      // let polylines = new Set([...geometryMap.polylines])
       let arcs = new Set([...geometryMap.arcs, ...arcsSuperiorFromPoints])
+      let dimensionDistances = new Set([
+        ...geometryMap.dimensionDistances,
+        ...dimensionDistancesSuperiorFromLines,
+      ])
 
       //开始移除
       constraintsDispatch.removeItemByGeometry([
         ...points,
         ...lines,
-        ...linesSubordinateFromPolylines,
-        ...polylines,
+        // ...linesSubordinateFromPolylines,
+        // ...polylines,
         ...arcs,
       ])
-      setTimeout(() => {
-        arcsGeometryDispatch.removeById([...arcs])
-        // polylinesGeometryDispatch.removeById(polylines)
-        linesGeometryDispatch.removeById([...lines])
-        pointsGeometryDispatch.removeById([...points])
-      }, 100)
+
+      /* [问题]
+       * 约束操作调整为 async，准确的完成以下操作
+       */
+      dimensionDistancesGeometryDispatch.removeById([...dimensionDistances])
+      arcsGeometryDispatch.removeById([...arcs])
+      // polylinesGeometryDispatch.removeById(polylines)
+      linesGeometryDispatch.removeById([...lines])
+      pointsGeometryDispatch.removeById([...points])
     },
   }
 }
 
-function usePoints() {
+export function usePoints() {
   let pointsGeometryManager = usePointsGeometryManager()
   let pointsGeometryQuery = usePointsGeometryQuery()
   return {
@@ -126,7 +162,7 @@ function usePoints() {
     },
   }
 }
-function useLines() {
+export function useLines() {
   let linesGeometryManager = useLinesGeometryManager()
   let linesGeometryQuery = useLinesGeometryQuery()
   let polylinesGeometryQuery = usePolylinesGeometryQuery()
@@ -160,8 +196,11 @@ function useLines() {
 //     },
 //   }
 // }
-function useArcs() {
+export function useArcs() {
   let arcsGeometryManager = useArcsGeometryManager()
+  let arcsGeometryQuery = useArcsGeometryQuery()
+  let pointsGeometryQuery = usePointsGeometryQuery()
+  let toolTempGCSManager = useToolTempGCSManager()
   return {
     removeById(batch) {
       if (!(batch instanceof Array)) {
@@ -171,8 +210,263 @@ function useArcs() {
         arcsGeometryManager.removeById(id)
       })
     },
+    updateCommit(index, position) {
+      let pointGeometry = pointsGeometryQuery.getByIndex(index)
+      let arcFormCenter = arcsGeometryQuery.getFormCenter(pointGeometry)
+      let arcFormStart = arcsGeometryQuery.getFormStart(pointGeometry)
+      let arcFormEnd = arcsGeometryQuery.getFormEnd(pointGeometry)
+
+      if (arcFormStart || arcFormEnd) {
+        let arc = arcFormStart || arcFormEnd
+        let pointCenterGeometry = pointsGeometryQuery.get(arc.center)
+        toolTempGCSManager.addConstraintCoordinateLock(pointCenterGeometry)
+      }
+
+      if (arcFormCenter) {
+        toolTempGCSManager.addConstraintArcRadiusLock(arcFormCenter)
+      }
+      // if (arcFormStart) {
+      //   arcsGCSManager.updateStart(arcFormStart)
+      // }
+      // if (arcFormEnd) {
+      //   arcsGCSManager.updateEnd(arcFormEnd)
+      // }
+    },
   }
 }
+
+import { Vector3 } from '../core/gl-math'
+import { useRenderer } from './viewport-provide-context'
+import { worldCoords2planeCoords, planeCoords2worldCoords } from '../utils/simple'
+import { useDimensionDistances as useDimensionDistancesGeometryMapper } from './geometry-mapper'
+import { useSelectGeometrys as useSelectGeometrysInteractionDispatch } from './interaction-dispatch.js'
+const space = 50
+export function useDimensionDistances() {
+  let updatedOnce = new Set()
+  let dimensionDistancesGeometryManager = useDimensionDistancesGeometryManager()
+  let dimensionDistancesGeometryQuery = useDimensionDistancesGeometryQuery()
+  let linesGeometryManager = useLinesGeometryManager()
+  let linesGeometryQuery = useLinesGeometryQuery()
+  let pointsGeometryManager = usePointsGeometryManager()
+  let pointsGeometryQuery = usePointsGeometryQuery()
+  let planesGeometryQuery = usePlanesGeometryQuery()
+  let renderer = useRenderer()
+  // let geometryUpdater = useGeometryUpdater()
+  let constraintsDispatch = useConstraintsDispatch()
+  let dimensionDistancesGeometryMapper = useDimensionDistancesGeometryMapper()
+  let selectGeometrysInteractionDispatch = useSelectGeometrysInteractionDispatch()
+  let toolTempGCSManager = useToolTempGCSManager()
+
+  function setConstraintDriving(id, constraint) {
+    let dimensionDistancesGeometry = dimensionDistancesGeometryQuery.get(id)
+    dimensionDistancesGeometry.constraintDriving = constraint
+  }
+  function getConstraintDriving(id) {
+    let dimensionDistancesGeometry = dimensionDistancesGeometryQuery.get(id)
+    return dimensionDistancesGeometry.constraintDriving
+  }
+  function switchConstraint(id, activate = true) {
+    let dimensionDistance = dimensionDistancesGeometryQuery.get(id)
+    let [main, corss1, corss2] = dimensionDistance.lines
+
+    let corss1LineGeometry = linesGeometryQuery.get(corss1)
+    let corss2LineGeometry = linesGeometryQuery.get(corss2)
+
+    let constraintDriving = getConstraintDriving(id)
+    if (constraintDriving) constraintsDispatch.removeById(constraintDriving)
+
+    if (activate) {
+      let constraint = constraintsDispatch.add('addConstraintCoordinate', [
+        corss1LineGeometry.start,
+        corss2LineGeometry.start,
+      ])
+      setConstraintDriving(id, constraint.id)
+    } else {
+      let corss1PointStartGeometry = pointsGeometryQuery.get(corss1LineGeometry.start)
+      let corss2PointStartGeometry = pointsGeometryQuery.get(corss2LineGeometry.start)
+      let vector3Start = new Vector3(
+        corss1PointStartGeometry.x,
+        corss1PointStartGeometry.y,
+        corss1PointStartGeometry.z,
+      )
+      let vector3End = new Vector3(
+        corss2PointStartGeometry.x,
+        corss2PointStartGeometry.y,
+        corss2PointStartGeometry.z,
+      )
+      let vector3Line = vector3End.sub(vector3Start)
+
+      let constraint = constraintsDispatch.add('addConstraintP2PDistance', [
+        corss1LineGeometry.start,
+        corss2LineGeometry.start,
+        vector3Line.length(),
+      ])
+      setConstraintDriving(id, constraint.id)
+    }
+  }
+
+  return {
+    removeById(batch) {
+      if (!(batch instanceof Array)) {
+        batch = [batch]
+      }
+      batch.forEach((id) => {
+        dimensionDistancesGeometryManager.removeById(id)
+      })
+    },
+    addPonit2Point(point1Id, point2Id) {
+      let pointGeometry1 = pointsGeometryQuery.get(point1Id)
+      let pointGeometry2 = pointsGeometryQuery.get(point2Id)
+      /*
+       * 创建主线
+       */
+      let mainPointStart = pointsGeometryManager.add([
+        pointGeometry1.x,
+        pointGeometry1.y,
+        pointGeometry1.z,
+      ])
+      let mainPointEnd = pointsGeometryManager.add([
+        pointGeometry2.x,
+        pointGeometry2.y,
+        pointGeometry2.z,
+      ])
+      let mainLine = linesGeometryManager.add(mainPointStart.id, mainPointEnd.id)
+
+      /*
+       * 平移主线
+       */
+      let plane = planesGeometryQuery.get(mainLine.plane)
+      let vector3Start = new Vector3(mainPointStart.x, mainPointStart.y, mainPointStart.z)
+      let vector3End = new Vector3(mainPointEnd.x, mainPointEnd.y, mainPointEnd.z)
+      let vector3Line = vector3End.sub(vector3Start)
+      let vector3LineNormalize = vector3Line.clone().normalize()
+      let vector3Normal = new Vector3(...plane.normal)
+      let vector3Perp = new Vector3().crossVectors(vector3Normal, vector3LineNormalize).normalize()
+
+      let [uOffset, vOffset] = worldCoords2planeCoords(vector3Perp.toArray(), plane)
+
+      let [width, height] = renderer.getSize()
+      uOffset *= (space / width) * 2
+      vOffset *= (space / height) * 2
+
+      let [xOffset, yOffset, zOffset] = planeCoords2worldCoords([uOffset, vOffset], plane)
+
+      ;[mainPointStart, mainPointEnd].forEach((point) => {
+        let index = pointsGeometryQuery.indexOf(point)
+        pointsGeometryManager.updatePure(
+          index,
+          new Vector3(point.x, point.y, point.z)
+            .add(new Vector3(xOffset, yOffset, zOffset))
+            .toArray(),
+        )
+      })
+
+      /*
+       * 创建交叉
+       */
+      let crossPointStart1 = pointsGeometryManager.clone(point1Id)
+      let crossPointEnd1 = pointsGeometryManager.clone(mainPointStart.id)
+      pointsGeometryManager.attach(crossPointStart1)
+      pointsGeometryManager.attach(crossPointEnd1)
+      let crossLine1 = linesGeometryManager.add(crossPointStart1.id, crossPointEnd1.id)
+      let crossPointStart2 = pointsGeometryManager.clone(point2Id)
+      let crossPointEnd2 = pointsGeometryManager.clone(mainPointEnd.id)
+      pointsGeometryManager.attach(crossPointStart2)
+      pointsGeometryManager.attach(crossPointEnd2)
+      let crossLine2 = linesGeometryManager.add(crossPointStart2.id, crossPointEnd2.id)
+
+      /*
+       * 创建dimension数据
+       */
+      let dimensionDistance = dimensionDistancesGeometryManager.add([
+        mainLine.id,
+        crossLine1.id,
+        crossLine2.id,
+      ])
+
+      /*
+       * 创建约束
+       */
+      constraintsDispatch.add('addConstraintPerpendicular2', [
+        mainPointStart.id,
+        mainPointEnd.id,
+        crossPointStart1.id,
+        crossPointEnd1.id,
+      ])
+      constraintsDispatch.add('addConstraintPerpendicular2', [
+        mainPointStart.id,
+        mainPointEnd.id,
+        crossPointStart2.id,
+        crossPointEnd2.id,
+      ])
+      constraintsDispatch.add('addConstraintParallel2', [
+        crossPointStart1.id,
+        crossPointStart2.id,
+        mainPointStart.id,
+        mainPointEnd.id,
+      ])
+      constraintsDispatch.add('addConstraintP2PCoincident', [point1Id, crossPointStart1.id])
+      constraintsDispatch.add('addConstraintP2PCoincident', [crossPointEnd1.id, mainPointStart.id])
+      constraintsDispatch.add('addConstraintP2PCoincident', [point2Id, crossPointStart2.id])
+      constraintsDispatch.add('addConstraintP2PCoincident', [crossPointEnd2.id, mainPointEnd.id])
+      switchConstraint(dimensionDistance.id, false)
+    },
+
+    updateBefore(id) {
+      if (updatedOnce.has(id)) return
+      updatedOnce.add(id)
+      switchConstraint(id, true)
+    },
+    updateAfter(id) {
+      updatedOnce.delete(id)
+      switchConstraint(id, false)
+    },
+    activate(subId) {
+      let dimensionDistanceGeometry =
+        dimensionDistancesGeometryMapper.getFormLineId(subId) ||
+        dimensionDistancesGeometryMapper.getFormPointId(subId)
+
+      if (dimensionDistanceGeometry) {
+        let { points, lines } = dimensionDistancesGeometryMapper.subordinate(
+          dimensionDistanceGeometry.id,
+        )
+        selectGeometrysInteractionDispatch.push([...points, ...lines])
+      }
+    },
+    deactivate(subId) {
+      let dimensionDistanceGeometry =
+        dimensionDistancesGeometryMapper.getFormLineId(subId) ||
+        dimensionDistancesGeometryMapper.getFormPointId(subId)
+
+      if (dimensionDistanceGeometry) {
+        let { points, lines } = dimensionDistancesGeometryMapper.subordinate(
+          dimensionDistanceGeometry.id,
+        )
+        selectGeometrysInteractionDispatch.remove([...points, ...lines])
+      }
+    },
+  }
+}
+
+export function useHelpers() {
+  let dimensionDistancesGeometryDispatch = useDimensionDistances()
+  return {
+    activate(subId) {
+      dimensionDistancesGeometryDispatch.activate(subId)
+    },
+    deactivate(subId) {
+      dimensionDistancesGeometryDispatch.deactivate(subId)
+    },
+  }
+}
+
+/* [增强]
+ * 1、dimensionDistances增加独立选取
+ * 2、删除功能关联dimensionDistances
+ * 3、渲染模块系统性加入样式规则（颜色、几何大小）
+ * 4、约束注册功能增加隐式标记
+ * 5、dimensionDistances增加操作约束（只能在dimension方向上移动——角度）
+ */
 
 /*
  * 1、每种几何都建立1对多影响思路

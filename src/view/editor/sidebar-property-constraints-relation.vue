@@ -21,17 +21,18 @@
 <script setup>
 import { computed, watch, ref } from 'vue'
 import { useConstraintsRelation as useConstraintsRelationDerived } from './hooks/constraint-derived'
-import { useSelectGeometrysStrict as useSelectGeometrysStrictInteractionDerived } from './hooks/interaction-derived'
+import { useSelectGeometrysStrictExcludingHelpers as useSelectGeometrysStrictExcludingHelpersInteractionDerived } from './hooks/interaction-derived'
 import { useConstraints as useConstraintsDispatch } from './hooks/constraint-dispatch'
 import { labelConstraintMap } from './locales/zh-CN/displayMap.js'
 /*
  * 列表逻辑
  */
 let constraintsRelationDerived = useConstraintsRelationDerived()
-let selectGeometrysStrictInteractionDerived = useSelectGeometrysStrictInteractionDerived()
+let selectGeometrysStrictExcludingHelpersInteractionDerived =
+  useSelectGeometrysStrictExcludingHelpersInteractionDerived()
 let constraints = computed(() => {
   return constraintsRelationDerived.value.filter(({ geometrys, type }) => {
-    return selectGeometrysStrictInteractionDerived.value.every((geometry) => {
+    return selectGeometrysStrictExcludingHelpersInteractionDerived.value.every((geometry) => {
       return geometrys.flat().includes(geometry)
     })
   })

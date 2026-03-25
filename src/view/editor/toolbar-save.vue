@@ -10,19 +10,7 @@ import { SaveTwoTone } from '@ant-design/icons-vue'
 import { toRaw, ref } from 'vue'
 import { useStorage } from '@vueuse/core'
 import { cloneDeep } from 'lodash-es'
-
-function empty() {
-  return {
-    planes: [],
-    points: [],
-    lines: [],
-    polylines: [],
-    arcs: [],
-    constraints: [],
-    constraintsIncrement: 0,
-    constraintsRelation: [],
-  }
-}
+import { empty } from './hooks/data-manager'
 
 let data = useStorage('35xcad', empty())
 
@@ -32,6 +20,7 @@ import {
   useLines as useLinesQuery,
   usePolylines as usePolylinesQuery,
   useArcs as useArcsQuery,
+  useDimensionDistances as useDimensionDistancesQuery,
 } from './hooks/geometry-query'
 import {
   useConstraints as useConstraintsQuery,
@@ -44,6 +33,7 @@ let pointsQuery = usePointsQuery()
 let linesQuery = useLinesQuery()
 let polylinesQuery = usePolylinesQuery()
 let arcsQuery = useArcsQuery()
+let dimensionDistancesQuery = useDimensionDistancesQuery()
 let constraintsQuery = useConstraintsQuery()
 let constraintsIncrementQuery = useConstraintsIncrementQuery()
 let constraintsRelationQuery = useConstraintsRelationQuery()
@@ -52,8 +42,9 @@ function onSave() {
   data.value.planes = cloneDeep(toRaw(planesQuery.all()))
   data.value.points = cloneDeep(toRaw(pointsQuery.all()))
   data.value.lines = cloneDeep(toRaw(linesQuery.all()))
-  data.value.polylines =cloneDeep(toRaw(polylinesQuery.all()))
+  data.value.polylines = cloneDeep(toRaw(polylinesQuery.all()))
   data.value.arcs = cloneDeep(toRaw(arcsQuery.all()))
+  data.value.dimensionDistances = cloneDeep(toRaw(dimensionDistancesQuery.all()))
   data.value.constraints = cloneDeep(toRaw(constraintsQuery.all()))
   data.value.constraintsIncrement = toRaw(constraintsIncrementQuery.get())
   data.value.constraintsRelation = cloneDeep(toRaw(constraintsRelationQuery.all()))
@@ -82,4 +73,8 @@ onMounted(function load() {
     loader.json(cloneDeep(data.value))
   }
 })
+
+// import { useDependencyGraph } from './hooks/data-manager'
+// let dependencyGraph = useDependencyGraph()
+// console.log(dependencyGraph)
 </script>

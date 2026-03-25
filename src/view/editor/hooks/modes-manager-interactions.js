@@ -10,6 +10,7 @@ export default function useModesManagerInteractions() {
     linesAdd: false,
     polylinesAdd: false,
     arcsAdd: false,
+    dimensionAdd: false,
     controls: false,
   })
   watchEffect(() => {
@@ -19,38 +20,44 @@ export default function useModesManagerInteractions() {
     enable.linesAdd = interactions.value.includes(linesAdd)
     enable.polylinesAdd = interactions.value.includes(polylinesAdd)
     enable.arcsAdd = interactions.value.includes(arcsAdd)
+    enable.dimensionAdd = interactions.value.includes(dimensionAdd)
     enable.controls = interactions.value.includes(controls)
   })
   const activator = {
     entitieSelect() {
       if (enable.entitieSelect) return
-      add(interactions, [entitieSelect])
-      remove(interactions, [pointsAdd, linesAdd, polylinesAdd, arcsAdd])
+      clear(interactions)
+      add(interactions, [entitieSelect, entitieTranslation, controls])
     },
     entitieTranslation() {
       if (enable.entitieTranslation) return
-      add(interactions, [entitieTranslation])
-      remove(interactions, [pointsAdd, linesAdd, polylinesAdd, arcsAdd])
+      clear(interactions)
+      add(interactions, [entitieSelect, entitieTranslation, controls])
     },
     pointsAdd() {
       if (enable.pointsAdd) return
-      add(interactions, [pointsAdd])
-      remove(interactions, [entitieSelect, entitieTranslation, linesAdd, polylinesAdd, arcsAdd])
+      clear(interactions)
+      add(interactions, [pointsAdd, controls])
     },
     linesAdd() {
       if (enable.linesAdd) return
-      add(interactions, [linesAdd])
-      remove(interactions, [entitieSelect, entitieTranslation, pointsAdd, polylinesAdd, arcsAdd])
+      clear(interactions)
+      add(interactions, [linesAdd, controls])
     },
     polylinesAdd() {
       if (enable.polylinesAdd) return
-      add(interactions, [polylinesAdd])
-      remove(interactions, [entitieSelect, entitieTranslation, pointsAdd, linesAdd, arcsAdd])
+      clear(interactions)
+      add(interactions, [polylinesAdd, controls])
     },
     arcsAdd() {
       if (enable.arcsAdd) return
-      add(interactions, [arcsAdd])
-      remove(interactions, [entitieSelect, entitieTranslation, pointsAdd, linesAdd, polylinesAdd])
+      clear(interactions)
+      add(interactions, [arcsAdd, controls])
+    },
+    dimensionAdd() {
+      if (enable.dimensionAdd) return
+      clear(interactions)
+      add(interactions, [dimensionAdd, controls])
     },
     controls(state = true) {
       if (enable.controls === state) return
@@ -74,6 +81,9 @@ function add(data, symbols) {
   data.value.push(...symbols)
   data.value = [...new Set(data.value)]
 }
+function clear(data) {
+  data.value = []
+}
 const pointsAdd = Symbol('points_add')
 const linesAdd = Symbol('lines_add')
 const polylinesAdd = Symbol('polylines_add')
@@ -83,3 +93,4 @@ const entitieSelect = Symbol('entitie_select')
 const entitieTranslation = Symbol('entitie_translation')
 
 const controls = Symbol('controls')
+const dimensionAdd = Symbol('dimension_add')

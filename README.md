@@ -49,6 +49,7 @@ A browser-based CAD software. online preview - [https://dengbupapapa.github.io/3
     - C2CDistance
     - ArcLength
   - Tool
-    - Size ⏳
+    - Dimension length ⏳
+    - Dimension angle ⏳
 - Feature
 - Assembly

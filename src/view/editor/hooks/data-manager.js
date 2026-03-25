@@ -4,6 +4,7 @@ import {
   useLines as useLinesGeometryManager,
   usePolylines as usePolylinesGeometryManager,
   useArcs as useArcsGeometryManager,
+  useDimensionDistances as useDimensionDistancesGeometryManager,
   //   useConstraintsIncrement as useConstraintsIncrementGeometryManager,
 } from './geometry-manager'
 import {
@@ -20,6 +21,7 @@ export function useLoader() {
   let linesGeometryManager = useLinesGeometryManager()
   let polylinesGeometryManager = usePolylinesGeometryManager()
   let arcsGeometryManager = useArcsGeometryManager()
+  let dimensionDistancesGeometryManager = useDimensionDistancesGeometryManager()
   let constraintsManager = useConstraintsManager()
   let constraintsIncrementManager = useConstraintsIncrementManager()
   let constraintsRelationManager = useConstraintsRelationManager()
@@ -31,6 +33,7 @@ export function useLoader() {
         lines,
         polylines,
         arcs,
+        dimensionDistances,
         constraints,
         constraintsIncrement,
         constraintsRelation,
@@ -43,6 +46,7 @@ export function useLoader() {
       linesGeometryManager.load(cloneDeep(lines))
       polylinesGeometryManager.load(cloneDeep(polylines))
       arcsGeometryManager.load(cloneDeep(arcs))
+      dimensionDistancesGeometryManager.load(cloneDeep(dimensionDistances))
       constraintsManager.load(cloneDeep(constraints))
       constraintsIncrementManager.set(constraintsIncrement)
       constraintsRelationManager.load(constraintsRelation)
@@ -50,7 +54,7 @@ export function useLoader() {
     empty() {
       planesGeometryManager.add([0, 0, 1], 0)
       planesGeometryManager.active(0)
-      // planesGeometryManager.visible(0)
+      planesGeometryManager.visible(0)
     },
   }
 }
@@ -61,6 +65,7 @@ export function useClear() {
   let linesGeometryManager = useLinesGeometryManager()
   let polylinesGeometryManager = usePolylinesGeometryManager()
   let arcsGeometryManager = useArcsGeometryManager()
+  let dimensionDistancesGeometryManager = useDimensionDistancesGeometryManager()
   let constraintsManager = useConstraintsManager()
   let constraintsIncrementManager = useConstraintsIncrementManager()
   let constraintsRelationManager = useConstraintsRelationManager()
@@ -74,6 +79,7 @@ export function useClear() {
       selectPoints.clear()
       selectPointsStrict.clear()
       selectLines.clear()
+      dimensionDistancesGeometryManager.clear()
       arcsGeometryManager.clear()
       polylinesGeometryManager.clear()
       linesGeometryManager.clear()
@@ -87,6 +93,7 @@ export function useClear() {
        */
     },
     geometry() {
+      dimensionDistancesGeometryManager.clear()
       arcsGeometryManager.clear()
       polylinesGeometryManager.clear()
       linesGeometryManager.clear()
@@ -94,4 +101,59 @@ export function useClear() {
       constraintsManager.clear()
     },
   }
+}
+
+export function empty() {
+  return {
+    planes: [],
+    points: [],
+    lines: [],
+    polylines: [],
+    arcs: [],
+    dimensionDistances: [],
+    constraints: [],
+    constraintsIncrement: 0,
+    constraintsRelation: [],
+  }
+}
+
+import {
+  usePlanes as usePlanesGeometryDerived,
+  usePoints as usePointsGeometryDerived,
+  useLines as useLinesGeometryDerived,
+  usePolylines as usePolylinesGeometryDerived,
+  useArcs as useArcsGeometryDerived,
+  // useDimensionDistances as useDimensionDistancesGeometryDerived,
+} from './geometry-derived'
+import {
+  useConstraints as useConstraintsDerived,
+  useConstraintsRelation as useConstraintsRelationDerived,
+  useConstraintsIncrement as useConstraintsIncrementDerived,
+} from './constraint-derived'
+import {
+  usePointsHash as usePointsHashGCSDerived,
+  useNumeralsHash as useNumeralsHashGCSDerived,
+  useUnknownsSetJSON as useUnknownsSetJSONGCSDerived,
+} from './solver-gcs-derived'
+import { watchEffect, toRaw, ref } from 'vue'
+export function useDependencyGraph() {
+  let pointsGeometryDerived = usePointsGeometryDerived()
+  let pointsHashGCSDerived = usePointsHashGCSDerived()
+  let numeralsHashGCSDerived = useNumeralsHashGCSDerived()
+  let unknownsSetJSONGCSDerived = useUnknownsSetJSONGCSDerived()
+  let graph = ref({})
+  watchEffect(() => {
+    let points = pointsGeometryDerived.value.map((point) => {
+      point = { ...point }
+      point.gcs = { ...pointsHashGCSDerived[point.gcs] }
+      point.gcs.u = { ...numeralsHashGCSDerived[point.gcs.u] }
+      point.gcs.v = { ...numeralsHashGCSDerived[point.gcs.v] }
+      return toRaw(point)
+    })
+    graph.value = {
+      points,
+      unknowns: toRaw(Object.values(unknownsSetJSONGCSDerived.value)[0]),
+    }
+  })
+  return graph
 }

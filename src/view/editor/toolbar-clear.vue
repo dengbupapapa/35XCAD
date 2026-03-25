@@ -7,7 +7,7 @@
 <script setup>
 import { RestTwoTone } from '@ant-design/icons-vue'
 import { useStorage } from '@vueuse/core'
-import { useClear, useLoader } from './hooks/data-manager'
+import { useClear, useLoader, empty } from './hooks/data-manager'
 let clear = useClear()
 let loader = useLoader()
 function onClear() {
@@ -17,15 +17,4 @@ function onClear() {
 }
 
 let data = useStorage('35xcad', empty())
-function empty() {
-  return {
-    planes: [],
-    points: [],
-    lines: [],
-    polylines: [],
-    arcs: [],
-    constraints: [],
-    constraintsIncrement: 0,
-  }
-}
 </script>

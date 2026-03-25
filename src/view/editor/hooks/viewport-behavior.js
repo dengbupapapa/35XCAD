@@ -18,7 +18,10 @@ import {
   useLines as useLinesGeometryQuery,
 } from './geometry-query.js'
 import { useArcs as useArcsGeometryMapper } from './geometry-mapper'
-import { useGeometrys as useGeometrysDispatch } from './geometry-dispatch.js'
+import {
+  useGeometrys as useGeometrysDispatch,
+  useHelpers as useHelpersGeometryDispatch,
+} from './geometry-dispatch.js'
 import useGeometryUpdater from './geometry-updater'
 import useModesManagerInteractions from './modes-manager-interactions.js'
 import {
@@ -76,35 +79,6 @@ export function useAddPointClick() {
     canvas.removeEventListener('click', onClick)
   })
 }
-
-/* [问题]
- * 删除点要考虑提前移除线问题
- */
-// export function useRemovePointClick() {
-//   const camera = useCamera()
-//   const renderer = useRenderer()
-//   const raycaster = useRaycaster()
-//   const pointsEntitie = usePointsEntitie()
-//   const pointsGeometryManager = usePointsGeometryManager()
-//   const canvas = renderer.element()
-
-//   function onMousedown(event) {
-//     if (event.button !== 2) return
-//     let rect = canvas.getBoundingClientRect()
-//     let { x, y } = viewport2ndc(rect, { x: event.clientX, y: event.clientY })
-//     raycaster.setFromCamera([x, y], camera)
-//     const intersection = raycaster.intersectObject(pointsEntitie)
-//     if (intersection.length === 0) return
-//     const index = intersection[0].instanceId
-//     pointsGeometryManager.remove(index)
-//   }
-//   onMounted(() => {
-//     canvas.addEventListener('mousedown', onMousedown)
-//   })
-//   onUnmounted(() => {
-//     canvas.removeEventListener('mousedown', onMousedown)
-//   })
-// }
 
 export function useAddLineClick() {
   const camera = useCamera()
@@ -287,215 +261,6 @@ export function useAddArcClick() {
   })
 }
 
-// export function useMovePointClick() {
-//   const camera = useCamera()
-//   const renderer = useRenderer()
-//   const raycaster = useRaycaster()
-//   const planesEntitie = usePlanesEntitie()
-//   const pointsGeometryManager = usePointsGeometryManager()
-//   const arcsGeometryMapper = useArcsGeometryMapper()
-//   const arcsGeometryManager = useArcsGeometryManager()
-//   const geometryUpdater = useGeometryUpdater()
-//   const modesManagerInteractions = useModesManagerInteractions()
-//   const canvas = renderer.element()
-
-//   let active = null
-//   function onMousedown(event) {
-//     if (event.button !== 0) return
-//     let rect = canvas.getBoundingClientRect()
-//     let { x, y } = viewport2ndc(rect, { x: event.clientX, y: event.clientY })
-//     raycaster.setFromRenderer(renderer)
-//     raycaster.setFromCamera([x, y], camera)
-//     // raycaster.setPointsHash(pointsHashGeometryDerived.value)
-//     // let position = raycaster.intersectPlane(planesEntitie.active)
-//     // if (!position) return
-//     let index = raycaster.intersectObject({ x, y }, 'point')?.index
-//     if (typeof index !== 'number' || !~index) return
-//     active = index
-//   }
-//   function onMousemove(event) {
-//     if (typeof active !== 'number') return
-//     const plane = planesEntitie.active
-//     if (event.button !== 0 || !plane) return
-//     let rect = canvas.getBoundingClientRect()
-//     let { x, y } = viewport2ndc(rect, { x: event.clientX, y: event.clientY })
-//     raycaster.setFromCamera([x, y], camera)
-//     let position = raycaster.intersectPlane(plane)
-//     if (!position) return
-//     // if (arcsGeometryMapper.getFormPointIndex(active)) {
-//     //   arcsGeometryManager.update(active, position)
-//     //   return
-//     // }
-//     // pointsGeometryManager.update(active, position)
-//     geometryUpdater.update(active, position)
-//   }
-//   function onMouseup(event) {
-//     if (event.button !== 0) return
-//     active = null
-//   }
-
-//   watch(
-//     () => modesManagerInteractions.enable.entitieTranslation,
-//     (enable) => {
-//       if (enable) {
-//         addEventListener()
-//       } else {
-//         removeEventListener()
-//       }
-//     },
-//     { immediate: true },
-//   )
-//   function addEventListener() {
-//     canvas.addEventListener('mousedown', onMousedown)
-//     canvas.addEventListener('mousemove', onMousemove)
-//     canvas.addEventListener('mouseup', onMouseup)
-//   }
-//   function removeEventListener() {
-//     canvas.removeEventListener('mousedown', onMousedown)
-//     canvas.removeEventListener('mousemove', onMousemove)
-//     canvas.removeEventListener('mouseup', onMouseup)
-//   }
-//   onUnmounted(removeEventListener)
-// }
-// export function useMoveLineClick() {
-//   const camera = useCamera()
-//   const renderer = useRenderer()
-//   const raycaster = useRaycaster()
-//   const planesEntitie = usePlanesEntitie()
-//   const linesGeometryDerived = useLinesGeometryDerived()
-//   // const pointsGeometry = usePointsGeometry()
-//   const pointsHashGeometryDerived = usePointsHashGeometryDerived()
-//   // const pointsGeometryManager = usePointsGeometryManager()
-//   const geometryUpdater = useGeometryUpdater()
-//   const modesManagerInteractions = useModesManagerInteractions()
-//   const canvas = renderer.element()
-
-//   let active = null
-//   let positionFromPlaneBegin = new Vector3()
-//   let pointStartBegin = new Vector3()
-//   let pointEndBegin = new Vector3()
-//   function onMousedown(event) {
-//     const plane = planesEntitie.active
-//     if (!plane || event.button !== 0) return
-//     let rect = canvas.getBoundingClientRect()
-//     let { x, y } = viewport2ndc(rect, { x: event.clientX, y: event.clientY })
-//     raycaster.setFromCamera([x, y], camera)
-//     raycaster.setFromRenderer(renderer)
-//     // raycaster.setPointsHash(pointsHashGeometryDerived.value)
-//     let index = raycaster.intersectObject({ x, y }, 'line')?.index
-//     let positionFromPlane = raycaster.intersectPlane(plane)
-//     if (typeof index !== 'number' || !~index || !positionFromPlane) return
-//     let { start, end } = linesGeometryDerived.value[index]
-//     let pointStart = pointsHashGeometryDerived.value[start]
-//     let pointEnd = pointsHashGeometryDerived.value[end]
-//     pointStartBegin.set(pointStart.x, pointStart.y, pointStart.z)
-//     pointEndBegin.set(pointEnd.x, pointEnd.y, pointEnd.z)
-//     positionFromPlaneBegin.set(...positionFromPlane)
-//     active = index
-//   }
-//   let positionFromPlaneCurrent = new Vector3()
-//   function onMousemove(event) {
-//     const plane = planesEntitie.active
-//     if (!plane || event.button !== 0 || typeof active !== 'number') return
-//     let rect = canvas.getBoundingClientRect()
-//     let x = ((event.clientX - rect.left) / rect.width) * 2 - 1
-//     let y = -((event.clientY - rect.top) / rect.height) * 2 + 1
-//     raycaster.setFromCamera([x, y], camera)
-//     let positionFromPlane = raycaster.intersectPlane(planesEntitie.active)
-//     if (!positionFromPlane) return
-//     positionFromPlaneCurrent.set(...positionFromPlane)
-//     let offset = positionFromPlaneCurrent.sub(positionFromPlaneBegin)
-//     let pointStartCurrent = pointStartBegin.clone().add(offset)
-//     let pointEndCurrent = pointEndBegin.clone().add(offset)
-//     // let { start, end } = linesGeometryDerived.value[active]
-//     // let pointStart = pointsHashGeometryDerived.value[start]
-//     // let pointEnd = pointsHashGeometryDerived.value[end]
-//     // let pointStartIndex = pointsGeometry.value.indexOf(pointStart)
-//     // let pointEndIndex = pointsGeometry.value.indexOf(pointEnd)
-//     // pointsGeometryManager.update(pointStartIndex, pointStartCurrent.toArray())
-//     // pointsGeometryManager.update(pointEndIndex, pointEndCurrent.toArray())
-//     geometryUpdater.update(active, {
-//       start: pointStartCurrent.toArray(),
-//       end: pointEndCurrent.toArray(),
-//     })
-//   }
-//   function onMouseup(event) {
-//     if (event.button !== 0) return
-//     active = null
-//   }
-
-//   watch(
-//     () => modesManagerInteractions.enable.entitieTranslation,
-//     (enable) => {
-//       if (enable) {
-//         addEventListener()
-//       } else {
-//         removeEventListener()
-//       }
-//     },
-//     { immediate: true },
-//   )
-//   function addEventListener() {
-//     canvas.addEventListener('mousedown', onMousedown)
-//     canvas.addEventListener('mousemove', onMousemove)
-//     canvas.addEventListener('mouseup', onMouseup)
-//   }
-//   function removeEventListener() {
-//     canvas.removeEventListener('mousedown', onMousedown)
-//     canvas.removeEventListener('mousemove', onMousemove)
-//     canvas.removeEventListener('mouseup', onMouseup)
-//   }
-//   onUnmounted(removeEventListener)
-// }
-
-// export function useSelectPointClick() {
-//   const camera = useCamera()
-//   const renderer = useRenderer()
-//   const raycaster = useRaycaster()
-//   const pointsGeometryQuery = usePointsGeometryQuery()
-//   const modesManagerInteractions = useModesManagerInteractions()
-//   const selectPointsManager = useSelectPointsInteractionManager()
-//   const canvas = renderer.element()
-
-//   function onMousedown(event) {
-//     if (event.button !== 0) return
-//     let rect = canvas.getBoundingClientRect()
-//     let { x, y } = viewport2ndc(rect, { x: event.clientX, y: event.clientY })
-//     raycaster.setFromRenderer(renderer)
-//     raycaster.setFromCamera([x, y], camera)
-//     // raycaster.setPointsHash(pointsHashGeometryDerived.value)
-//     // let position = raycaster.intersectPlane(planesEntitie.active)
-//     // if (!position) return
-//     let index = raycaster.intersectObject({ x, y }, 'point')?.index
-//     if (typeof index !== 'number' || !~index) {
-//       return selectPointsManager.clear()
-//     }
-//     let point = pointsGeometryQuery.getByIndex(index)
-//     if (event.ctrlKey || event.shiftKey) {
-//       return selectPointsManager.push(point.id)
-//     }
-//     selectPointsManager.set(point.id)
-//   }
-//   watch(
-//     () => modesManagerInteractions.enable.entitieSelect,
-//     (enable) => {
-//       if (enable) {
-//         addEventListener()
-//       } else {
-//         removeEventListener()
-//       }
-//     },
-//     { immediate: true },
-//   )
-//   function addEventListener() {
-//     canvas.addEventListener('mousedown', onMousedown)
-//   }
-//   function removeEventListener() {
-//     canvas.removeEventListener('mousedown', onMousedown)
-//   }
-//   onUnmounted(removeEventListener)
-// }
-
 /*
  * 选中
  */
@@ -520,8 +285,6 @@ export function useSelect() {
     raycaster.setFromCamera([x, y], camera)
     let state = { x, y }
     if (!selectPoints.onMousedown(state, event) && !selectLines.onMousedown(state, event)) {
-      // selectPointsInteractionManager.clear()
-      // selectLinesInteractionManager.clear()
       selectGeometrysInteractionDispatch.clear()
     }
   }
@@ -575,11 +338,10 @@ const CLICK_TIME = 200
 function useSelectPoints() {
   const raycaster = useRaycaster()
   const pointsGeometryQuery = usePointsGeometryQuery()
-  const selectPointsInteractionManager = useSelectPointsInteractionManager()
   const selectPointsInteractionQuery = useSelectPointsInteractionQuery()
   const selectPointsStrictInteractionManager = useSelectPointsStrictInteractionManager()
   const selectGeometrysInteractionDispatch = useSelectGeometrysInteractionDispatch()
-  // const selectPointsStrictInteractionQuery = useSelectPointsStrictInteractionQuery()
+  const helpersGeometryDispatch = useHelpersGeometryDispatch()
 
   let startTime = 0
   let startX = 0
@@ -606,11 +368,12 @@ function useSelectPoints() {
         }
         selectGeometrysInteractionDispatch.push(point.id)
       } else {
-        if (!selectPointsInteractionQuery.includes(point)) {
+        if (!selectPointsInteractionQuery.includes(point.id)) {
           selectGeometrysInteractionDispatch.set(point.id)
           selectPointsStrictInteractionManager.add(point.id)
         }
       }
+      helpersGeometryDispatch.activate(point.id)
       return true
     },
     onMousemove(state, event) {
@@ -627,7 +390,7 @@ function useSelectPoints() {
         // console.log('click');
         if (idRemove) {
           selectGeometrysInteractionDispatch.remove(idRemove)
-          // selectPointsStrictInteractionManager.remove(idRemove)
+          helpersGeometryDispatch.deactivate(idRemove)
         }
       } else {
         // console.log('drag');
@@ -640,12 +403,9 @@ function useSelectPoints() {
 function useSelectLines() {
   const raycaster = useRaycaster()
   const linesGeometryQuery = useLinesGeometryQuery()
-  const selectPointsInteractionManager = useSelectPointsInteractionManager()
-  const selectPointsInteractionQuery = useSelectPointsInteractionQuery()
-  const selectLinesInteractionManager = useSelectLinesInteractionManager()
   const selectLinesInteractionQuery = useSelectLinesInteractionQuery()
   const selectGeometrysInteractionDispatch = useSelectGeometrysInteractionDispatch()
-  // const selectPointsStrictInteractionManager = useSelectPointsStrictInteractionManager();
+  const helpersGeometryDispatch = useHelpersGeometryDispatch()
 
   let startTime = 0
   let startX = 0
@@ -665,69 +425,19 @@ function useSelectLines() {
         return false
       }
       let line = linesGeometryQuery.getByIndex(index)
-      let { start, end } = line
-      let hasStart = selectPointsInteractionQuery.includes(start)
-      let hasEnd = selectPointsInteractionQuery.includes(end)
-
-      // if (event.ctrlKey || event.shiftKey) {
-      //   if (selectLinesInteractionQuery.includes(line.id)) {
-      //     lineRemove = line
-      //   }
-      //   selectLinesInteractionManager.push(line.id)
-      // } else {
-      //   if (!selectLinesInteractionQuery.includes(line.id)) {
-      //     selectLinesInteractionManager.set(line.id)
-      //   }
-      // }
-
-      // if (event.ctrlKey || event.shiftKey) {
-      //   // let ids = []
-      //   // if (!hasStart && hasEnd) {
-      //   //   ids.push(start)
-      //   // }
-      //   // if (hasStart && !hasEnd) {
-      //   //   ids.push(end)
-      //   // }
-      //   // if (hasStart && hasEnd) {
-      //   //   ids.push(start, end)
-      //   // }
-      //   // if (!hasStart && !hasEnd) {
-      //   //   ids.push(start, end)
-      //   // }
-      //   // selectPointsInteractionManager.push(ids)
-      //   selectPointsInteractionManager.push([start, end])
-      // } else {
-      //   // if (!hasStart && hasEnd) {
-      //   //   selectPointsInteractionManager.push(start)
-      //   // }
-      //   // if (hasStart && !hasEnd) {
-      //   //   selectPointsInteractionManager.push(end)
-      //   // }
-      //   // if (hasStart && hasEnd) {
-      //   //   selectPointsInteractionManager.set([start, end])
-      //   // }
-      //   // if (!hasStart && !hasEnd) {
-      //   //   selectPointsInteractionManager.set([start, end])
-      //   // }
-      //   selectPointsInteractionManager.set([start, end])
-      // }
 
       if (event.ctrlKey || event.shiftKey) {
         if (selectLinesInteractionQuery.includes(line.id)) {
           lineRemove = line
         }
-        // selectLinesInteractionManager.push(line.id)
-        // selectPointsInteractionManager.push([start, end])
-        selectGeometrysInteractionDispatch.push([line.id, start, end])
+        selectGeometrysInteractionDispatch.push([line.id, line.start, line.end])
       } else {
-        // if (!selectLinesInteractionQuery.includes(line.id)) {
-        //   selectLinesInteractionManager.set(line.id)
-        //   selectPointsInteractionManager.set([start, end])
-        // }
         if (!selectLinesInteractionQuery.includes(line.id)) {
-          selectGeometrysInteractionDispatch.set([line.id, start, end])
+          selectGeometrysInteractionDispatch.set([line.id, line.start, line.end])
         }
       }
+      helpersGeometryDispatch.activate(line.id)
+
       return true
     },
     onMousemove(state, event) {
@@ -743,14 +453,12 @@ function useSelectLines() {
       if (!isDragging && duration < CLICK_TIME) {
         // console.log('click');
         if (lineRemove) {
-          // selectLinesInteractionManager.remove(lineRemove.id)
-          // selectPointsInteractionManager.remove(lineRemove.start)
-          // selectPointsInteractionManager.remove(lineRemove.end)
           selectGeometrysInteractionDispatch.remove([
             lineRemove.id,
             lineRemove.start,
             lineRemove.end,
           ])
+          helpersGeometryDispatch.deactivate(lineRemove.id)
         }
       } else {
         // console.log('drag');
@@ -772,6 +480,8 @@ export function useMove() {
   const canvas = renderer.element()
   const movePoints = useMovePoints()
   const moveLines = useMoveLines()
+  const geometryUpdater = useGeometryUpdater()
+  const selectPointsInteractionQuery = useSelectPointsInteractionQuery()
 
   let activeted = false
   function onMousedown(event) {
@@ -783,6 +493,10 @@ export function useMove() {
     raycaster.setFromRenderer(renderer)
     let state = { x, y }
     activeted = movePoints.onMousedown(state, event) || moveLines.onMousedown(state, event)
+    if (activeted) {
+      let selectPoints = selectPointsInteractionQuery.get()
+      geometryUpdater.updateBefore(selectPoints)
+    }
   }
   function onMousemove(event) {
     const plane = planesEntitie.active
@@ -797,6 +511,10 @@ export function useMove() {
   }
   function onMouseup(event) {
     if (event.button !== 0) return
+    if (activeted) {
+      let selectPoints = selectPointsInteractionQuery.get()
+      geometryUpdater.updateAfter(selectPoints)
+    }
     activeted = false
     movePoints.onMouseup({}, event)
     moveLines.onMouseup({}, event)

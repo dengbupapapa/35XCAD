@@ -5,15 +5,15 @@ import {
   useLines as useLinesGeometry,
   usePolylines as usePolylinesGeometry,
   useArcs as useArcsGeometry,
-  // useConstraints as useConstraintsGeometry,
+  useDimensionDistances as useDimensionDistancesGeometry,
+  useDimensionAngles as useDimensionAnglesGeometry,
   usePlanesHash as usePlanesHashGeometry,
   usePointsHash as usePointsHashGeometry,
   useLinesHash as useLinesHashGeometry,
   usePolylinesHash as usePolylinesHashGeometry,
   useArcsHash as useArcsHashGeometry,
-  // useConstraintsHash as useConstraintsHashGeometry,
-  // useConstraintsPlaneHash as useConstraintsPlaneHashGeometry,
-  // useConstraintsIncrement as useConstraintsIncrementGeometry,
+  useDimensionDistancesHash as useDimensionDistancesHashGeometry,
+  useDimensionAnglesHash as useDimensionAnglesHashGeometry,
   useIncrement as useIncrementGeometry,
 } from './geometry-provide-context.js'
 
@@ -164,48 +164,67 @@ export function useArcs() {
     hasFormPoint(point) {
       return !!this.getFormPoint(point)
     },
-    hasFormCenter(point){
+    hasFormCenter(point) {
       return !!this.getFormCenter(point)
     },
-    hasFormStart(point){
+    hasFormStart(point) {
       return !!this.getFormStart(point)
     },
-    hasFormEnd(point){
+    hasFormEnd(point) {
       return !!this.getFormEnd(point)
     },
   }
 }
-// export function useConstraints() {
-//   let constraintsGeometry = useConstraintsGeometry()
-//   let constraintsHashGeometry = useConstraintsHashGeometry()
-//   let constraintsPlaneHashGeometry = useConstraintsPlaneHashGeometry()
-//   return {
-//     get(id) {
-//       return constraintsHashGeometry.value[id]
-//     },
-//     getByIndex(index) {
-//       return constraintsGeometry.value[index]
-//     },
-//     getByPlane(plane) {
-//       return constraintsPlaneHashGeometry.value[plane]
-//     },
-//     indexOf(constraint) {
-//       return constraintsGeometry.value.indexOf(constraint)
-//     },
-//     all() {
-//       return constraintsGeometry.value
-//     },
-//   }
-// }
-// export function useConstraintsIncrement() {
-//   let constraintsIncrementGeometry = useConstraintsIncrementGeometry()
-//   return {
-//     get() {
-//       return ++constraintsIncrementGeometry.value
-//     },
-//   }
-// }
 
+export function useDimensionDistances() {
+  let dimensionDistances = useDimensionDistancesGeometry()
+  let dimensionDistancesHash = useDimensionDistancesHashGeometry()
+  return {
+    get(id) {
+      return dimensionDistancesHash.value[id]
+    },
+    getByIndex(index) {
+      return dimensionDistances.value[index]
+    },
+    indexOf(dimensionDistance) {
+      return dimensionDistances.value.indexOf(dimensionDistance)
+    },
+    has(dimensionDistance) {
+      return dimensionDistances.value.includes(dimensionDistance)
+    },
+    hasById(id) {
+      return !!this.get(id)
+    },
+    all() {
+      return dimensionDistances.value
+    },
+  }
+}
+
+export function useDimensionAngles() {
+  let dimensionAngles = useDimensionAnglesGeometry()
+  let dimensionAnglesHash = useDimensionAnglesHashGeometry()
+  return {
+    get(id) {
+      return dimensionAnglesHash.value[id]
+    },
+    getByIndex(index) {
+      return dimensionAngles.value[index]
+    },
+    indexOf(dimensionAngle) {
+      return dimensionAngles.value.indexOf(dimensionAngle)
+    },
+    has(dimensionAngle) {
+      return dimensionAngles.value.includes(dimensionAngle)
+    },
+    hasById(id) {
+      return !!this.get(id)
+    },
+    all() {
+      return dimensionAngles.value
+    },
+  }
+}
 export function useIncrement() {
   let incrementGeometry = useIncrementGeometry()
   return {

@@ -6,11 +6,46 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "11169781",
+      "name": "dimension",
+      "font_class": "dimension",
+      "unicode": "e63f",
+      "unicode_decimal": 58943
+    },
+    {
+      "icon_id": "47084369",
+      "name": "dimensionVertical",
+      "font_class": "dimensionVertical",
+      "unicode": "ec20",
+      "unicode_decimal": 60448
+    },
+    {
+      "icon_id": "47084467",
+      "name": "dimensionHorizontal",
+      "font_class": "dimensionHorizontal",
+      "unicode": "ec21",
+      "unicode_decimal": 60449
+    },
+    {
       "icon_id": "18034693",
       "name": "addConstraintP2PSymmetric2",
       "font_class": "addConstraintP2PSymmetric2",
       "unicode": "e690",
       "unicode_decimal": 59024
+    },
+    {
+      "icon_id": "47098386",
+      "name": "addConstraintParallel2",
+      "font_class": "addConstraintParallel2",
+      "unicode": "ec22",
+      "unicode_decimal": 60450
+    },
+    {
+      "icon_id": "47098396",
+      "name": "addConstraintPerpendicular2",
+      "font_class": "addConstraintPerpendicular2",
+      "unicode": "ec23",
+      "unicode_decimal": 60451
     },
     {
       "icon_id": "9036707",

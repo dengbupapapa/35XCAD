@@ -81,6 +81,9 @@ export function useNumerals() {
     indexOf(numeral) {
       return numerals.indexOf(numeral)
     },
+    all(){
+      return numerals
+    }
   }
 }
 export function useConstraints() {

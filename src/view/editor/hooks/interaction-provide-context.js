@@ -11,15 +11,15 @@ export default function useRegistry() {
   const selectableConstraints = ref([])
   provide(selectableConstraintsSymbol, selectableConstraints)
 
-  const activeElement = shallowRef();
+  const activeElement = shallowRef()
   provide(activeElementSymbol, activeElement)
   function onMousedownSaveActiveElement(event) {
     activeElement.value = event.target
   }
-  onMounted(()=>{
+  onMounted(() => {
     document.addEventListener('mousedown', onMousedownSaveActiveElement)
   })
-  onUnmounted(()=>{
+  onUnmounted(() => {
     document.removeEventListener('mousedown', onMousedownSaveActiveElement)
   })
 }

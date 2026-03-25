@@ -8,9 +8,6 @@ import {
 } from './constraint-query.js'
 import { ConstraintResolver } from '../core/data-constraint.js'
 
-/*
- * 删除重合约束如果是polylines创建的还要想办法更新polylines
- */
 export function useConstraints() {
   let constraintsManager = useConstraintsManager()
   let constraintsRelationManager = useConstraintsRelationManager()
@@ -25,11 +22,11 @@ export function useConstraints() {
     removeById(id) {
       constraintResolver.solverUnattach(id)
     },
-    add(name, geometrys) {
-      constraintResolver.solverAttach(name, geometrys)
+    add(name, args, driving, tag) {
+      return constraintResolver.solverAttach(name, args, driving, tag)
     },
-    usable(geometrys) {
-      return constraintResolver.solverUsable(geometrys)
+    usable(args) {
+      return constraintResolver.solverUsable(args)
     },
     /*
      * 以下目前适合geometry正确处理完毕的

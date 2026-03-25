@@ -29,6 +29,12 @@ export class Vector3 {
   length(...args) {
     return this.impl.length(...args.map(({ impl }) => impl))
   }
+  crossVectors(...args) {
+    return new Vector3(...this.impl.crossVectors(...args.map(({ impl }) => impl)).toArray())
+  }
+  normalize(...args) {
+    return new Vector3(...this.impl.normalize(...args.map(({ impl }) => impl)).toArray())
+  }
   set x(x) {
     this.impl.x = x
   }

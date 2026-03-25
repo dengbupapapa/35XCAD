@@ -153,18 +153,19 @@ export function useConstraints() {
       }
     })
   }
+  let effect = //debounce(
+    function effect() {
+      /* [问题]
+       * 这段求解调用应该移到gcs里去
+       */
+      systemsGCSManager.reset()
+      systemsGCSManager.solver()
+      updateGeometry()
 
-  let effect = debounce(function effect() {
-    /* [问题]
-     * 这段求解调用应该移到gcs里去
-     */
-    systemsGCSManager.reset()
-    systemsGCSManager.solver()
-    updateGeometry()
-
-    systemsGCSQuery.active.handle.clearByTag(-1)
-    toolTempGCSManager.clearNumerals()
-  }, 16)
+      systemsGCSQuery.active.handle.clearByTag(-1)
+      toolTempGCSManager.clearNumerals()
+    }
+  //, 16)
 
   return {
     updateNumerals(id, numerals) {
@@ -178,11 +179,11 @@ export function useConstraints() {
       // constraintsGCSManager.update(constraint)
       // effect()
     },
-    add(constraint) {
-      let tag = constraintsIncrementQuery.get()
+    add(constraint, driving = true, tag = constraintsIncrementQuery.get()) {
+      constraint.driving = driving
       constraint.tag = tag
       constraint.id = nanoid()
-      constraint.args.push(tag, true)
+      constraint.args.push(tag, driving)
       constraint.plane = planesGeometryQuery?.active?.id
 
       this.attach(constraint)
@@ -233,7 +234,7 @@ export function useConstraints() {
         delete constraintsPlaneHashProvideContext.value[plane]
       })
     },
-    addConstraintP2PDistance(p1, p2, distance) {
+    addConstraintP2PDistance(p1, p2, distance, driving, tag) {
       let constraint = {
         type: 'addConstraintP2PDistance',
         args: [p1, p2, distance],
@@ -244,15 +245,10 @@ export function useConstraints() {
           ['x', 'y'],
         ],
       }
-      this.add(constraint)
+      this.add(constraint, driving, tag)
       return constraint
     },
-    addConstraintHorizontal() {},
-    // addConstraintCoordinate(p, { x, y }) {
-    //   this.addConstraintCoordinateX(p, x)
-    //   this.addConstraintCoordinateY(p, y)
-    // },
-    addConstraintCoordinateX(p, x) {
+    addConstraintCoordinateX(p, x, driving, tag) {
       let constraint = {
         type: 'addConstraintCoordinateX',
         args: [p, x],
@@ -260,10 +256,10 @@ export function useConstraints() {
         numerals: [1],
         unknowns: [['x']],
       }
-      this.add(constraint)
+      this.add(constraint, driving, tag)
       return constraint
     },
-    addConstraintCoordinateY(p, y) {
+    addConstraintCoordinateY(p, y, driving, tag) {
       let constraint = {
         type: 'addConstraintCoordinateY',
         args: [p, y],
@@ -271,10 +267,10 @@ export function useConstraints() {
         numerals: [1],
         unknowns: [['y']],
       }
-      this.add(constraint)
+      this.add(constraint, driving, tag)
       return constraint
     },
-    addConstraintP2PCoincident(p1, p2) {
+    addConstraintP2PCoincident(p1, p2, driving, tag) {
       let constraint = {
         type: 'addConstraintP2PCoincident',
         args: [p1, p2],
@@ -284,19 +280,19 @@ export function useConstraints() {
           ['x', 'y'],
         ],
       }
-      this.add(constraint)
+      this.add(constraint, driving, tag)
       return constraint
     },
-    addConstraintArcRules(arc) {
+    addConstraintArcRules(arc, driving, tag) {
       let constraint = {
         type: 'addConstraintArcRules',
         args: [arc],
         arcs: [0],
       }
-      this.add(constraint)
+      this.add(constraint, driving, tag)
       return constraint
     },
-    addConstraintPointOnLine(p, l) {
+    addConstraintPointOnLine(p, l, driving, tag) {
       let constraint = {
         type: 'addConstraintPointOnLine',
         args: [p, l],
@@ -304,10 +300,10 @@ export function useConstraints() {
         lines: [1],
         unknowns: [['x', 'y']],
       }
-      this.add(constraint)
+      this.add(constraint, driving, tag)
       return constraint
     },
-    addConstraintPointOnLine2(p, lp1, lp2) {
+    addConstraintPointOnLine2(p, lp1, lp2, driving, tag) {
       let constraint = {
         type: 'addConstraintPointOnLine2',
         args: [p, lp1, lp2],
@@ -318,10 +314,10 @@ export function useConstraints() {
           ['x', 'y'],
         ],
       }
-      this.add(constraint)
+      this.add(constraint, driving, tag)
       return constraint
     },
-    addConstraintPointOnPerpBisector(p, l) {
+    addConstraintPointOnPerpBisector(p, l, driving, tag) {
       let constraint = {
         type: 'addConstraintPointOnPerpBisector',
         args: [p, l],
@@ -329,55 +325,85 @@ export function useConstraints() {
         lines: [1],
         unknowns: [['x', 'y']],
       }
-      this.add(constraint)
+      this.add(constraint, driving, tag)
       return constraint
     },
-    addConstraintParallel(l1, l2) {
+    addConstraintParallel(l1, l2, driving, tag) {
       let constraint = {
         type: 'addConstraintParallel',
         args: [l1, l2],
         lines: [0, 1],
       }
-      this.add(constraint)
+      this.add(constraint, driving, tag)
       return constraint
     },
-    addConstraintPerpendicular(l1, l2) {
+    addConstraintParallel2(l1p1, l1p2, l2p1, l2p2, driving, tag) {
+      let constraint = {
+        type: 'addConstraintParallel2',
+        args: [l1p1, l1p2, l2p1, l2p2],
+        points: [0, 1, 2, 3],
+        unknowns: [
+          ['x', 'y'],
+          ['x', 'y'],
+          ['x', 'y'],
+          ['x', 'y'],
+        ],
+      }
+      this.add(constraint, driving, tag)
+      return constraint
+    },
+    addConstraintPerpendicular(l1, l2, driving, tag) {
       let constraint = {
         type: 'addConstraintPerpendicular',
         args: [l1, l2],
         lines: [0, 1],
       }
-      this.add(constraint)
+      this.add(constraint, driving, tag)
       return constraint
     },
-    addConstraintEqualLength(l1, l2) {
+    addConstraintPerpendicular2(l1p1, l1p2, l2p1, l2p2, driving, tag) {
+      let constraint = {
+        type: 'addConstraintPerpendicular2',
+        args: [l1p1, l1p2, l2p1, l2p2],
+        points: [0, 1, 2, 3],
+        unknowns: [
+          ['x', 'y'],
+          ['x', 'y'],
+          ['x', 'y'],
+          ['x', 'y'],
+        ],
+      }
+      this.add(constraint, driving, tag)
+      return constraint
+    },
+    addConstraintEqualLength(l1, l2, driving, tag) {
       let constraint = {
         type: 'addConstraintEqualLength',
         args: [l1, l2],
         lines: [0, 1],
       }
-      this.add(constraint)
+      this.add(constraint, driving, tag)
       return constraint
     },
-    addConstraintHorizontal(line) {
+    addConstraintHorizontal(line, driving, tag) {
       let constraint = {
         type: 'addConstraintHorizontal',
         args: [line],
         lines: [0],
       }
-      this.add(constraint)
+      this.add(constraint, driving, tag)
       return constraint
     },
-    addConstraintVertical(line) {
+    addConstraintVertical(line, driving, tag) {
       let constraint = {
         type: 'addConstraintVertical',
         args: [line],
         lines: [0],
       }
-      this.add(constraint)
+      this.add(constraint, driving, tag)
       return constraint
     },
-    addConstraintHorizontal2(p1, p2) {
+    addConstraintHorizontal2(p1, p2, driving, tag) {
       let constraint = {
         type: 'addConstraintHorizontal2',
         args: [p1, p2],
@@ -387,10 +413,10 @@ export function useConstraints() {
           ['x', 'y'],
         ],
       }
-      this.add(constraint)
+      this.add(constraint, driving, tag)
       return constraint
     },
-    addConstraintVertical2(p1, p2) {
+    addConstraintVertical2(p1, p2, driving, tag) {
       let constraint = {
         type: 'addConstraintVertical2',
         args: [p1, p2],
@@ -400,19 +426,19 @@ export function useConstraints() {
           ['x', 'y'],
         ],
       }
-      this.add(constraint)
+      this.add(constraint, driving, tag)
       return constraint
     },
-    addConstraintMidpointOnLine(l1, l2) {
+    addConstraintMidpointOnLine(l1, l2, driving, tag) {
       let constraint = {
         type: 'addConstraintMidpointOnLine',
         args: [l1, l2],
         lines: [0, 1],
       }
-      this.add(constraint)
+      this.add(constraint, driving, tag)
       return constraint
     },
-    addConstraintMidpointOnLine2(l1p1, l1p2, l2p1, l2p2) {
+    addConstraintMidpointOnLine2(l1p1, l1p2, l2p1, l2p2, driving, tag) {
       let constraint = {
         type: 'addConstraintMidpointOnLine2',
         args: [l1p1, l1p2, l2p1, l2p2],
@@ -424,10 +450,10 @@ export function useConstraints() {
           ['x', 'y'],
         ],
       }
-      this.add(constraint)
+      this.add(constraint, driving, tag)
       return constraint
     },
-    addConstraintP2PSymmetric(p1, p2, p) {
+    addConstraintP2PSymmetric(p1, p2, p, driving, tag) {
       let constraint = {
         type: 'addConstraintP2PSymmetric',
         args: [p1, p2, p],
@@ -438,10 +464,10 @@ export function useConstraints() {
           ['x', 'y'],
         ],
       }
-      this.add(constraint)
+      this.add(constraint, driving, tag)
       return constraint
     },
-    addConstraintP2PSymmetric2(p1, p2, l) {
+    addConstraintP2PSymmetric2(p1, p2, l, driving, tag) {
       let constraint = {
         type: 'addConstraintP2PSymmetric2',
         args: [p1, p2, l],
@@ -452,7 +478,21 @@ export function useConstraints() {
           ['x', 'y'],
         ],
       }
-      this.add(constraint)
+      this.add(constraint, driving, tag)
+      return constraint
+    },
+    addConstraintP2PAngle(p1, p2, angle, driving, tag) {
+      let constraint = {
+        type: 'addConstraintP2PAngle',
+        args: [p1, p2, angle],
+        points: [0, 1],
+        numerals: [2],
+        unknowns: [
+          ['x', 'y'],
+          ['x', 'y'],
+        ],
+      }
+      this.add(constraint, driving, tag)
       return constraint
     },
   }
@@ -484,11 +524,12 @@ export function useConstraintsRelation() {
         id: nanoid(),
         tag: constraintsIncrementQuery.get(),
       }
-      this.attach(constraintRelation)
+      return this.attach(constraintRelation)
     },
     attach(constraintRelation) {
       constraintsRelationProvideContext.value.push(constraintRelation)
       constraintsRelationHashProvideContext.value[constraintRelation.id] = constraintRelation
+      return constraintRelation
     },
     removeByIndex(index) {
       assertIndexFormList(

@@ -54,3 +54,32 @@ export function useActiveElement() {
     return activeElementInteraction.value
   })
 }
+
+import { useHelpers as useHelpersGeometryMapper } from './geometry-mapper'
+export function useSelectGeometrysExcludingHelpers() {
+  let selectGeometrysInteractionDerived = useSelectGeometrys()
+  let helpersGeometryMapper = useHelpersGeometryMapper()
+  return computed(() => {
+    return selectGeometrysInteractionDerived.value.filter((id) => {
+      return !helpersGeometryMapper.hasFormLineId(id) && !helpersGeometryMapper.hasFormPointId(id)
+    })
+  })
+}
+
+export function useSelectGeometrysStrictExcludingHelpers() {
+  let selectGeometrysStrictInteractionDerived = useSelectGeometrysStrict()
+  let helpersGeometryMapper = useHelpersGeometryMapper()
+  return computed(() => {
+    return selectGeometrysStrictInteractionDerived.value.filter((id) => {
+      return !helpersGeometryMapper.hasFormLineId(id) && !helpersGeometryMapper.hasFormPointId(id)
+    })
+  })
+}
+
+export function useHasSelectExcludingHelpers() {
+  let selectGeometrysStrictExcludingHelpersInteractionDerived =
+    useSelectGeometrysStrictExcludingHelpers()
+  return computed(() => {
+    return selectGeometrysStrictExcludingHelpersInteractionDerived.value.length > 0
+  })
+}

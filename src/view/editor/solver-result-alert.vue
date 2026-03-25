@@ -21,6 +21,7 @@
       <template #icon> <CloseCircleOutlined /> </template>
       {{ tipSolverResultDiagnose['hasConflicting'] }}
     </a-tag>
+    <!-- {{ solverResult }} -->
   </div>
 </template>
 <script setup>

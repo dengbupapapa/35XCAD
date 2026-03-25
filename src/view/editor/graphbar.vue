@@ -7,6 +7,14 @@
           interactionsManager.enable.entitieSelect && interactionsManager.enable.entitieTranslation,
       }"
     />
+    <a-divider type="vertical" style="border-color: #aaa; margin-left: 20px; margin-right: 10px" />
+    <Dimension
+      class="icon"
+      :class="{
+        actived: interactionsManager.enable.dimensionAdd,
+      }"
+    />
+    <a-divider type="vertical" style="border-color: #aaa; margin-left: 20px; margin-right: 10px" />
     <Line
       class="icon"
       :class="{
@@ -39,6 +47,7 @@ import Line from './graphbar-line.vue'
 import Polyline from './graphbar-polyline.vue'
 import Arc from './graphbar-arc.vue'
 import Point from './graphbar-point.vue'
+import Dimension from './graphbar-dimension.vue'
 import { useRenderer } from './hooks/viewport-provide-context.js'
 import useInteractions from './hooks/modes-manager-interactions.js'
 import { onMounted, watchEffect } from 'vue'
@@ -56,7 +65,8 @@ watchEffect(() => {
     canvas.style.cursor = 'copy'
   } else if (
     interactionsManager.enable.entitieSelect ||
-    interactionsManager.enable.entitieTranslation
+    interactionsManager.enable.entitieTranslation ||
+    interactionsManager.enable.dimensionAdd
   ) {
     canvas.style.cursor = 'default'
   }
@@ -76,16 +86,16 @@ import { useSelectGeometrys as useSelectGeometrysInteractionDispatch } from './h
 let selectGeometrysInteractionDispatch = useSelectGeometrysInteractionDispatch()
 function onClick(event) {
   if (!event.target.closest('.icon')) return
-  if (event.target.closest('.cursor')) return
+  // if (event.target.closest('.cursor')) return
   selectGeometrysInteractionDispatch.clear()
 }
 import hotkeys from 'hotkeys-js'
 hotkeys('esc', function (event, handler) {
   event.preventDefault()
   selectGeometrysInteractionDispatch.clear()
-  if (interactionsManager.enable.entitieSelect && interactionsManager.enable.entitieTranslation) {
-    selectGeometrysInteractionDispatch.clear()
-  }
+  // if (interactionsManager.enable.entitieSelect && interactionsManager.enable.entitieTranslation) {
+  //   selectGeometrysInteractionDispatch.clear()
+  // }
 })
 </script>
 <style scoped lang="less">

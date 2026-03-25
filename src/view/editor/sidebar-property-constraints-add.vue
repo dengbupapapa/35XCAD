@@ -16,7 +16,7 @@
 <script setup>
 import { computed } from 'vue'
 import { createFromIconfontCN } from '@ant-design/icons-vue'
-import { useSelectGeometrysStrict } from './hooks/interaction-derived'
+import { useSelectGeometrysStrictExcludingHelpers } from './hooks/interaction-derived'
 import { labelConstraintMap } from './locales/zh-CN/displayMap.js'
 import { useConstraints as useConstraintsDispatch } from './hooks/constraint-dispatch'
 import iconfont from '@/assets/iconfont/iconfont.js?url'
@@ -28,16 +28,16 @@ let constraintsDispatch = useConstraintsDispatch()
 /*
  * 获取可用的约束
  */
-let selectGeometrysStrict = useSelectGeometrysStrict()
+let selectGeometrysStrictExcludingHelpers = useSelectGeometrysStrictExcludingHelpers()
 let constraintsUsable = computed(() => {
-  return constraintsDispatch.usable(selectGeometrysStrict.value)
+  return constraintsDispatch.usable(selectGeometrysStrictExcludingHelpers.value)
 })
 
 /*
  * 添加约束
  */
 function onClick(name) {
-  constraintsDispatch.add(name, selectGeometrysStrict.value)
+  constraintsDispatch.add(name, selectGeometrysStrictExcludingHelpers.value)
 }
 </script>
 <style scoped lang="less">

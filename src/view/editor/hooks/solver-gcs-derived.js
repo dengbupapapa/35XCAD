@@ -5,7 +5,10 @@ export {
   useNumerals,
   useNumeralsHash,
   useUnknownsSet,
+  useUnknownsSetJSON,
   useSystems,
+  usePoints,
+  usePointsHash,
 } from './solver-gcs-provide-context.js'
 
 export function useSolverResult() {

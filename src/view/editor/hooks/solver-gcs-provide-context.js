@@ -1,5 +1,6 @@
 import { provide, inject, ref, shallowRef } from 'vue'
 import gcs from 'gcs'
+import { throttle } from 'lodash-es'
 
 export default function useRegistry() {
   let status = ref('pending')
@@ -26,7 +27,6 @@ export default function useRegistry() {
   const results = ref([])
   const resultsHash = ref({})
   const solverResult = ref({})
-
   provide(moduleSymbol, ModuleCallback)
   provide(systemsSymbol, systems)
   provide(unknownsSetSymbol, unknownsSet)
@@ -49,6 +49,12 @@ export default function useRegistry() {
   gcs()
     .then((M) => {
       Module = M
+      // let solveThrottle = throttle(function (...args) {
+      //   return this.solve.apply(this, args)
+      // }, 0)
+      // M.System.prototype.solveThrottle = function (...args) {
+      //   return solveThrottle.apply(this, args)
+      // }
       status.value = 'resolve'
     })
     .catch((e) => {

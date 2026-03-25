@@ -18,7 +18,7 @@
           <EyeInvisibleTwoTone v-if="visibled" @click="onHidden" :title="labelBasicMap['hidden']" />
           <EyeTwoTone v-else @click="onVisible" :title="labelBasicMap['visible']" />
         </div>
-        <SidebarFeaturePlaneMakeFront :id="id"/>
+        <SidebarFeaturePlaneMakeFront :id="id" />
       </div>
       <!-- <a-menu @click="onMenuClick">
         <a-menu-item key="delete">删除</a-menu-item>
@@ -27,23 +27,25 @@
   </a-dropdown>
 </template>
 <script setup>
-import { onMounted, onUnmounted, useTemplateRef, ref, watch } from 'vue'
+import { onMounted, onUnmounted, useTemplateRef, ref, watch, computed } from 'vue'
 import { EyeInvisibleTwoTone, EyeTwoTone } from '@ant-design/icons-vue'
 import { usePlanes as usePlanesGeometryManager } from './hooks/geometry-manager'
+import { usePlanes as usePlanesGeometryQuery } from './hooks/geometry-query'
+import { usePlane as usePlaneGeometryDerived } from './hooks/geometry-derived'
 import SidebarFeaturePlaneMakeFront from './sidebar-feature-plane-make-front.vue'
-import {labelBasicMap} from './locales/zh-CN/displayMap.js'
-defineProps({ id: { type: String, required: true } })
+import { labelBasicMap } from './locales/zh-CN/displayMap.js'
+let props = defineProps({ id: { type: String, required: true } })
 
 let planesGeometryManager = usePlanesGeometryManager()
+let planesGeometryQuery = usePlanesGeometryQuery()
+let planeGeometryDerived = usePlaneGeometryDerived(props.id)
 //hover
 let hover = ref(false)
 function onMouseenter() {
   hover.value = true
-  if (selected.value) return
 }
 function onMouseleave() {
   hover.value = false
-  if (selected.value) return
 }
 //selected
 let selected = ref(false)
@@ -70,6 +72,13 @@ function onVisible() {
 function onHidden() {
   visibled.value = false
 }
+watch(
+  planeGeometryDerived,
+  (plane) => {
+    visibled.value = plane.visible
+  },
+  { immediate: true },
+)
 //handle
 watch(
   () => [hover.value, selected.value, visibled.value],

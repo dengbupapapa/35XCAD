@@ -30,11 +30,12 @@ const linesEntitie = useLinesEntitie()
 watch(
   linePoints,
   (linePoints) => {
+    if (!linePoints) return
     let [start, end] = linePoints
     if (!start || !end) return
     linesEntitie.translation(props.index, [start.x, start.y, start.z], [end.x, end.y, end.z])
   },
-  { deep: true },
+  { deep: true, immediate: true },
 )
 // //删除
 // onUnmounted(() => {

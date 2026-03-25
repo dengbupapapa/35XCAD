@@ -121,7 +121,6 @@ export function useToolTemp() {
       // let numeralPointGCSV = numeralsGCSQuery.get(pointGCS.v)
       // numeralPointGCSU.handle.set(u)
       // numeralPointGCSV.handle.set(v)
-
       systemsGCSQuery.active.handle.addConstraintCoordinateX(
         pointGCS.handle,
         doubleX.handle,
@@ -224,6 +223,7 @@ export function useNumerals() {
   let numerals = useNumeralsGCS()
   let numeralsHash = useNumeralsHashGCS()
   let numeralsPtrHash = useNumeralsPtrHashGCS()
+  let unknownsSetGCSManager = useUnknownsSet()
   return {
     add({ id, value }) {
       let double = new Module.Double(value)
@@ -242,6 +242,7 @@ export function useNumerals() {
     removeById(id) {
       let numeral = numeralsHash[id]
       let index = numerals.indexOf(numeral)
+      unknownsSetGCSManager.numeralRemoveAll(numeral)
       numerals.splice(index, 1)
       delete numeralsHash[id]
       delete numeralsPtrHash[numeral.ptr]
@@ -302,6 +303,7 @@ export function usePoints() {
       delete pointsHash[point.id]
       numeralsGCSManager.removeById(point.u)
       numeralsGCSManager.removeById(point.v)
+      point.handle.delete()
     },
     removeById(id) {
       let index = points.findIndex((point) => point.id === id)
@@ -316,6 +318,7 @@ export function usePoints() {
       ;[...points].forEach((point) => {
         points.shift()
         delete pointsHash[point.id]
+        point.handle.delete()
       })
     },
     update(data) {
@@ -360,11 +363,13 @@ export function useLines() {
       let index = linesGCSQuery.indexOf(lineGCS)
       linesGCS.splice(index, 1)
       delete linesHashGCS[lineGCS.id]
+      lineGCS.handle.delete()
     },
     clear() {
       ;[...linesGCS].forEach((line) => {
         linesGCS.shift()
         delete linesHashGCS[line.id]
+        line.handle.delete()
       })
     },
   }
@@ -486,6 +491,7 @@ export function useArcs() {
       let index = arcsGCSQuery.indexOf(arcGCS)
       arcsGCS.splice(index, 1)
       delete arcsHashGCS[arcGCS.id]
+      arcGCS.handle.delete()
     },
   }
 }
@@ -528,11 +534,11 @@ export function useConstraints() {
           if (!(unknown instanceof Array)) return
           if (unknown.includes('x')) {
             let numeralU = numeralsGCSQuery.get(pointGCS.u)
-            unknownsSetManager.numeral(numeralU)
+            unknownsSetManager.numeralAdd(numeralU)
           }
           if (unknown.includes('y')) {
             let numeralV = numeralsGCSQuery.get(pointGCS.v)
-            unknownsSetManager.numeral(numeralV)
+            unknownsSetManager.numeralAdd(numeralV)
           }
           return
         }
@@ -549,10 +555,10 @@ export function useConstraints() {
           let numeralEndU = numeralsGCSQuery.get(pointEndGCS.u)
           let numeralEndV = numeralsGCSQuery.get(pointEndGCS.v)
 
-          unknownsSetManager.numeral(numeralStartU)
-          unknownsSetManager.numeral(numeralStartV)
-          unknownsSetManager.numeral(numeralEndU)
-          unknownsSetManager.numeral(numeralEndV)
+          unknownsSetManager.numeralAdd(numeralStartU)
+          unknownsSetManager.numeralAdd(numeralStartV)
+          unknownsSetManager.numeralAdd(numeralEndU)
+          unknownsSetManager.numeralAdd(numeralEndV)
           return
         }
         if (arcs instanceof Array && arcs.includes(index)) {
@@ -566,24 +572,24 @@ export function useConstraints() {
 
           let numeralCenterU = numeralsGCSQuery.get(pointGCSCenter.u)
           let numeralCenterV = numeralsGCSQuery.get(pointGCSCenter.v)
-          unknownsSetManager.numeral(numeralCenterU)
-          unknownsSetManager.numeral(numeralCenterV)
+          unknownsSetManager.numeralAdd(numeralCenterU)
+          unknownsSetManager.numeralAdd(numeralCenterV)
           let numeralStartU = numeralsGCSQuery.get(pointGCSStart.u)
           let numeralStartV = numeralsGCSQuery.get(pointGCSStart.v)
-          unknownsSetManager.numeral(numeralStartU)
-          unknownsSetManager.numeral(numeralStartV)
+          unknownsSetManager.numeralAdd(numeralStartU)
+          unknownsSetManager.numeralAdd(numeralStartV)
           let numeralEndU = numeralsGCSQuery.get(pointGCSEnd.u)
           let numeralEndV = numeralsGCSQuery.get(pointGCSEnd.v)
-          unknownsSetManager.numeral(numeralEndU)
-          unknownsSetManager.numeral(numeralEndV)
+          unknownsSetManager.numeralAdd(numeralEndU)
+          unknownsSetManager.numeralAdd(numeralEndV)
 
           let numeralAngleStart = numeralsGCSQuery.get(arcGCS.angleStart)
           let numeralAngleEnd = numeralsGCSQuery.get(arcGCS.angleEnd)
           let numeralRadius = numeralsGCSQuery.get(arcGCS.radius)
 
-          unknownsSetManager.numeral(numeralAngleStart)
-          unknownsSetManager.numeral(numeralAngleEnd)
-          unknownsSetManager.numeral(numeralRadius)
+          unknownsSetManager.numeralAdd(numeralAngleStart)
+          unknownsSetManager.numeralAdd(numeralAngleEnd)
+          unknownsSetManager.numeralAdd(numeralRadius)
 
           // console.log(numeralAngleStart, numeralAngleEnd, numeralRadius)
 
@@ -627,11 +633,11 @@ export function useConstraints() {
           if (!(unknown instanceof Array)) return
           if (unknown.includes('x')) {
             let numeralU = numeralsGCSQuery.get(pointGCS.u)
-            unknownsSetManager.unnumeral(numeralU)
+            unknownsSetManager.numeralRemoveOne(numeralU)
           }
           if (unknown.includes('y')) {
             let numeralV = numeralsGCSQuery.get(pointGCS.v)
-            unknownsSetManager.unnumeral(numeralV)
+            unknownsSetManager.numeralRemoveOne(numeralV)
           }
           return
         }
@@ -642,12 +648,12 @@ export function useConstraints() {
 
           let numeralStartU = numeralsGCSQuery.get(pointGCSStart.u)
           let numeralStartV = numeralsGCSQuery.get(pointGCSStart.v)
-          unknownsSetManager.unnumeral(numeralStartU)
-          unknownsSetManager.unnumeral(numeralStartV)
+          unknownsSetManager.numeralRemoveOne(numeralStartU)
+          unknownsSetManager.numeralRemoveOne(numeralStartV)
           let numeralEndU = numeralsGCSQuery.get(pointGCSEnd.u)
           let numeralEndV = numeralsGCSQuery.get(pointGCSEnd.v)
-          unknownsSetManager.unnumeral(numeralEndU)
-          unknownsSetManager.unnumeral(numeralEndV)
+          unknownsSetManager.numeralRemoveOne(numeralEndU)
+          unknownsSetManager.numeralRemoveOne(numeralEndV)
           return
         }
         if (arcs instanceof Array && arcs.includes(index)) {
@@ -659,24 +665,24 @@ export function useConstraints() {
 
           let numeralCenterU = numeralsGCSQuery.get(pointGCSCenter.u)
           let numeralCenterV = numeralsGCSQuery.get(pointGCSCenter.v)
-          unknownsSetManager.unnumeral(numeralCenterU)
-          unknownsSetManager.unnumeral(numeralCenterV)
+          unknownsSetManager.numeralRemoveOne(numeralCenterU)
+          unknownsSetManager.numeralRemoveOne(numeralCenterV)
           let numeralStartU = numeralsGCSQuery.get(pointGCSStart.u)
           let numeralStartV = numeralsGCSQuery.get(pointGCSStart.v)
-          unknownsSetManager.unnumeral(numeralStartU)
-          unknownsSetManager.unnumeral(numeralStartV)
+          unknownsSetManager.numeralRemoveOne(numeralStartU)
+          unknownsSetManager.numeralRemoveOne(numeralStartV)
           let numeralEndU = numeralsGCSQuery.get(pointGCSEnd.u)
           let numeralEndV = numeralsGCSQuery.get(pointGCSEnd.v)
-          unknownsSetManager.unnumeral(numeralEndU)
-          unknownsSetManager.unnumeral(numeralEndV)
+          unknownsSetManager.numeralRemoveOne(numeralEndU)
+          unknownsSetManager.numeralRemoveOne(numeralEndV)
 
           let numeralAngleStart = numeralsGCSQuery.get(arcGCS.angleStart)
           let numeralAngleEnd = numeralsGCSQuery.get(arcGCS.angleEnd)
           let numeralRadius = numeralsGCSQuery.get(arcGCS.radius)
 
-          unknownsSetManager.unnumeral(numeralAngleStart)
-          unknownsSetManager.unnumeral(numeralAngleEnd)
-          unknownsSetManager.unnumeral(numeralRadius)
+          unknownsSetManager.numeralRemoveOne(numeralAngleStart)
+          unknownsSetManager.numeralRemoveOne(numeralAngleEnd)
+          unknownsSetManager.numeralRemoveOne(numeralRadius)
 
           // console.log(numeralAngleStart, numeralAngleEnd, numeralRadius)
 
@@ -756,6 +762,7 @@ export function useResults() {
       result.conflictings = []
       result.redundants = []
       result.dependentsGraph = []
+      result.snapshot = Object.assign({}, result)
     },
     update(
       id,
@@ -799,6 +806,7 @@ export function useResults() {
   }
 }
 
+let solverThrottle
 export function useSystems() {
   let systems = useSystemsGCS()
   let Module = useModuleGCS()
@@ -813,6 +821,87 @@ export function useSystems() {
   let constraintsGCSQuery = useConstraintsGCSQuery()
   let pointsGCSQuery = usePointsGCSQuery()
   let numeralsGCSQuery = useNumeralsGCSQuery()
+  if (!solverThrottle) {
+    solverThrottle = throttle(function () {
+      let system = systemsGCSQuery.active.handle
+      let result = resultsQuery.get(systemsGCSQuery.active.result)
+      if (constraintsGCSQuery.all().length === 0) return result
+      resultsManager.backup(systemsGCSQuery.active.result)
+      // system.declareUnknowns(unknownsSetGCSQuery.active.handle)
+      system.initSolution(Algorithm.DogLeg)
+
+      let status = system.solve(true, Algorithm.DogLeg, false)
+      //不论什么情况都要诊断，就算有最优解也有可能冗余
+      let diagnose = system.diagnose(Algorithm.DogLeg)
+      let conflictings = []
+      let hasConflicting = system.hasConflicting()
+      if (hasConflicting) {
+        let tags = new Tags()
+        system.getConflicting(tags)
+        for (let i = 0; i < tags.size(); i++) {
+          conflictings.push(tags.ptr(i))
+        }
+      }
+      let redundants = []
+      let hasRedundant = system.hasRedundant()
+      if (hasRedundant) {
+        let tags = new Tags()
+        system.getRedundant(tags)
+        for (let i = 0; i < tags.size(); i++) {
+          redundants.push(tags.ptr(i))
+        }
+      }
+      if (status != SolveStatus.Success.value && status != SolveStatus.Converged.value) {
+        resultsManager.update(systemsGCSQuery.active.result, {
+          status,
+          diagnose,
+          conflictings,
+          hasConflicting,
+          redundants,
+          hasRedundant,
+        })
+        this.reset()
+        //undoSolution
+        /* [问题]
+         * 是利用undoSolution还是直接clear
+         */
+        return result
+      }
+      system.applySolution()
+      let ds = new Dependents()
+      system.getDependentParams(ds)
+      let dependents = new Set() //[]
+      for (let i = 0; i < ds.size(); i++) {
+        dependents.add(ds.ptr(i))
+      }
+
+      /*
+       * [优化]
+       * 获取求解信息获取方式通过遍历的方式低效
+       */
+      let dgs = new DependentsGroups()
+      system.getDependentParamsGroups(dgs)
+      let dependentsGroups = []
+      for (let r = 0; r < dgs.row(); r++) {
+        let column = new Set() //[]
+        for (let c = 0; c < dgs.column(r); c++) {
+          column.add(dgs.ptr(r, c))
+        }
+        dependentsGroups.push(column.values().toArray())
+      }
+      resultsManager.update(systemsGCSQuery.active.result, {
+        status,
+        dependents: dependents.values().toArray(),
+        dependentsGroups,
+        diagnose,
+        conflictings,
+        hasConflicting,
+        redundants,
+        hasRedundant,
+      })
+      return result
+    }, 0)
+  }
 
   return {
     add() {
@@ -865,8 +954,8 @@ export function useSystems() {
       //       // //注册为unknown
       //       // let numeralU = numeralsGCSQuery.get(pointGCS.u)
       //       // let numeralV = numeralsGCSQuery.get(pointGCS.v)
-      //       // unknownsManager.numeral(numeralU.handle)
-      //       // unknownsManager.numeral(numeralV.handle)
+      //       // unknownsManager.numeralAdd(numeralU.handle)
+      //       // unknownsManager.numeralAdd(numeralV.handle)
       //       return
       //     }
       //     if (numerals instanceof Array && numerals.includes(index)) {
@@ -947,79 +1036,7 @@ export function useSystems() {
     //   })
     //   return result
     // } /*, 16)*/,
-    solver /*: throttle(function */() {
-      let system = systemsGCSQuery.active.handle
-      let result = resultsQuery.get(systemsGCSQuery.active.result)
-      resultsManager.backup(systemsGCSQuery.active.result)
-      // system.declareUnknowns(unknownsSetGCSQuery.active.handle)
-      system.initSolution(Algorithm.DogLeg)
-      let status = system.solve(true, Algorithm.DogLeg, false)
-      //不论什么情况都要诊断，就算有最优解也有可能冗余
-      let diagnose = system.diagnose(Algorithm.DogLeg)
-      let conflictings = []
-      let hasConflicting = system.hasConflicting()
-      if (hasConflicting) {
-        let tags = new Tags()
-        system.getConflicting(tags)
-        for (let i = 0; i < tags.size(); i++) {
-          conflictings.push(tags.ptr(i))
-        }
-      }
-      let redundants = []
-      let hasRedundant = system.hasRedundant()
-      if (hasRedundant) {
-        let tags = new Tags()
-        system.getRedundant(tags)
-        for (let i = 0; i < tags.size(); i++) {
-          redundants.push(tags.ptr(i))
-        }
-      }
-      if (status != SolveStatus.Success.value && status != SolveStatus.Converged.value) {
-        resultsManager.update(systemsGCSQuery.active.result, {
-          status,
-          diagnose,
-          conflictings,
-          hasConflicting,
-          redundants,
-          hasRedundant,
-        })
-        this.reset()
-        //undoSolution
-        /* [问题]
-         * 是利用undoSolution还是直接clear
-         */
-        return result
-      }
-      system.applySolution()
-      let ds = new Dependents()
-      system.getDependentParams(ds)
-      let dependents = new Set() //[]
-      for (let i = 0; i < ds.size(); i++) {
-        dependents.add(ds.ptr(i))
-      }
-
-      let dgs = new DependentsGroups()
-      system.getDependentParamsGroups(dgs)
-      let dependentsGroups = []
-      for (let r = 0; r < dgs.row(); r++) {
-        let column = new Set() //[]
-        for (let c = 0; c < dgs.column(r); c++) {
-          column.add(dgs.ptr(r, c))
-        }
-        dependentsGroups.push(column.values().toArray())
-      }
-      resultsManager.update(systemsGCSQuery.active.result, {
-        status,
-        dependents: dependents.values().toArray(),
-        dependentsGroups,
-        diagnose,
-        conflictings,
-        hasConflicting,
-        redundants,
-        hasRedundant,
-      })
-      return result
-    } /*, 16)*/,
+    solver: solverThrottle,
     active(index) {
       assertIndexFormList(systems, index, 'systems:active')
       systems.forEach((system, i) => {
@@ -1086,18 +1103,30 @@ export function useUnknownsSet() {
     has(numeral) {
       return unknownsSet.some(({ handle }) => handle.has(numeral.handle))
     },
-    numeral(n) {
+    numeralAdd(n) {
       let unknowns = unknownsSetGCSQuery.active
       // if (unknownsSetJSONGCS.value[unknowns.id].includes(n.id)) return //允许重复，防止一个变量对应多个约束，一个约束删除导致其他约束变量失效问题
       unknownsSetJSONGCS.value[unknowns.id].push(n.id)
       unknownsSetGCSQuery.active.handle.push(n.handle)
     },
-    unnumeral(n) {
+    numeralRemoveOne(n) {
       let unknowns = unknownsSetGCSQuery.active
+      // console.log(1, !unknownsSetJSONGCS.value[unknowns.id].includes(n.id), n.id)
       if (!unknownsSetJSONGCS.value[unknowns.id].includes(n.id)) return
       let index = unknownsSetJSONGCS.value[unknowns.id].indexOf(n.id)
       unknownsSetJSONGCS.value[unknowns.id].splice(index, 1)
+      // console.log(2, unknownsSetJSONGCS.value[unknowns.id].includes(n.id), n.id)
       if (unknownsSetJSONGCS.value[unknowns.id].includes(n.id)) return //如果还存在就不要移除变量，防止一个变量对应多个约束，一个约束删除导致其他约束变量失效问题
+      unknownsSetGCSQuery.active.handle.remove(n.handle)
+    },
+    numeralRemoveAll(n) {
+      let unknowns = unknownsSetGCSQuery.active
+      ;[...unknownsSetJSONGCS.value[unknowns.id]].forEach((id) => {
+        if (id === n.id) {
+          let index = unknownsSetJSONGCS.value[unknowns.id].indexOf(n.id)
+          unknownsSetJSONGCS.value[unknowns.id].splice(index, 1)
+        }
+      })
       unknownsSetGCSQuery.active.handle.remove(n.handle)
     },
     active(index) {

@@ -6,7 +6,7 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 import Components from 'unplugin-vue-components/vite'
 import { AntDesignVueResolver } from 'unplugin-vue-components/resolvers'
 
-import { dirGCS } from "./config"
+import { dirGCS } from './config'
 
 // https://vite.dev/config/
 export default defineConfig({

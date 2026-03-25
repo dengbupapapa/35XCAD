@@ -79,11 +79,11 @@ export function useSelectGeometrys() {
   }
 }
 
-export function useActiveElement(){
+export function useActiveElement() {
   let activeElementInteraction = useActiveElementInteraction()
   return {
-    get(){
+    get() {
       return activeElementInteraction.value
-    }
+    },
   }
 }

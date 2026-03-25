@@ -4,16 +4,15 @@ import {
   useLines as useLinesGeometry,
   usePolylines as usePolylinesGeometry,
   useArcs as useArcsGeometry,
-  // useConstraints as useConstraintsGeometry,
-  // useConstraintsIncrement as useConstraintsIncrementGeometry,
-  useIncrement as useIncrementGeometry,
+  useDimensionDistances as useDimensionDistancesGeometry,
+  useDimensionAngles as useDimensionAnglesGeometry,
   usePlanesHash as usePlanesHashGeometry,
   usePointsHash as usePointsHashGeometry,
   useLinesHash as useLinesHashGeometry,
   usePolylinesHash as usePolylinesHashGeometry,
   useArcsHash as useArcsHashGeometry,
-  // useConstraintsHash as useConstraintsHashGeometry,
-  // useConstraintsPlaneHash as useConstraintsPlaneHashGeometry,
+  useDimensionDistancesHash as useDimensionDistancesHashGeometry,
+  useDimensionAnglesHash as useDimensionAnglesHashGeometry,
 } from './geometry-provide-context.js'
 import {
   usePlanes as usePlanesGeometryQuery,
@@ -24,7 +23,7 @@ import {
   // useConstraints as useConstraintsGeometryQuery,
   // useConstraintsIncrement as useConstraintsIncrementGeometryQuery,
 } from './geometry-query.js'
-import { useArcs as useArcsGeometryMapper } from './geometry-mapper'
+import { useDimensionDistances as useDimensionDistancesGeometryMapper } from './geometry-mapper'
 import { useConstraints as useConstraintsManager } from './constraint-manager.js'
 import {
   useToolTemp as useToolTempGCSManager,
@@ -63,114 +62,114 @@ import {
 } from '../utils/simple'
 import { cloneDeep, debounce, throttle } from 'lodash-es'
 
-export default function useGeometry() {
-  const pointsGeometryManager = usePoints()
-  const pointsGeometryQuery = usePointsGeometryQuery()
-  const linesGeometryQuery = useLinesGeometryQuery()
-  const arcsGeometryMapper = useArcsGeometryMapper()
-  const arcsGeometryManager = useArcs()
-  const linesGeometryManager = useLines()
-  return {
-    updateCommitPoint(index, position) {
-      // updateCommitPoint(batch) {
-      // if (arguments.length === 2) {
-      //   let index = arguments[0]
-      //   let position = arguments[1]
-      //   batch = [{ index, position }]
-      // }
-      // return batch.reduce((prev, { index, position }) => {
-      //   // if(){
+// export default function useGeometry() {
+//   const pointsGeometryManager = usePoints()
+//   const pointsGeometryQuery = usePointsGeometryQuery()
+//   const linesGeometryQuery = useLinesGeometryQuery()
+//   const arcsGeometryMapper = useArcsGeometryMapper()
+//   const arcsGeometryManager = useArcs()
+//   const linesGeometryManager = useLines()
+//   return {
+//     updateCommitPoint(index, position) {
+//       // updateCommitPoint(batch) {
+//       // if (arguments.length === 2) {
+//       //   let index = arguments[0]
+//       //   let position = arguments[1]
+//       //   batch = [{ index, position }]
+//       // }
+//       // return batch.reduce((prev, { index, position }) => {
+//       //   // if(){
 
-      //   // }
-      //   if (arcsGeometryMapper.getFormPointIndex(index)) {
-      //     prev.push(...arcsGeometryManager.updateCommit(index, position))
-      //     return prev
-      //   }
-      //   prev.push(...pointsGeometryManager.updateCommit(index, position))
-      //   return prev
-      // }, [])
-      if (arcsGeometryMapper.getFormPointIndex(index)) {
-        return arcsGeometryManager.updateCommit(index, position)
-      }
-      return pointsGeometryManager.updateCommit(index, position)
-    },
-    updateApplyPoint(numerals) {
-      pointsGeometryManager.updateApply(numerals)
-    },
-    updatePointImmediate(...batch) {
-      let numerals = this.updateCommitPoint(...batch)
-      this.updateApplyPoint(numerals)
-    },
-    updatePoint: throttle(function (...batch) {
-      return this.updatePointImmediate(...batch)
-    }, 16),
-    // updatePointById: throttle(function (batch) {
-    //   if (arguments.length === 2) {
-    //     let id = arguments[0]
-    //     let position = arguments[1]
-    //     batch = [{ id, position }]
-    //   }
-    //   batch = batch.map(({ id, position }) => {
-    //     let point = pointsGeometryQuery.get(id)
-    //     let index = pointsGeometryQuery.indexOf(point)
-    //     return {
-    //       index,
-    //       position,
-    //     }
-    //   })
-    //   return this.updatePointImmediate(batch)
-    // }, 16),
-    updateLineImmediate(...batch) {
-      let numerals = this.updateCommitLine(...batch)
-      this.updateApplyPoint(numerals)
-    },
+//       //   // }
+//       //   if (arcsGeometryMapper.getFormPointIndex(index)) {
+//       //     prev.push(...arcsGeometryManager.updateCommit(index, position))
+//       //     return prev
+//       //   }
+//       //   prev.push(...pointsGeometryManager.updateCommit(index, position))
+//       //   return prev
+//       // }, [])
+//       if (arcsGeometryMapper.getFormPointIndex(index)) {
+//         return arcsGeometryManager.updateCommit(index, position)
+//       }
+//       return pointsGeometryManager.updateCommit(index, position)
+//     },
+//     updateApplyPoint(numerals) {
+//       pointsGeometryManager.updateApply(numerals)
+//     },
+//     updatePointImmediate(...batch) {
+//       let numerals = this.updateCommitPoint(...batch)
+//       this.updateApplyPoint(numerals)
+//     },
+//     updatePoint: throttle(function (...batch) {
+//       return this.updatePointImmediate(...batch)
+//     }, 16),
+//     // updatePointById: throttle(function (batch) {
+//     //   if (arguments.length === 2) {
+//     //     let id = arguments[0]
+//     //     let position = arguments[1]
+//     //     batch = [{ id, position }]
+//     //   }
+//     //   batch = batch.map(({ id, position }) => {
+//     //     let point = pointsGeometryQuery.get(id)
+//     //     let index = pointsGeometryQuery.indexOf(point)
+//     //     return {
+//     //       index,
+//     //       position,
+//     //     }
+//     //   })
+//     //   return this.updatePointImmediate(batch)
+//     // }, 16),
+//     updateLineImmediate(...batch) {
+//       let numerals = this.updateCommitLine(...batch)
+//       this.updateApplyPoint(numerals)
+//     },
 
-    updateLine: throttle(function (...batch) {
-      return this.updateLineImmediate(...batch)
-    }, 16),
-    updateCommitLine(index, position) {
-      // updateCommitLine(batch) {
-      // if (arguments.length === 2) {
-      //   let index = arguments[0]
-      //   let position = arguments[1]
-      //   batch = [{ index, position }]
-      // }
-      // return batch.reduce((prev, { index, position }) => {
-      // let line = linesGeometryQuery.getByIndex(index)
-      // let pointsGeometryStart = pointsGeometryQuery.get(line.start)
-      // let pointsGeometryEnd = pointsGeometryQuery.get(line.end)
-      // let pointsGeometryStartIndex = pointsGeometryQuery.indexOf(pointsGeometryStart)
-      // let pointsGeometryEndIndex = pointsGeometryQuery.indexOf(pointsGeometryEnd)
-      // let numerals = []
-      // numerals.push(...this.updateCommitPoint(pointsGeometryStartIndex,position.start))
-      // numerals.push(...this.updateCommitPoint(pointsGeometryEndIndex,position.end))
-      return linesGeometryManager.updateCommit(index, position)
-      //   return prev
-      // }, [])
-    },
+//     updateLine: throttle(function (...batch) {
+//       return this.updateLineImmediate(...batch)
+//     }, 16),
+//     updateCommitLine(index, position) {
+//       // updateCommitLine(batch) {
+//       // if (arguments.length === 2) {
+//       //   let index = arguments[0]
+//       //   let position = arguments[1]
+//       //   batch = [{ index, position }]
+//       // }
+//       // return batch.reduce((prev, { index, position }) => {
+//       // let line = linesGeometryQuery.getByIndex(index)
+//       // let pointsGeometryStart = pointsGeometryQuery.get(line.start)
+//       // let pointsGeometryEnd = pointsGeometryQuery.get(line.end)
+//       // let pointsGeometryStartIndex = pointsGeometryQuery.indexOf(pointsGeometryStart)
+//       // let pointsGeometryEndIndex = pointsGeometryQuery.indexOf(pointsGeometryEnd)
+//       // let numerals = []
+//       // numerals.push(...this.updateCommitPoint(pointsGeometryStartIndex,position.start))
+//       // numerals.push(...this.updateCommitPoint(pointsGeometryEndIndex,position.end))
+//       return linesGeometryManager.updateCommit(index, position)
+//       //   return prev
+//       // }, [])
+//     },
 
-    update(batch) {
-      if (arguments.length === 2) {
-        let index = arguments[0]
-        let position = arguments[1]
-        batch = [{ index, position }]
-      }
+//     update(batch) {
+//       if (arguments.length === 2) {
+//         let index = arguments[0]
+//         let position = arguments[1]
+//         batch = [{ index, position }]
+//       }
 
-      let numerals = batch.reduce((prev, { index, position }) => {
-        if (position instanceof Array) {
-          prev.push(...this.updateCommitPoint(index, position))
-          return prev
-        }
-        if (Object.keys(position).length === 2 && position.start instanceof Array && position.end) {
-          prev.push(...this.updateCommitLine(index, position))
-          return prev
-        }
-      }, [])
+//       let numerals = batch.reduce((prev, { index, position }) => {
+//         if (position instanceof Array) {
+//           prev.push(...this.updateCommitPoint(index, position))
+//           return prev
+//         }
+//         if (Object.keys(position).length === 2 && position.start instanceof Array && position.end) {
+//           prev.push(...this.updateCommitLine(index, position))
+//           return prev
+//         }
+//       }, [])
 
-      this.updateApplyPoint(numerals)
-    },
-  }
-}
+//       this.updateApplyPoint(numerals)
+//     },
+//   }
+// }
 
 export function usePlanes() {
   let planesGeometry = usePlanesGeometry()
@@ -252,7 +251,7 @@ export function usePlanes() {
       /* [问题]
        * 到底只有一个求解器还是多个求解器 （暂时觉得是一个求解器，但是数据该归类平面还是要做）**重要**
        */
-      systemsGCSManager.active(index)
+      systemsGCSManager.active(0) //index
     },
   }
 }
@@ -291,7 +290,6 @@ export function usePoints() {
         y,
         z,
         id: nanoid(),
-        // planes: [planesManager?.active?.id],
         plane: planesGeometryQuery?.active?.id,
         // type: 'point',
       }
@@ -496,25 +494,28 @@ export function usePoints() {
       let result = systemsGCSManager.solver()
       let { dependentsGroups, dependents, status, redundants, dependentsGraph } = result
       // console.log(result, numerals)
-      let updatedPoints = new Set()
-      dependentsGraph.forEach((graph) => {
-        // console.log(numerals.some((numeral) => graph.includes(numeral.ptr.toString())))
-        if (numerals.some((numeral) => graph.includes(numeral.ptr.toString()))) {
-          graph.forEach((ptr) => {
-            let numeralGCS = numeralsGCSQuery.getByPtr(ptr)
-            let pointGCS = pointsGCSQuery.get(numeralGCS.creator)
-            if (!pointGCS) return
-            let pointGeometry = pointsGeometryQuery.get(pointGCS.creator)
-            // console.log(ptr,pointGeometry.id)
-            if (updatedPoints.has(pointGeometry)) {
-              // console.log("updatedPoints.has(pointGeometry)", pointGeometry)
-              return
-            }
-            updatedPoints.add(pointGeometry)
-            this.updateByNumeralPtr(ptr)
-          })
-        }
-      })
+      if (numerals.length > 0) {
+        let updatedPoints = new Set()
+        dependentsGraph.forEach((graph) => {
+          // console.log(numerals.some((numeral) => graph.includes(numeral.ptr.toString())))
+          if (numerals.some((numeral) => graph.includes(numeral.ptr.toString()))) {
+            graph.forEach((ptr) => {
+              let numeralGCS = numeralsGCSQuery.getByPtr(ptr)
+              // if (!numeralGCS) return
+              let pointGCS = pointsGCSQuery.get(numeralGCS.creator)
+              if (!pointGCS) return
+              let pointGeometry = pointsGeometryQuery.get(pointGCS.creator)
+              // console.log(ptr,pointGeometry.id)
+              if (updatedPoints.has(pointGeometry)) {
+                // console.log("updatedPoints.has(pointGeometry)", pointGeometry)
+                return
+              }
+              updatedPoints.add(pointGeometry)
+              this.updateByNumeralPtr(ptr)
+            })
+          }
+        })
+      }
       // dependentsGroups.forEach((rows) => {
       //   if (numerals.some((numeral) => rows.includes(numeral.ptr)) || true) {
       //     rows.forEach((ptr) => {
@@ -574,7 +575,7 @@ export function useLines() {
   let linesHashGeometry = useLinesHashGeometry()
   let pointsGeometryManager = usePoints()
   let pointsGeometryQuery = usePointsGeometryQuery()
-  let pointsGeometryUpdater = usePointsGeometryUpdater()
+  // let pointsGeometryUpdater = usePointsGeometryUpdater()
   let linesEntitie = useLinesEntitie()
   let linesGCSManager = useLinesGCSManager()
   return {
@@ -583,7 +584,7 @@ export function useLines() {
         start,
         end,
         id: nanoid(),
-        planes: [planesGeometryQuery?.active?.id],
+        plane: planesGeometryQuery?.active?.id,
         // type: 'line',
       }
       // linesGeometry.value.push(line) //我们的架构是否一定两个点在同一plane？
@@ -639,17 +640,17 @@ export function useLines() {
         // this.remove(line)
       })
     },
-    updateCommit(index, position) {
-      let line = linesGeometry.value[index]
-      let pointsGeometryStart = pointsGeometryQuery.get(line.start)
-      let pointsGeometryEnd = pointsGeometryQuery.get(line.end)
-      let pointsGeometryStartIndex = pointsGeometryQuery.indexOf(pointsGeometryStart)
-      let pointsGeometryEndIndex = pointsGeometryQuery.indexOf(pointsGeometryEnd)
-      let numerals = []
-      numerals.push(...pointsGeometryUpdater.updateCommit(pointsGeometryStartIndex, position.start))
-      numerals.push(...pointsGeometryUpdater.updateCommit(pointsGeometryEndIndex, position.end))
-      return numerals
-    },
+    // updateCommit(index, position) {
+    //   let line = linesGeometry.value[index]
+    //   let pointsGeometryStart = pointsGeometryQuery.get(line.start)
+    //   let pointsGeometryEnd = pointsGeometryQuery.get(line.end)
+    //   let pointsGeometryStartIndex = pointsGeometryQuery.indexOf(pointsGeometryStart)
+    //   let pointsGeometryEndIndex = pointsGeometryQuery.indexOf(pointsGeometryEnd)
+    //   let numerals = []
+    //   numerals.push(...pointsGeometryUpdater.updateCommit(pointsGeometryStartIndex, position.start))
+    //   numerals.push(...pointsGeometryUpdater.updateCommit(pointsGeometryEndIndex, position.end))
+    //   return numerals
+    // },
     // updateCommit(batch) {
     //   if (arguments.length === 2) {
     //     let index = arguments[0]
@@ -705,7 +706,7 @@ export function usePolylines() {
       let polyline = {
         lines,
         id: nanoid(),
-        planes: [planesGeometryQuery?.active?.id],
+        plane: planesGeometryQuery?.active?.id,
         // type: 'polyline',
       }
       // polylinesGeometry.value.push(polyline)
@@ -921,35 +922,31 @@ export function useArcs() {
     //   let numerals = this.updateCommit(index, position)
     //   this.updateApply(numerals)
     // },
-    updateApply(numerals) {
-      pointsGeometryManager.updateApply(numerals)
-    },
-    updateCommit(index, position) {
-      let numerals = []
-      let pointGeometry = pointsGeometryQuery.getByIndex(index)
-      let arcFormCenter = arcsGeometryQuery.getFormCenter(pointGeometry)
-      let arcFormStart = arcsGeometryQuery.getFormStart(pointGeometry)
-      let arcFormEnd = arcsGeometryQuery.getFormEnd(pointGeometry)
-      let numeralsCurrent = pointsGeometryManager.updateCommit(index, position)
-      numerals.push(...numeralsCurrent)
-      if (arcFormStart || arcFormEnd) {
-        let arc = arcFormStart || arcFormEnd
-        let pointCenterGeometry = pointsGeometryQuery.get(arc.center)
-        toolTempGCSManager.addConstraintCoordinateLock(pointCenterGeometry)
-      }
+    // updateApply(numerals) {
+    //   pointsGeometryManager.updateApply(numerals)
+    // },
+    // updateCommit(index, position) {
+    //   let pointGeometry = pointsGeometryQuery.getByIndex(index)
+    //   let arcFormCenter = arcsGeometryQuery.getFormCenter(pointGeometry)
+    //   let arcFormStart = arcsGeometryQuery.getFormStart(pointGeometry)
+    //   let arcFormEnd = arcsGeometryQuery.getFormEnd(pointGeometry)
 
-      if (arcFormCenter) {
-        toolTempGCSManager.addConstraintArcRadiusLock(arcFormCenter)
-      }
-      // if (arcFormStart) {
-      //   arcsGCSManager.updateStart(arcFormStart)
-      // }
-      // if (arcFormEnd) {
-      //   arcsGCSManager.updateEnd(arcFormEnd)
-      // }
+    //   if (arcFormStart || arcFormEnd) {
+    //     let arc = arcFormStart || arcFormEnd
+    //     let pointCenterGeometry = pointsGeometryQuery.get(arc.center)
+    //     toolTempGCSManager.addConstraintCoordinateLock(pointCenterGeometry)
+    //   }
 
-      return numerals
-    },
+    //   if (arcFormCenter) {
+    //     toolTempGCSManager.addConstraintArcRadiusLock(arcFormCenter)
+    //   }
+    //   // if (arcFormStart) {
+    //   //   arcsGCSManager.updateStart(arcFormStart)
+    //   // }
+    //   // if (arcFormEnd) {
+    //   //   arcsGCSManager.updateEnd(arcFormEnd)
+    //   // }
+    // },
     // updateCommit(batch) {
     //   if (arguments.length === 2) {
     //     let index = arguments[0]
@@ -986,259 +983,118 @@ export function useArcs() {
   }
 }
 
-// export function useConstraints() {
-//   let constraintsGeometry = useConstraintsGeometry()
-//   let constraintsHashGeometry = useConstraintsHashGeometry()
-//   let constraintsPlaneHashGeometry = useConstraintsPlaneHashGeometry()
-//   let constraintsIncrementGeometryQuery = useConstraintsIncrementGeometryQuery()
-//   let constraintsGCSManager = useConstraintsGCSManager()
-//   let planesGeometryQuery = usePlanesGeometryQuery()
-//   let pointsManager = usePoints()
-//   let pointsGeometryQuery = usePointsGeometryQuery()
-//   let constraintsGeometryQuery = useConstraintsGeometryQuery()
-//   let systemsGCSManager = useSystemsGCSManager()
-//   let systemsGCSQuery = useSystemsGCSQuery()
-//   let unknownsSetGCSQuery = useUnknownsSetGCSQuery()
-//   let resultsGCSQuery = useResultsGCSQuery()
-//   let numeralsGCSQuery = useNumeralsGCSQuery()
-//   let pointsGCSQuery = usePointsGCSQuery()
-//   let arcsGCSMapper = useArcsGCSMapper()
-//   let toolTempGCSManager = useToolTempGCSManager()
+export function useDimensionDistances() {
+  let dimensionDistancesGeometry = useDimensionDistancesGeometry()
+  let dimensionDistancesHashGeometry = useDimensionDistancesHashGeometry()
+  let planesGeometryQuery = usePlanesGeometryQuery()
+  let linesGeometryQuery = useLinesGeometryQuery()
+  let pointsGeometryQuery = usePointsGeometryQuery()
+  let pointsGeometryManager = usePoints()
+  let dimensionDistancesGeometryMapper = useDimensionDistancesGeometryMapper()
+  let toolTempGCSManager = useToolTempGCSManager()
+  return {
+    add(lines) {
+      let dimensionDistance = {
+        lines,
+        id: nanoid(),
+        plane: planesGeometryQuery?.active?.id,
+      }
+      return this.attach(dimensionDistance)
+    },
+    attach(dimensionDistance) {
+      dimensionDistance.lines.forEach((id) => {
+        let line = linesGeometryQuery.get(id)
+        line.creator = dimensionDistance.id
+      })
+      dimensionDistancesGeometry.value.push(dimensionDistance)
+      dimensionDistancesHashGeometry.value[dimensionDistance.id] = dimensionDistance
+      return dimensionDistance
+    },
+    load(dimensionDistancesGeometry) {
+      dimensionDistancesGeometry.forEach((dimensionDistanceGeometry) => {
+        this.attach(dimensionDistanceGeometry)
+      })
+    },
+    removeByIndex(index) {
+      assertIndexFormList(
+        dimensionDistancesGeometry.value,
+        index,
+        'dimensionDistancesGeometry:removeByIndex',
+      )
+      let dimensionDistance = dimensionDistancesGeometry.value.splice(index, 1)[0]
+      delete dimensionDistancesHashGeometry.value[dimensionDistance.id]
+    },
+    remove(dimensionDistance) {
+      let index = dimensionDistancesGeometry.value.indexOf(dimensionDistance)
+      this.removeByIndex(index)
+    },
+    removeById(id) {
+      let dimensionDistance = dimensionDistancesHashGeometry.value[id]
+      let index = dimensionDistancesGeometry.value.indexOf(dimensionDistance)
+      this.removeByIndex(index)
+    },
+    clear() {
+      ;[...dimensionDistancesGeometry.value].forEach((dimensionDistance) => {
+        dimensionDistancesGeometry.value.shift()
+        delete dimensionDistancesHashGeometry.value[dimensionDistance.id]
+      })
+    },
+  }
+}
 
-//   let constraintsBatch = []
-//   function usageConstraintsBatch() {
-//     let numerals = []
-//     constraintsBatch.forEach((constraint) => {
-//       constraint.args.forEach((arg, index) => {
-//         /* [联动] 1
-//          * 找出与该约束有关的变量
-//          */
-//         if (constraint.points instanceof Array && constraint.points.includes(index)) {
-//           let pointGeometry = pointsGeometryQuery.get(arg)
-//           let pointGCS = pointsGCSQuery.get(pointGeometry.gcs)
-//           let unknown = constraint.unknowns[index]
-//           if (!(unknown instanceof Array)) return
-//           if (unknown.includes('x')) {
-//             let numeralU = numeralsGCSQuery.get(pointGCS.u)
-//             numerals.push(numeralU)
-//           }
-//           if (unknown.includes('y')) {
-//             let numeralV = numeralsGCSQuery.get(pointGCS.v)
-//             numerals.push(numeralV)
-//           }
-//           return
-//         }
-//         if (constraint.arcs instanceof Array && constraint.arcs.includes(index)) {
-//           let arcsGCS = arcsGCSMapper.getByGeometry(arg)
-
-//           let pointGCSCenter = pointsGCSQuery.get(arcsGCS.center)
-//           let pointGCSStart = pointsGCSQuery.get(arcsGCS.start)
-//           let pointGCSEnd = pointsGCSQuery.get(arcsGCS.end)
-
-//           let numeralCenterU = numeralsGCSQuery.get(pointGCSCenter.u)
-//           let numeralCenterV = numeralsGCSQuery.get(pointGCSCenter.v)
-//           numerals.push(numeralCenterU)
-//           numerals.push(numeralCenterV)
-//           let numeralStartU = numeralsGCSQuery.get(pointGCSStart.u)
-//           let numeralStartV = numeralsGCSQuery.get(pointGCSStart.v)
-//           numerals.push(numeralStartU)
-//           numerals.push(numeralStartV)
-//           let numeralEndU = numeralsGCSQuery.get(pointGCSEnd.u)
-//           let numeralEndV = numeralsGCSQuery.get(pointGCSEnd.v)
-//           numerals.push(numeralEndU)
-//           numerals.push(numeralEndV)
-
-//           return
-//         }
-//       })
-//     })
-//     constraintsBatch = []
-//     return numerals
-//   }
-//   function updateGeometry() {
-//     let numeralsRelated = usageConstraintsBatch()
-
-//     let updatedPoints = new Set()
-//     function updated(ptr) {
-//       let numeralGCS = numeralsGCSQuery.getByPtr(ptr)
-//       let pointGCS = pointsGCSQuery.get(numeralGCS.creator)
-//       if (!pointGCS) return
-//       let pointGeometry = pointsGeometryQuery.get(pointGCS.creator)
-//       if (updatedPoints.has(pointGeometry)) {
-//         return true
-//       }
-//       updatedPoints.add(pointGeometry)
-//     }
-
-//     let stables = unknownsSetGCSQuery.stable()
-//     let stablesRelated = numeralsRelated.filter((numeral) => stables.includes(numeral))
-//     stablesRelated.forEach(({ ptr }) => {
-//       if (updated(ptr)) return
-//       pointsManager.updateByNumeralPtr(ptr)
-//     })
-
-//     let resultCurrent = resultsGCSQuery.get(systemsGCSQuery.active.result)
-//     let resultBackup = resultsGCSQuery.backup(systemsGCSQuery.active.result)
-//     // console.log(resultCurrent, resultBackup)
-//     // console.log(resultCurrent, numeralsRelated)
-//     ;[...resultCurrent.dependentsGroups, ...resultBackup.dependentsGroups].forEach((rows) => {
-//       if (numeralsRelated.some((numeral) => rows.includes(numeral.ptr))) {
-//         rows.forEach((ptr) => {
-//           if (updated(ptr)) return
-//           pointsManager.updateByNumeralPtr(ptr)
-//         })
-//       }
-//     })
-//   }
-
-//   let effect = debounce(function effect() {
-//     /* [问题]
-//      * 这段求解调用应该移到gcs里去
-//      */
-//     systemsGCSManager.reset()
-//     systemsGCSManager.solver()
-//     updateGeometry()
-
-//     systemsGCSQuery.active.handle.clearByTag(-1)
-//     toolTempGCSManager.clearNumerals()
-//   }, 16)
-
-//   return {
-//     updateNumerals(id, numerals) {
-//       let constraint = constraintsGeometryQuery.get(id)
-//       // if (constraint.numerals.length !== numerals.length) {
-//       //   throw new Error('constraint.numerals.length !== numerals.length!')
-//       // }
-//       constraint.numerals.forEach((index, i) => {
-//         constraint.args[index] = numerals[i]
-//       })
-//       // constraintsGCSManager.update(constraint)
-//       // effect()
-//     },
-//     add(constraint) {
-//       let tag = constraintsIncrementGeometryQuery.get()
-//       constraint.tag = tag
-//       constraint.id = nanoid()
-//       constraint.args.push(tag, true)
-//       constraint.plane = planesGeometryQuery?.active?.id
-
-//       this.attach(constraint)
-//     },
-//     attach(constraint) {
-//       let constraintGCS = constraintsGCSManager.add(constraint)
-//       constraintGCS.creator = constraint.id
-//       constraint.gcs = constraintGCS.id
-//       constraintsGeometry.value.push(constraint)
-//       constraintsHashGeometry.value[constraint.id] = constraint
-//       if (!(constraintsPlaneHashGeometry.value[constraint.plane] instanceof Array)) {
-//         constraintsPlaneHashGeometry.value[constraint.plane] = []
-//       }
-//       constraintsPlaneHashGeometry.value[constraint.plane].push(constraint)
-//       constraintsBatch.push(constraint)
-//       effect()
-//     },
-//     load(constraintsGeometry) {
-//       constraintsGeometry.forEach((constraint) => {
-//         this.attach(constraint)
-//       })
-//     },
-//     removeByIndex(index) {
-//       let constraint = constraintsGeometry.value.splice(index, 1)[0]
-//       delete constraintsHashGeometry.value[constraint.id]
-//       let constraintsPlaneHashItem = constraintsPlaneHashGeometry.value[constraint.plane]
-//       let indexForConstraintsPlaneHash = constraintsPlaneHashItem.indexOf(constraint)
-//       constraintsPlaneHashItem.splice(indexForConstraintsPlaneHash, 1)
-//       constraintsGCSManager.removeById(constraint.gcs)
-//     },
-//     remove(constraint) {
-//       let index = constraintsGeometry.value.indexOf(constraint)
-//       this.removeByIndex(index)
-//     },
-//     clear() {
-//       constraintsGCSManager.clear()
-//       ;[...constraintsGeometry.value].forEach((constraint) => {
-//         constraintsGeometry.value.shift()
-//         delete constraintsHashGeometry.value[constraint.id]
-//       })
-//       Object.keys(constraintsPlaneHashGeometry.value).forEach((plane) => {
-//         delete constraintsPlaneHashGeometry.value[plane]
-//       })
-//     },
-//     addConstraintP2PDistance(p1, p2, distance) {
-//       let constraint = {
-//         type: 'addConstraintP2PDistance',
-//         args: [p1, p2, distance],
-//         points: [0, 1],
-//         numerals: [2],
-//         unknowns: [
-//           ['x', 'y'],
-//           ['x', 'y'],
-//         ],
-//       }
-//       this.add(constraint)
-//     },
-//     addConstraintHorizontal() {},
-//     addConstraintCoordinate(p, { x, y }) {
-//       this.addConstraintCoordinateX(p, x)
-//       this.addConstraintCoordinateY(p, y)
-//     },
-//     addConstraintCoordinateX(p, x) {
-//       let constraint = {
-//         type: 'addConstraintCoordinateX',
-//         args: [p, x],
-//         points: [0],
-//         numerals: [1],
-//         unknowns: [['x']],
-//       }
-//       this.add(constraint)
-//     },
-//     addConstraintCoordinateY(p, y) {
-//       let constraint = {
-//         type: 'addConstraintCoordinateY',
-//         args: [p, y],
-//         points: [0],
-//         numerals: [1],
-//         unknowns: [['y']],
-//       }
-//       this.add(constraint)
-//     },
-//     addConstraintP2PCoincident(p1, p2) {
-//       let constraint = {
-//         type: 'addConstraintP2PCoincident',
-//         args: [p1, p2],
-//         points: [0, 1],
-//         unknowns: [
-//           ['x', 'y'],
-//           ['x', 'y'],
-//         ],
-//       }
-//       this.add(constraint)
-//     },
-//     addConstraintArcRules(arc) {
-//       let constraint = {
-//         type: 'addConstraintArcRules',
-//         args: [arc],
-//         arcs: [0],
-//       }
-//       this.add(constraint)
-//     },
-//   }
-// }
-
-// export function useConstraintsIncrement() {
-//   let constraintsIncrementGeometry = useConstraintsIncrementGeometry()
-//   return {
-//     set(number) {
-//       constraintsIncrementGeometry.value = number
-//     },
-//   }
-// }
-
-// export function useIncrement() {
-//   let incrementGeometry = useIncrementGeometry()
-//   return {
-//     set(number) {
-//       incrementGeometry.value = number
-//     },
-//   }
-// }
+/* [优化]
+ * creator部分都可以放到add里去做，因为数据已经记录上了attach时就不需要去关联了
+ * 一些复杂的功能如splitByLineId应该放到dispatch中去
+ */
+export function useDimensionAngles() {
+  let planesGeometryQuery = usePlanesGeometryQuery()
+  let arcsGeometryQuery = useArcsGeometryQuery()
+  let dimensionAnglesGeometry = useDimensionAnglesGeometry()
+  let dimensionAnglesHashGeometry = useDimensionAnglesHashGeometry()
+  return {
+    add(arc) {
+      let dimensionAngle = {
+        arc,
+        id: nanoid(),
+        plane: planesGeometryQuery?.active?.id,
+      }
+      return this.attach(dimensionAngle)
+    },
+    attach(dimensionAngle) {
+      let arc = arcsGeometryQuery.get(dimensionAngle.arc)
+      arc.creator = dimensionAngle.id
+      dimensionAnglesGeometry.value.push(dimensionAngle)
+      dimensionAnglesHashGeometry.value[dimensionAngle.id] = dimensionAngle
+      return dimensionAngle
+    },
+    load(dimensionAnglesGeometry) {
+      dimensionAnglesGeometry.forEach((dimensionAngleGeometry) => {
+        this.attach(dimensionAngleGeometry)
+      })
+    },
+    removeByIndex(index) {
+      assertIndexFormList(
+        dimensionAnglesGeometry.value,
+        index,
+        'dimensionAnglesGeometry:removeByIndex',
+      )
+      let dimensionAngle = dimensionAnglesGeometry.value.splice(index, 1)[0]
+      delete dimensionAnglesHashGeometry.value[dimensionAngle.id]
+    },
+    remove(dimensionAngle) {
+      let index = dimensionAnglesGeometry.value.indexOf(dimensionAngle)
+      this.removeByIndex(index)
+    },
+    removeById(id) {
+      let dimensionAngle = dimensionAnglesHashGeometry.value[id]
+      let index = dimensionAnglesGeometry.value.indexOf(dimensionAngle)
+      this.removeByIndex(index)
+    },
+    clear() {
+      ;[...dimensionAnglesGeometry.value].forEach((dimensionAngle) => {
+        dimensionAnglesGeometry.value.shift()
+        delete dimensionAnglesHashGeometry.value[dimensionAngle.id]
+      })
+    },
+  }
+}

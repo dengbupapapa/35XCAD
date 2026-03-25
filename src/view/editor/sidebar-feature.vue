@@ -5,8 +5,8 @@
     v-model:checkedKeys="checkedKeys"
     :tree-data="treeData"
   >
-    <template #title="{ title, icon,  id }">
-      <SidebarFeaturePlane v-if="title === 'front'" :id="id">
+    <template #title="{ title, icon, id }">
+      <SidebarFeaturePlane v-if="title === 'front'" :id="id" :key="id">
         <Icon :type="icon" />
         {{ labelPlaneMap[title] }}
       </SidebarFeaturePlane>
@@ -18,7 +18,7 @@ import { ref, watch, computed } from 'vue'
 import { usePlanes as usePlanesGeometryDerived } from './hooks/geometry-derived'
 import SidebarFeaturePlane from './sidebar-feature-plane.vue'
 import { createFromIconfontCN } from '@ant-design/icons-vue'
-import {labelPlaneMap} from './locales/zh-CN/displayMap.js'
+import { labelPlaneMap } from './locales/zh-CN/displayMap.js'
 import iconfont from '@/assets/iconfont/iconfont.js?url'
 let Icon = createFromIconfontCN({
   scriptUrl: iconfont, // 在 iconfont.cn 上生成

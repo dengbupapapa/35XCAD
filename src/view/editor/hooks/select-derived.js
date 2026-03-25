@@ -55,3 +55,68 @@ export function useSelectGeometrys() {
     return [...selectPoints.value, ...selectLines.value]
   })
 }
+
+import { useHelpers as useHelpersGeometryMapper } from './geometry-mapper'
+
+export function useSelectGeometrysStrictExcludingHelpers() {
+  let selectGeometrysStrictSelectDerived = useSelectGeometrysStrict()
+  let helpersGeometryMapper = useHelpersGeometryMapper()
+  return computed(() => {
+    return selectGeometrysStrictSelectDerived.value.filter(({ id }) => {
+      return !helpersGeometryMapper.hasFormLineId(id) && !helpersGeometryMapper.hasFormPointId(id)
+    })
+  })
+}
+export function useSelectGeometrysExcludingHelpers() {
+  let selectGeometrysSelectDerived = useSelectGeometrys()
+  let helpersGeometryMapper = useHelpersGeometryMapper()
+  return computed(() => {
+    return selectGeometrysSelectDerived.value.filter(({ id }) => {
+      return !helpersGeometryMapper.hasFormLineId(id) && !helpersGeometryMapper.hasFormPointId(id)
+    })
+  })
+}
+
+export function useSelectPointsStrictExcludingHelpers() {
+  let selectPointsStrictInteractionDerived = useSelectPointsStrictInteractionDerived()
+  let pointsHashGeometryDerived = usePointsHashGeometryDerived()
+  let helpersGeometryMapper = useHelpersGeometryMapper()
+  return computed(() => {
+    return selectPointsStrictInteractionDerived.value
+      .filter((id) => {
+        return !helpersGeometryMapper.hasFormPointId(id)
+      })
+      .map((id) => {
+        return pointsHashGeometryDerived.value[id]
+      })
+  })
+}
+export function useSelectPointsExcludingHelpers() {
+  let selectPointsInteractionDerived = useSelectPointsInteractionDerived()
+  let pointsHashGeometryDerived = usePointsHashGeometryDerived()
+  let helpersGeometryMapper = useHelpersGeometryMapper()
+  return computed(() => {
+    return selectPointsInteractionDerived.value
+      .filter((id) => {
+        return !helpersGeometryMapper.hasFormPointId(id)
+      })
+      .map((id) => {
+        return pointsHashGeometryDerived.value[id]
+      })
+  })
+}
+
+export function useSelectLinesExcludingHelpers() {
+  let selectLinesInteractionDerived = useSelectLinesInteractionDerived()
+  let linesHashGeometryDerived = useLinesHashGeometryDerived()
+  let helpersGeometryMapper = useHelpersGeometryMapper()
+  return computed(() => {
+    return selectLinesInteractionDerived.value
+      .filter((id) => {
+        return !helpersGeometryMapper.hasFormLineId(id)
+      })
+      .map((id) => {
+        return linesHashGeometryDerived.value[id]
+      })
+  })
+}

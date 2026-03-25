@@ -1,6 +1,6 @@
 <template>
   <select
-    :size="selectGeometrysStrict.length"
+    :size="selectGeometrysStrictExcludingHelpers.length"
     class="select"
     v-model="selected"
     @keydown="onKeydown"
@@ -8,7 +8,7 @@
     <a-dropdown
       :trigger="['contextmenu']"
       :key="point.id"
-      v-for="(point, index) in selectPointsStrict"
+      v-for="(point, index) in selectPointsStrictExcludingHelpers"
     >
       <option :value="point.id" @contextmenu="onContextmenuOption(point)">
         {{ labelGeometryMap[geometryMapper.typeById(point.id)] }}{{ index + 1 }}
@@ -21,7 +21,11 @@
       </template>
     </a-dropdown>
 
-    <a-dropdown :trigger="['contextmenu']" :key="line.id" v-for="(line, index) in selectLines">
+    <a-dropdown
+      :trigger="['contextmenu']"
+      :key="line.id"
+      v-for="(line, index) in selectLinesExcludingHelpers"
+    >
       <option :value="line.id" @contextmenu="onContextmenuOption(line)">
         {{ labelGeometryMap[geometryMapper.typeById(line.id)] }}{{ index + 1 }}
       </option>
@@ -44,17 +48,17 @@
 <script setup>
 import { computed, watch, ref } from 'vue'
 import {
-  useSelectGeometrysStrict,
-  useSelectPointsStrict,
-  useSelectLines,
+  useSelectGeometrysStrictExcludingHelpers,
+  useSelectPointsStrictExcludingHelpers,
+  useSelectLinesExcludingHelpers,
 } from './hooks/select-derived'
 import { useGeometry as useGeometryMapper } from './hooks/geometry-mapper'
-import { useSelectGeometrys as useSelectGeometrysInteractionDispatch} from './hooks/interaction-dispatch'
+import { useSelectGeometrys as useSelectGeometrysInteractionDispatch } from './hooks/interaction-dispatch'
 import { labelGeometryMap } from './locales/zh-CN/displayMap.js'
 let geometryMapper = useGeometryMapper()
-let selectGeometrysStrict = useSelectGeometrysStrict()
-let selectPointsStrict = useSelectPointsStrict()
-let selectLines = useSelectLines()
+let selectGeometrysStrictExcludingHelpers = useSelectGeometrysStrictExcludingHelpers()
+let selectPointsStrictExcludingHelpers = useSelectPointsStrictExcludingHelpers()
+let selectLinesExcludingHelpers = useSelectLinesExcludingHelpers()
 let selectGeometrysInteractionDispatch = useSelectGeometrysInteractionDispatch()
 
 /*
@@ -66,7 +70,7 @@ function onMenuClick({ key }) {
   }
 }
 //删除
-function onDelete(){
+function onDelete() {
   selectGeometrysInteractionDispatch.remove(selected.value)
 }
 function onKeydown(event) {
@@ -79,7 +83,6 @@ let selected = ref()
 function onContextmenuOption(geometry) {
   selected.value = geometry.id
 }
-
 </script>
 <style scoped lang="less">
 .select {
