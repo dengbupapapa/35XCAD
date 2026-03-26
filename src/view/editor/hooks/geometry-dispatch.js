@@ -20,6 +20,7 @@ import {
   useArcs as useArcsGeometryMapper,
 } from './geometry-mapper'
 import { useConstraints as useConstraintsDispatch } from './constraint-dispatch'
+import { useEffectDdebouncePromise as useEffectDdebouncePromiseConstraintQuery } from './constraint-query'
 import { useToolTemp as useToolTempGCSManager } from './solver-gcs-manager.js'
 export function useGeometrys() {
   let pointsGeometryQuery = usePointsGeometryQuery()
@@ -34,7 +35,8 @@ export function useGeometrys() {
   let dimensionDistancesGeometryMapper = useDimensionDistancesGeometryMapper()
   let arcsGeometryMapper = useArcsGeometryMapper()
 
-  let constraintsDispatch = useConstraintsDispatch()
+  let constraintsDispatch = useConstraintsDispatch({ effectDdebounce: true })
+  let effectDdebouncePromiseConstraintQuery = useEffectDdebouncePromiseConstraintQuery()
 
   let arcsGeometryDispatch = useArcs()
   // let polylinesGeometryDispatch = usePolylines()
@@ -136,14 +138,20 @@ export function useGeometrys() {
         ...arcs,
       ])
 
-      /* [问题]
-       * 约束操作调整为 async，准确的完成以下操作
-       */
-      dimensionDistancesGeometryDispatch.removeById([...dimensionDistances])
-      arcsGeometryDispatch.removeById([...arcs])
-      // polylinesGeometryDispatch.removeById(polylines)
-      linesGeometryDispatch.removeById([...lines])
-      pointsGeometryDispatch.removeById([...points])
+      //约束操作调整为 async，准确的完成以下操作
+      function clearGeometry() {
+        dimensionDistancesGeometryDispatch.removeById([...dimensionDistances])
+        arcsGeometryDispatch.removeById([...arcs])
+        // polylinesGeometryDispatch.removeById(polylines)
+        linesGeometryDispatch.removeById([...lines])
+        pointsGeometryDispatch.removeById([...points])
+      }
+      let effectDdebouncePromise = effectDdebouncePromiseConstraintQuery.get()
+      if (effectDdebouncePromise) {
+        effectDdebouncePromise.then(clearGeometry)
+      } else {
+        clearGeometry()
+      }
     },
   }
 }
@@ -314,30 +322,33 @@ export function useDimensionDistances() {
         dimensionDistancesGeometryManager.removeById(id)
       })
     },
+    /* [问题]
+     * 1、约束点被删除，要清理该约束（通过新增一个数据关系表记录？）
+     */
     addPonit2Point(point1Id, point2Id) {
       let pointGeometry1 = pointsGeometryQuery.get(point1Id)
       let pointGeometry2 = pointsGeometryQuery.get(point2Id)
       /*
        * 创建主线
        */
-      let mainPointStart = pointsGeometryManager.add([
-        pointGeometry1.x,
-        pointGeometry1.y,
-        pointGeometry1.z,
-      ])
-      let mainPointEnd = pointsGeometryManager.add([
-        pointGeometry2.x,
-        pointGeometry2.y,
-        pointGeometry2.z,
-      ])
-      let mainLine = linesGeometryManager.add(mainPointStart.id, mainPointEnd.id)
+      // let mainPointStart = pointsGeometryManager.add([
+      //   pointGeometry1.x,
+      //   pointGeometry1.y,
+      //   pointGeometry1.z,
+      // ])
+      // let mainPointEnd = pointsGeometryManager.add([
+      //   pointGeometry2.x,
+      //   pointGeometry2.y,
+      //   pointGeometry2.z,
+      // ])
+      // let mainLine = linesGeometryManager.add(mainPointStart.id, mainPointEnd.id)
 
-      /*
-       * 平移主线
-       */
-      let plane = planesGeometryQuery.get(mainLine.plane)
-      let vector3Start = new Vector3(mainPointStart.x, mainPointStart.y, mainPointStart.z)
-      let vector3End = new Vector3(mainPointEnd.x, mainPointEnd.y, mainPointEnd.z)
+      // /*
+      //  * 平移主线
+      //  */
+      let plane = planesGeometryQuery.get(pointGeometry1.plane)
+      let vector3Start = new Vector3(pointGeometry1.x, pointGeometry1.y, pointGeometry1.z)
+      let vector3End = new Vector3(pointGeometry2.x, pointGeometry2.y, pointGeometry2.z)
       let vector3Line = vector3End.sub(vector3Start)
       let vector3LineNormalize = vector3Line.clone().normalize()
       let vector3Normal = new Vector3(...plane.normal)
@@ -351,15 +362,27 @@ export function useDimensionDistances() {
 
       let [xOffset, yOffset, zOffset] = planeCoords2worldCoords([uOffset, vOffset], plane)
 
-      ;[mainPointStart, mainPointEnd].forEach((point) => {
-        let index = pointsGeometryQuery.indexOf(point)
-        pointsGeometryManager.updatePure(
-          index,
-          new Vector3(point.x, point.y, point.z)
-            .add(new Vector3(xOffset, yOffset, zOffset))
-            .toArray(),
-        )
-      })
+      // ;[mainPointStart, mainPointEnd].forEach((point) => {
+      //   let index = pointsGeometryQuery.indexOf(point)
+      //   pointsGeometryManager.updatePure(
+      //     index,
+      //     new Vector3(point.x, point.y, point.z)
+      //       .add(new Vector3(xOffset, yOffset, zOffset))
+      //       .toArray(),
+      //   )
+      // })
+
+      let mainPointStart = pointsGeometryManager.add(
+        new Vector3(pointGeometry1.x, pointGeometry1.y, pointGeometry1.z)
+          .add(new Vector3(xOffset, yOffset, zOffset))
+          .toArray(),
+      )
+      let mainPointEnd = pointsGeometryManager.add(
+        new Vector3(pointGeometry2.x, pointGeometry2.y, pointGeometry2.z)
+          .add(new Vector3(xOffset, yOffset, zOffset))
+          .toArray(),
+      )
+      let mainLine = linesGeometryManager.add(mainPointStart.id, mainPointEnd.id)
 
       /*
        * 创建交叉
@@ -387,6 +410,7 @@ export function useDimensionDistances() {
       /*
        * 创建约束
        */
+      switchConstraint(dimensionDistance.id, true)
       constraintsDispatch.add('addConstraintPerpendicular2', [
         mainPointStart.id,
         mainPointEnd.id,

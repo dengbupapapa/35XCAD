@@ -5,6 +5,7 @@ import {
   useConstraintsIncrement as useConstraintsIncrementProvideContext,
   useConstraintsRelation as useConstraintsRelationProvideContext,
   useConstraintsRelationHash as useConstraintsRelationHashProvideContext,
+  useEffectDdebouncePromise as useEffectDdebouncePromiseProvideContext,
 } from './constraint-provide-context.js'
 
 export function useConstraints() {
@@ -75,6 +76,17 @@ export function useConstraintsRelation() {
           return items.includes(geometry)
         })
       })
+    },
+  }
+}
+export function useEffectDdebouncePromise() {
+  let effectDdebouncePromiseProvideContext = useEffectDdebouncePromiseProvideContext()
+  return {
+    get() {
+      return effectDdebouncePromiseProvideContext.promise
+    },
+    working() {
+      return effectDdebouncePromiseProvideContext.status === 'pending'
     },
   }
 }

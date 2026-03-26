@@ -9,13 +9,38 @@ export class ConstraintResolver {
     ConstraintResolver.rulers.push(ruler)
     return ruler
   }
-  constructor() {}
   static context = new Map()
   static setContext(key, object) {
     ConstraintResolver.context.set(key, object)
   }
   static getContext(key) {
     return ConstraintResolver.context.get(key)
+  }
+  #content = new Map()
+  constructor(options) {
+    // ConstraintResolver.context.entries().forEach(([key, value]) => {
+    //   if (options?.effectDdebounce && key === 'constraintsManager') {
+    //     this.#content.set(key, ConstraintResolver.getContext('constraintsManagerEffectDdebounce'))
+    //     return
+    //   }
+    //   this.#content.set(key, value)
+    // })
+    // console.log(this.#content)
+    // if (options?.effectDdebounce && key==='constraintsManager') {
+    // } else {
+    // }
+    // console.log(options?.effectDdebounce)
+    // let constraintsManagerEffectDdebounce = ConstraintResolver.getContext(
+    //   'constraintsManagerEffectDdebounce',
+    // )
+    // let constraintsManager = ConstraintResolver.getContext('constraintsManager')
+    // ConstraintResolver.setContext('constraintsManager', function () {
+    //   console.log(options?.effectDdebounce)
+    //   if (options?.effectDdebounce) {
+    //     return constraintsManagerEffectDdebounce
+    //   }
+    //   return constraintsManager
+    // })
   }
   solverUsable(args) {
     return ConstraintResolver.rulers

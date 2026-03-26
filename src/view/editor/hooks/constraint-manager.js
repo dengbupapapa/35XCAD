@@ -5,6 +5,7 @@ import {
   useConstraintsIncrement as useConstraintsIncrementProvideContext,
   useConstraintsRelation as useConstraintsRelationProvideContext,
   useConstraintsRelationHash as useConstraintsRelationHashProvideContext,
+  useEffectDdebouncePromise as useEffectDdebouncePromiseProvideContext,
 } from './constraint-provide-context.js'
 import {
   usePlanes as usePlanesGeometryQuery,
@@ -15,6 +16,7 @@ import {
   useConstraints as useConstraintsQuery,
   useConstraintsIncrement as useConstraintsIncrementQuery,
   useConstraintsRelation as useConstraintsRelationQuery,
+  useEffectDdebouncePromise as useEffectDdebouncePromiseQuery,
 } from './constraint-query.js'
 import {
   useToolTemp as useToolTempGCSManager,
@@ -31,7 +33,9 @@ import {
 import { useArcs as useArcsGCSMapper, useLines as useLinesGCSMapper } from './solver-gcs-mapper.js'
 import { nanoid, assertIndexFormList } from '../utils/simple'
 import { debounce } from 'lodash-es'
-export function useConstraints() {
+let effectDebounceGlobal
+export function useConstraints(options) {
+  let effectDdebounce = options?.effectDdebounce || false
   let constraintsProvideContext = useConstraintsProvideContext()
   let constraintsHashProvideContext = useConstraintsHashProvideContext()
   let constraintsPlaneHashProvideContext = useConstraintsPlaneHashProvideContext()
@@ -50,6 +54,8 @@ export function useConstraints() {
   let linesGCSMapper = useLinesGCSMapper()
   let arcsGCSMapper = useArcsGCSMapper()
   let toolTempGCSManager = useToolTempGCSManager()
+  let effectDdebouncePromiseManager = useEffectDdebouncePromise()
+  let effectDdebouncePromiseQuery = useEffectDdebouncePromiseQuery()
 
   let constraintsBatch = []
   function usageConstraintsBatch() {
@@ -153,19 +159,36 @@ export function useConstraints() {
       }
     })
   }
-  let effect = //debounce(
-    function effect() {
-      /* [问题]
-       * 这段求解调用应该移到gcs里去
-       */
-      systemsGCSManager.reset()
-      systemsGCSManager.solver()
-      updateGeometry()
+  function effect() {
+    /* [问题]
+     * 这段求解调用应该移到gcs里去
+     */
+    systemsGCSManager.reset()
+    systemsGCSManager.solver()
+    updateGeometry()
 
-      systemsGCSQuery.active.handle.clearByTag(-1)
-      toolTempGCSManager.clearNumerals()
+    systemsGCSQuery.active.handle.clearByTag(-1)
+    toolTempGCSManager.clearNumerals()
+  }
+  if (effectDdebounce) {
+    if (effectDebounceGlobal) {
+      effect = effectDebounceGlobal
+    } else {
+      let effectSync = effect
+      let effectDebounceFn = debounce(() => {
+        effectSync()
+        effectDdebouncePromiseManager.resolve()
+      }, 16)
+
+      effect = () => {
+        if (!effectDdebouncePromiseQuery.working()) {
+          effectDdebouncePromiseManager.pending()
+        }
+        effectDebounceFn()
+      }
+      effectDebounceGlobal = effect
     }
-  //, 16)
+  }
 
   return {
     updateNumerals(id, numerals) {
@@ -561,6 +584,29 @@ export function useConstraintsRelation() {
     },
   }
 }
-/*
- * 收集几何和约束需要细化到一对一的关系吗
- */
+export function useEffectDdebouncePromise() {
+  let effectDdebouncePromiseProvideContext = useEffectDdebouncePromiseProvideContext()
+  return {
+    pending() {
+      let resolve, reject
+      let promise = new Promise((res, rej) => {
+        resolve = res
+        reject = rej
+      })
+      effectDdebouncePromiseProvideContext.promise = promise
+      effectDdebouncePromiseProvideContext.resolve = resolve
+      effectDdebouncePromiseProvideContext.reject = reject
+      effectDdebouncePromiseProvideContext.status = 'pending'
+    },
+    resolve() {
+      effectDdebouncePromiseProvideContext.resolve()
+      effectDdebouncePromiseProvideContext.status = 'resolve'
+      delete effectDdebouncePromiseProvideContext.promise
+    },
+    reject() {
+      effectDdebouncePromiseProvideContext.reject()
+      effectDdebouncePromiseProvideContext.status = 'reject'
+      delete effectDdebouncePromiseProvideContext.promise
+    },
+  }
+}

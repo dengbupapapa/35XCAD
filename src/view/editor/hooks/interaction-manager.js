@@ -16,6 +16,10 @@ import {
   useSelectPointsStrict as useSelectPointsStrictInteractionQuery,
   useSelectLines as useSelectLinesInteractionQuery,
 } from './interaction-query'
+import {
+  usePoints as usePointsViewportManager,
+  useLines as useLinesViewportManager,
+} from './viewport-manager'
 
 export function useSelectPoints() {
   let selectsPoints = useSelectPointsInteraction()
@@ -23,10 +27,16 @@ export function useSelectPoints() {
   let pointsEntitie = usePointsEntitie()
   let pointsGeometryQuery = usePointsGeometryQuery()
   let selectPointsStrictInteractionManage = useSelectPointsStrict()
+  let pointsViewportManager = usePointsViewportManager()
   function active(id, enabled) {
-    let pointsGeometry = pointsGeometryQuery.get(id)
-    let index = pointsGeometryQuery.indexOf(pointsGeometry)
-    pointsEntitie.active(index, enabled)
+    // let pointsGeometry = pointsGeometryQuery.get(id)
+    // let index = pointsGeometryQuery.indexOf(pointsGeometry)
+    // pointsEntitie.active(index, enabled)
+    if (enabled) {
+      pointsViewportManager.activate(id)
+    } else {
+      pointsViewportManager.deactivate(id)
+    }
   }
   return {
     set(ids) {
@@ -149,10 +159,16 @@ export function useSelectLines() {
   let selectLinesInteractionQuery = useSelectLinesInteractionQuery()
   let linesEntitie = useLinesEntitie()
   let linesGeometryQuery = useLinesGeometryQuery()
+  let linesViewportManager = useLinesViewportManager()
   function active(id, enabled) {
-    let pointsGeometry = linesGeometryQuery.get(id)
-    let index = linesGeometryQuery.indexOf(pointsGeometry)
-    linesEntitie.active(index, enabled)
+    // let pointsGeometry = linesGeometryQuery.get(id)
+    // let index = linesGeometryQuery.indexOf(pointsGeometry)
+    // linesEntitie.active(index, enabled)
+    if (enabled) {
+      linesViewportManager.activate(id)
+    } else {
+      linesViewportManager.deactivate(id)
+    }
   }
   return {
     set(ids) {

@@ -29,7 +29,7 @@ export default function useGeometrys() {
         pointsGeometryUpdater.updateBefore(id)
       })
     },
-    updateAfter(ids) {
+    updateAfter: function (ids) {
       if (!(ids instanceof Array)) {
         ids = [ids]
       }
@@ -67,7 +67,6 @@ export default function useGeometrys() {
       //   pointsGeometryUpdater.updateReset(index, position)
       // })
     },
-    //, 16),
   }
 }
 

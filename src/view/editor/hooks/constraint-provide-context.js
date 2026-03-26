@@ -13,6 +13,8 @@ export default function useRegistry() {
   const constraintsRelationHash = ref({})
   provide(constraintsRelationSymbol, constraintsRelation)
   provide(constraintsRelationHashSymbol, constraintsRelationHash)
+  const effectDdebouncePromise = {}
+  provide(effectDdebouncePromiseSymbol, effectDdebouncePromise)
 }
 
 const constraintsSymbol = Symbol('constraints')
@@ -21,6 +23,7 @@ const constraintsPlaneHashSymbol = Symbol('constraintsPlaneHash')
 const constraintsIncrementSymbol = Symbol('constraintsIncrement')
 const constraintsRelationSymbol = Symbol('constraintsRelation')
 const constraintsRelationHashSymbol = Symbol('constraintsRelationHash')
+const effectDdebouncePromiseSymbol = Symbol('effectDdebouncePromise')
 export function useConstraints() {
   return inject(constraintsSymbol)
 }
@@ -38,4 +41,7 @@ export function useConstraintsRelation() {
 }
 export function useConstraintsRelationHash() {
   return inject(constraintsRelationHashSymbol)
+}
+export function useEffectDdebouncePromise() {
+  return inject(effectDdebouncePromiseSymbol)
 }

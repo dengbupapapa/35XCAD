@@ -8,13 +8,13 @@ import {
 } from './constraint-query.js'
 import { ConstraintResolver } from '../core/data-constraint.js'
 
-export function useConstraints() {
-  let constraintsManager = useConstraintsManager()
+export function useConstraints(options) {
+  let constraintsManager = useConstraintsManager(options)
   let constraintsRelationManager = useConstraintsRelationManager()
   let constraintsQuery = useConstraintsQuery()
   let constraintsRelationQuery = useConstraintsRelationQuery()
 
-  let constraintResolver = new ConstraintResolver()
+  let constraintResolver = new ConstraintResolver() //加占时只能用同步不能用effectDdebounce
   return {
     /*
      * 以下目前适合基于ConstraintResolver逻辑处理的

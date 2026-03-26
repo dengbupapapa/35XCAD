@@ -87,12 +87,14 @@ export class Points {
     const positions = new Float32Array([-0.5, -0.5, 0, 0.5, -0.5, 0, -0.5, 0.5, 0, 0.5, 0.5, 0])
     const indices = [0, 1, 2, 2, 1, 3]
     const centers = new Float32Array(this.#MAX_POINTS * 3)
-    const activeds = new Float32Array(this.#MAX_POINTS)
+    const sizes = new Float32Array(this.#MAX_POINTS)
+    const colors = new Float32Array(this.#MAX_POINTS * 4)
     const geometry = new InstancedBufferGeometry()
     geometry.setAttribute('position', new BufferAttribute(positions, 3))
     geometry.setIndex(indices)
     geometry.setAttribute('center', new InstancedBufferAttribute(centers, 3))
-    geometry.setAttribute('actived', new InstancedBufferAttribute(activeds, 1))
+    geometry.setAttribute('size', new InstancedBufferAttribute(sizes, 1))
+    geometry.setAttribute('color', new InstancedBufferAttribute(colors, 4))
     const material = new ShaderMaterial({
       vertexShader: Points.shaderVertex,
       fragmentShader: Points.shaderFragment,
@@ -100,10 +102,10 @@ export class Points {
       // transparent: true,
       side: DoubleSide,
       uniforms: {
-        size: { value: config['point-size'] },
+        // size: { value: config['point-size'] },
         resolution: { value: this.#resolution },
-        color: { value: new Vector4(...config['point-color']) },
-        colorActived: { value: new Vector4(...config['point-color-actived']) },
+        // color: { value: new Vector4(...config['point-color']) },
+        // colorActived: { value: new Vector4(...config['point-color-actived']) },
       },
     })
 
@@ -111,17 +113,22 @@ export class Points {
     this.impl.count = 0
     this.impl.frustumCulled = false
   }
-  active(index, enabled = true) {
-    const actived = this.impl.geometry.attributes.actived
-    if (enabled) {
-      actived.array.set([1], index * 1)
-    } else {
-      actived.array.set([0], index * 1)
-    }
-    actived.needsUpdate = true
+  color(index, value) {
+    const attributeColor = this.impl.geometry.attributes.color
+    attributeColor.array.set(value, index * 4)
+    attributeColor.needsUpdate = true
   }
-  add(position) {
+  size(index, value) {
+    const attributeSize = this.impl.geometry.attributes.size
+    attributeSize.array.set([value], index * 1)
+    attributeSize.needsUpdate = true
+  }
+  add(position, size = config['point-size'], color = config['point-color']) {
     let index = this.impl.count++
+
+    this.color(index, color)
+    this.size(index, size)
+
     this.translation(index, position)
   }
 
@@ -136,6 +143,14 @@ export class Points {
       const center = this.impl.geometry.attributes.center
       center.array.copyWithin(index * 3, last * 3, last * 3 + 3)
       center.needsUpdate = true
+
+      const attributeColor = this.impl.geometry.attributes.color
+      attributeColor.array.copyWithin(index * 4, last * 4, last * 4 + 4)
+      attributeColor.needsUpdate = true
+
+      const attributeSize = this.impl.geometry.attributes.size
+      attributeSize.array.copyWithin(index * 1, last * 1, last * 1 + 1)
+      attributeSize.needsUpdate = true
     }
     this.impl.count--
     this.impl.computeBoundingSphere()
@@ -156,30 +171,23 @@ export class Points {
   }
   static shaderVertex = `
     attribute vec3 center;
-    attribute float actived;
-    uniform float size;
+    attribute vec4 color;
+    attribute float size;
     uniform vec2 resolution;
-    varying float v_actived;
+    varying vec4 v_color;
     void main() {
       vec4 clipPos = projectionMatrix * modelViewMatrix * vec4(center, 1.0);
       vec2 pixel = size / resolution * 2.0;
       clipPos.xy += position.xy * pixel * clipPos.w;
-      // clipPos.z -= 0.0005 * clipPos.w;
       gl_Position = clipPos;
-      v_actived = actived;
+      v_color = color;
     }
   `
 
   static shaderFragment = `
-    uniform vec4 color;
-    uniform vec4 colorActived;
-    varying float v_actived;
+    varying vec4 v_color;
     void main() {
-      if(int(v_actived)==1){
-        gl_FragColor = colorActived;
-        return;
-      }
-      gl_FragColor = color;
+      gl_FragColor = v_color;
     }
   `
 }
@@ -193,41 +201,47 @@ export class Lines {
     const indices = [0, 1, 2, 2, 1, 3]
     const starts = new Float32Array(this.#MAX_LINES * 3)
     const ends = new Float32Array(this.#MAX_LINES * 3)
-    const activeds = new Float32Array(this.#MAX_LINES)
+    const lineWidths = new Float32Array(this.#MAX_LINES)
+    const lineColors = new Float32Array(this.#MAX_LINES * 4)
     const geometry = new InstancedBufferGeometry()
     geometry.setAttribute('position', new BufferAttribute(positions, 3))
     geometry.setIndex(indices)
     geometry.setAttribute('lineStart', new InstancedBufferAttribute(starts, 3))
     geometry.setAttribute('lineEnd', new InstancedBufferAttribute(ends, 3))
-    geometry.setAttribute('actived', new InstancedBufferAttribute(activeds, 1))
+    geometry.setAttribute('lineWidth', new InstancedBufferAttribute(lineWidths, 1))
+    geometry.setAttribute('lineColor', new InstancedBufferAttribute(lineColors, 4))
     const material = new ShaderMaterial({
       vertexShader: Lines.shaderVertex,
       fragmentShader: Lines.shaderFragment,
       // depthTest: true,
       side: DoubleSide,
       uniforms: {
-        lineWidth: { value: config['line-width'] },
+        // lineWidth: { value: config['line-width'] },
         pointWidth: { value: config['point-size'] },
         resolution: { value: this.#resolution },
-        color: { value: new Vector4(...config['line-color']) },
-        colorActived: { value: new Vector4(...config['line-color-actived']) },
+        // color: { value: new Vector4(...config['line-color']) },
+        // colorActived: { value: new Vector4(...config['line-color-actived']) },
       },
     })
     this.impl = new InstancedMesh(geometry, material, this.#MAX_LINES)
     this.impl.count = 0
     this.impl.frustumCulled = false
   }
-  active(index, enabled = true) {
-    const actived = this.impl.geometry.attributes.actived
-    if (enabled) {
-      actived.array.set([1], index * 1)
-    } else {
-      actived.array.set([0], index * 1)
-    }
-    actived.needsUpdate = true
+
+  lineColor(index, value) {
+    const attributeLineColor = this.impl.geometry.attributes.lineColor
+    attributeLineColor.array.set(value, index * 4)
+    attributeLineColor.needsUpdate = true
   }
-  add(start, end) {
+  lineWidth(index, value) {
+    const attributeLineWidth = this.impl.geometry.attributes.lineWidth
+    attributeLineWidth.array.set([value], index * 1)
+    attributeLineWidth.needsUpdate = true
+  }
+  add(start, end, lineWidth = config['line-width'], lineColor = config['line-color']) {
     let index = this.impl.count++
+    this.lineWidth(index, lineWidth)
+    this.lineColor(index, lineColor)
     this.translation(index, start, end)
   }
   translation(index, start, end) {
@@ -250,6 +264,14 @@ export class Lines {
       lineEnd.array.copyWithin(index * 3, last * 3, last * 3 + 3)
       lineStart.needsUpdate = true
       lineEnd.needsUpdate = true
+
+      const attributeLineColor = this.impl.geometry.attributes.lineColor
+      attributeLineColor.array.copyWithin(index * 4, last * 4, last * 4 + 4)
+      attributeLineColor.needsUpdate = true
+
+      const attributeLineWidth = this.impl.geometry.attributes.lineWidth
+      attributeLineWidth.array.copyWithin(index * 1, last * 1, last * 1 + 1)
+      attributeLineWidth.needsUpdate = true
     }
     this.impl.count--
     // this.impl.computeBoundingSphere()
@@ -264,11 +286,11 @@ export class Lines {
   static shaderVertex = `
     attribute vec3 lineStart;
     attribute vec3 lineEnd;
-    attribute float actived;
+    attribute float lineWidth;
+    attribute vec4 lineColor;
     uniform vec2 resolution;
-    uniform float lineWidth;
     uniform float pointWidth;
-    varying float v_actived;
+    varying vec4 v_lineColor;
     void main() {
       float t = position.y;
       float side = position.x;
@@ -297,19 +319,13 @@ export class Lines {
       clipP.w  = w;
       
       gl_Position = clipP;
-      v_actived = actived;
+      v_lineColor = lineColor;
     }
   `
   static shaderFragment = `
-    uniform vec4 color;
-    uniform vec4 colorActived;
-    varying float v_actived;
+    varying vec4 v_lineColor;
     void main() {
-      if(int(v_actived)==1){
-        gl_FragColor = colorActived;
-        return;
-      }
-      gl_FragColor = color;
+      gl_FragColor = v_lineColor;
     }
   `
 }

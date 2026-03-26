@@ -484,9 +484,9 @@ export function useArcs() {
       numeralsGCSManager.removeById(arcGCS.angleEnd)
       numeralsGCSManager.removeById(arcGCS.radius)
 
-      pointsGCSManager.remove(pointGCSCenter)
-      pointsGCSManager.remove(pointGCSStart)
-      pointsGCSManager.remove(pointGCSEnd)
+      // pointsGCSManager.remove(pointGCSCenter)
+      // pointsGCSManager.remove(pointGCSStart)
+      // pointsGCSManager.remove(pointGCSEnd)
 
       let index = arcsGCSQuery.indexOf(arcGCS)
       arcsGCS.splice(index, 1)

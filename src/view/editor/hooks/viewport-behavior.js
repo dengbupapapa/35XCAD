@@ -12,7 +12,6 @@ import {
   usePolylines as usePolylinesGeometryManager,
   useArcs as useArcsGeometryManager,
 } from './geometry-manager.js'
-import { useConstraints as useConstraintsManager } from './constraint-manager.js'
 import {
   usePoints as usePointsGeometryQuery,
   useLines as useLinesGeometryQuery,
@@ -40,6 +39,7 @@ import { useSelectGeometrys as useSelectGeometrysInteractionDispatch } from './i
 import { useConstraints as useConstraintsDispatch } from './constraint-dispatch'
 import { Vector3 } from '../core/gl-math'
 import { viewport2ndc } from '../utils/simple'
+import { throttle } from 'lodash-es'
 
 /* [优化]
  * 后面同一个事件要统一抽离到一个事件里去管理，解决多次计算问题;
@@ -141,7 +141,6 @@ export function useAddPolylineClick() {
   const pointsGeometryManager = usePointsGeometryManager()
   const linesGeometryManager = useLinesGeometryManager()
   const polylinesGeometryManager = usePolylinesGeometryManager()
-  const constraintsManager = useConstraintsManager()
   const modesManagerInteractions = useModesManagerInteractions()
   const canvas = renderer.element()
   const constraintsDispatch = new useConstraintsDispatch()
@@ -498,7 +497,7 @@ export function useMove() {
       geometryUpdater.updateBefore(selectPoints)
     }
   }
-  function onMousemove(event) {
+  let onMousemove = throttle(function onMousemove(event) {
     const plane = planesEntitie.active
     if (!plane || event.button !== 0 || !activeted) return
     let rect = canvas.getBoundingClientRect()
@@ -508,7 +507,7 @@ export function useMove() {
     let state = { x, y }
     movePoints.onMousemove(state, event)
     moveLines.onMousemove(state, event)
-  }
+  }, 16)
   function onMouseup(event) {
     if (event.button !== 0) return
     if (activeted) {

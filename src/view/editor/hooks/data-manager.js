@@ -22,7 +22,7 @@ export function useLoader() {
   let polylinesGeometryManager = usePolylinesGeometryManager()
   let arcsGeometryManager = useArcsGeometryManager()
   let dimensionDistancesGeometryManager = useDimensionDistancesGeometryManager()
-  let constraintsManager = useConstraintsManager()
+  let constraintsManager = useConstraintsManager({ effectDdebounce: true })
   let constraintsIncrementManager = useConstraintsIncrementManager()
   let constraintsRelationManager = useConstraintsRelationManager()
   return {
