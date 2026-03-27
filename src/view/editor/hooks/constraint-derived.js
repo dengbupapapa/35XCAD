@@ -29,3 +29,10 @@ export function useConstraintsRelation() {
     return constraintsRelationProvideContext.value
   })
 }
+
+export function useConstraintRelation(id) {
+  let constraintsRelationProvideContext = useConstraintsRelationProvideContext()
+  return computed(() => {
+    return constraintsRelationProvideContext.value[id]
+  })
+}

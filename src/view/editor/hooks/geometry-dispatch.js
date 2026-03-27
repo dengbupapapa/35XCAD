@@ -249,8 +249,8 @@ import { worldCoords2planeCoords, planeCoords2worldCoords } from '../utils/simpl
 import { useDimensionDistances as useDimensionDistancesGeometryMapper } from './geometry-mapper'
 import { useSelectGeometrys as useSelectGeometrysInteractionDispatch } from './interaction-dispatch.js'
 const space = 50
+let updatedOnceDimensionDistance = new Set()
 export function useDimensionDistances() {
-  let updatedOnce = new Set()
   let dimensionDistancesGeometryManager = useDimensionDistancesGeometryManager()
   let dimensionDistancesGeometryQuery = useDimensionDistancesGeometryQuery()
   let linesGeometryManager = useLinesGeometryManager()
@@ -263,53 +263,71 @@ export function useDimensionDistances() {
   let constraintsDispatch = useConstraintsDispatch()
   let dimensionDistancesGeometryMapper = useDimensionDistancesGeometryMapper()
   let selectGeometrysInteractionDispatch = useSelectGeometrysInteractionDispatch()
-  let toolTempGCSManager = useToolTempGCSManager()
 
-  function setConstraintDriving(id, constraint) {
+  function setConstraintDistance(id, constraint) {
     let dimensionDistancesGeometry = dimensionDistancesGeometryQuery.get(id)
-    dimensionDistancesGeometry.constraintDriving = constraint
+    dimensionDistancesGeometry.constraintDistance = constraint
   }
-  function getConstraintDriving(id) {
+
+  function getConstraintDistance(id) {
     let dimensionDistancesGeometry = dimensionDistancesGeometryQuery.get(id)
-    return dimensionDistancesGeometry.constraintDriving
+    return dimensionDistancesGeometry.constraintDistance
   }
-  function switchConstraint(id, activate = true) {
+
+  function setConstraintCoordinate(id, constraint) {
+    let dimensionDistancesGeometry = dimensionDistancesGeometryQuery.get(id)
+    dimensionDistancesGeometry.constraintCoordinate = constraint
+  }
+
+  function getConstraintCoordinate(id) {
+    let dimensionDistancesGeometry = dimensionDistancesGeometryQuery.get(id)
+    return dimensionDistancesGeometry.constraintCoordinate
+  }
+
+  function switchConstraint(id, use = true) {
     let dimensionDistance = dimensionDistancesGeometryQuery.get(id)
     let [main, corss1, corss2] = dimensionDistance.lines
 
     let corss1LineGeometry = linesGeometryQuery.get(corss1)
     let corss2LineGeometry = linesGeometryQuery.get(corss2)
 
-    let constraintDriving = getConstraintDriving(id)
-    if (constraintDriving) constraintsDispatch.removeById(constraintDriving)
-
-    if (activate) {
+    if (use) {
+      let constraintDistance = getConstraintDistance(id)
+      if (constraintDistance) constraintsDispatch.disable(constraintDistance)
       let constraint = constraintsDispatch.add('addConstraintCoordinate', [
         corss1LineGeometry.start,
         corss2LineGeometry.start,
       ])
-      setConstraintDriving(id, constraint.id)
+      setConstraintCoordinate(id, constraint.id)
     } else {
-      let corss1PointStartGeometry = pointsGeometryQuery.get(corss1LineGeometry.start)
-      let corss2PointStartGeometry = pointsGeometryQuery.get(corss2LineGeometry.start)
-      let vector3Start = new Vector3(
-        corss1PointStartGeometry.x,
-        corss1PointStartGeometry.y,
-        corss1PointStartGeometry.z,
-      )
-      let vector3End = new Vector3(
-        corss2PointStartGeometry.x,
-        corss2PointStartGeometry.y,
-        corss2PointStartGeometry.z,
-      )
-      let vector3Line = vector3End.sub(vector3Start)
+      let constraintCoordinate = getConstraintCoordinate(id)
+      if (constraintCoordinate) constraintsDispatch.removeById(constraintCoordinate)
 
-      let constraint = constraintsDispatch.add('addConstraintP2PDistance', [
-        corss1LineGeometry.start,
-        corss2LineGeometry.start,
-        vector3Line.length(),
-      ])
-      setConstraintDriving(id, constraint.id)
+      let constraintDistance = getConstraintDistance(id)
+      if (constraintDistance) {
+        constraintsDispatch.enable(constraintDistance)
+      } else {
+        let corss1PointStartGeometry = pointsGeometryQuery.get(corss1LineGeometry.start)
+        let corss2PointStartGeometry = pointsGeometryQuery.get(corss2LineGeometry.start)
+        let vector3Start = new Vector3(
+          corss1PointStartGeometry.x,
+          corss1PointStartGeometry.y,
+          corss1PointStartGeometry.z,
+        )
+        let vector3End = new Vector3(
+          corss2PointStartGeometry.x,
+          corss2PointStartGeometry.y,
+          corss2PointStartGeometry.z,
+        )
+        let vector3Line = vector3End.sub(vector3Start)
+
+        let constraint = constraintsDispatch.add('addConstraintP2PDistance', [
+          corss1LineGeometry.start,
+          corss2LineGeometry.start,
+          vector3Line.length(),
+        ])
+        setConstraintDistance(id, constraint.id)
+      }
     }
   }
 
@@ -437,12 +455,23 @@ export function useDimensionDistances() {
     },
 
     updateBefore(id) {
-      if (updatedOnce.has(id)) return
-      updatedOnce.add(id)
+      if (updatedOnceDimensionDistance.has(id)) return
+      updatedOnceDimensionDistance.add(id)
       switchConstraint(id, true)
     },
+    updateCommit(index) {
+      // let pointGeometry = pointsGeometryQuery.getByIndex(index)
+      // let dimensionDistanceGeometry = dimensionDistancesGeometryMapper.getFormPoint(pointGeometry)
+      // let id = dimensionDistanceGeometry.id
+      // console.log(3, id, updatedOnceDimensionDistance)
+      // if (updatedOnceDimensionDistance.has(id)) return
+      // updatedOnceDimensionDistance.add(id)
+      // switchConstraint(id, true)
+      // console.log(1, id)
+    },
     updateAfter(id) {
-      updatedOnce.delete(id)
+      if (!updatedOnceDimensionDistance.has(id)) return
+      updatedOnceDimensionDistance.delete(id)
       switchConstraint(id, false)
     },
     activate(subId) {

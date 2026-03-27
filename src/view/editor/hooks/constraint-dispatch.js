@@ -28,6 +28,20 @@ export function useConstraints(options) {
     usable(args) {
       return constraintResolver.solverUsable(args)
     },
+    enable(id) {
+      let constraintRelation = constraintsRelationQuery.get(id)
+      let { constraints } = constraintRelation
+      constraints.forEach((constraint) => {
+        constraintsManager.enable(constraint)
+      })
+    },
+    disable(id) {
+      let constraintRelation = constraintsRelationQuery.get(id)
+      let { constraints } = constraintRelation
+      constraints.forEach((constraint) => {
+        constraintsManager.disable(constraint)
+      })
+    },
     /*
      * 以下目前适合geometry正确处理完毕的
      */

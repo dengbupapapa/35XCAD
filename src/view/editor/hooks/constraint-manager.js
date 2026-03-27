@@ -32,7 +32,7 @@ import {
 } from './solver-gcs-query.js'
 import { useArcs as useArcsGCSMapper, useLines as useLinesGCSMapper } from './solver-gcs-mapper.js'
 import { nanoid, assertIndexFormList } from '../utils/simple'
-import { debounce } from 'lodash-es'
+import { cloneDeep, debounce } from 'lodash-es'
 let effectDebounceGlobal
 export function useConstraints(options) {
   let effectDdebounce = options?.effectDdebounce || false
@@ -212,17 +212,36 @@ export function useConstraints(options) {
       this.attach(constraint)
     },
     attach(constraint) {
-      let constraintGCS = constraintsGCSManager.add(constraint)
-      constraintGCS.creator = constraint.id
-      constraint.gcs = constraintGCS.id
       constraintsProvideContext.value.push(constraint)
       constraintsHashProvideContext.value[constraint.id] = constraint
       if (!(constraintsPlaneHashProvideContext.value[constraint.plane] instanceof Array)) {
         constraintsPlaneHashProvideContext.value[constraint.plane] = []
       }
       constraintsPlaneHashProvideContext.value[constraint.plane].push(constraint)
+      this.enable(constraint.id)
+    },
+    enable(id) {
+      let constraint = constraintsQuery.get(id)
+      let constraintGCS = constraintsGCSManager.add(constraint)
+      constraintGCS.creator = constraint.id
+      constraint.gcs = constraintGCS.id
       constraintsBatch.push(constraint)
       effect()
+    },
+    disable(id) {
+      let constraint = constraintsQuery.get(id)
+      constraintsGCSManager.removeById(constraint.gcs)
+      effect()
+    },
+    clone(id) {
+      let constraint = this.copy(id)
+      constraint.id = nanoid()
+      return constraint
+    },
+    copy(id) {
+      let constraint = constraintsQuery.get(id)
+      let copy = cloneDeep(constraint)
+      return copy
     },
     load(constraintsProvideContext) {
       constraintsProvideContext.forEach((constraint) => {
@@ -230,13 +249,13 @@ export function useConstraints(options) {
       })
     },
     removeByIndex(index) {
-      let constraint = constraintsProvideContext.value.splice(index, 1)[0]
-      constraintsGCSManager.removeById(constraint.gcs)
+      let constraint = constraintsQuery.getByIndex(index)
+      this.disable(constraint.id)
+      constraintsProvideContext.value.splice(index, 1)[0]
       delete constraintsHashProvideContext.value[constraint.id]
       let constraintsPlaneHashItem = constraintsPlaneHashProvideContext.value[constraint.plane]
       let indexForConstraintsPlaneHash = constraintsPlaneHashItem.indexOf(constraint)
       constraintsPlaneHashItem.splice(indexForConstraintsPlaneHash, 1)
-      effect()
     },
     remove(constraint) {
       let index = constraintsProvideContext.value.indexOf(constraint)

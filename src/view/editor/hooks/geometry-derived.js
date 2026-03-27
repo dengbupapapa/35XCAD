@@ -1,4 +1,4 @@
-import { computed } from 'vue'
+import { computed, unref } from 'vue'
 import {
   usePlanes as usePlanesGeometry,
   usePoints as usePointsGeometry,
@@ -143,5 +143,64 @@ export function usePlaneByIndex(index) {
   let planesGeometry = usePlanesGeometry()
   return computed(() => {
     return planesGeometry.value[index]
+  })
+}
+
+import {
+  useDimensionDistances as useDimensionDistancesGeometryMapper,
+  useHelpers as useHelpersGeometryMapper,
+} from './geometry-mapper.js'
+export function useIsAllDimensionDistances(ids) {
+  let dimensionDistancesGeometryMapper = useDimensionDistancesGeometryMapper()
+  return computed(() => {
+    return (
+      ids.value.every((id) => {
+        return (
+          dimensionDistancesGeometryMapper.hasFormLineId(id) ||
+          dimensionDistancesGeometryMapper.hasFormPointId(id)
+        )
+      }) && ids.value.length > 0
+    )
+  })
+}
+
+export function useDimensionDistances(ids) {
+  let dimensionDistancesGeometryMapper = useDimensionDistancesGeometryMapper()
+  return computed(() => {
+    return new Set(
+      ids.value
+        .filter((id) => {
+          return (
+            dimensionDistancesGeometryMapper.hasFormLineId(id) ||
+            dimensionDistancesGeometryMapper.hasFormPointId(id)
+          )
+        })
+        .map((id) => {
+          return (
+            dimensionDistancesGeometryMapper.getFormLineId(id) ||
+            dimensionDistancesGeometryMapper.getFormPointId(id)
+          )
+        }),
+    )
+      .values()
+      .toArray()
+  })
+}
+
+export function useDimensionDistancesLength(ids) {
+  let dimensionDistancesGeometryDerived = useDimensionDistances(ids)
+  return computed(() => {
+    return dimensionDistancesGeometryDerived.value.values().toArray().length
+  })
+}
+
+export function useNotHelpers(ids) {
+  let helpersGeometryMapper = useHelpersGeometryMapper()
+  return computed(() => {
+    return (
+      ids.value.every((id) => {
+        return !helpersGeometryMapper.hasFormLineId(id) && !helpersGeometryMapper.hasFormPointId(id)
+      }) && ids.value.length > 0
+    )
   })
 }

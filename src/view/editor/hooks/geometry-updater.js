@@ -70,6 +70,7 @@ export default function useGeometrys() {
   }
 }
 
+let updatedOnce = new Set()
 export function usePoints() {
   let pointsGeometryQuery = usePointsGeometryQuery()
   let linesGeometryQuery = useLinesGeometryQuery()
@@ -83,32 +84,31 @@ export function usePoints() {
     updateBefore(id) {
       let dimensionDistance = dimensionDistancesGeometryMapper.getFormPointId(id)
       if (dimensionDistance) {
+        if (updatedOnce.has(dimensionDistance.id)) return
+        updatedOnce.add(dimensionDistance.id)
         dimensionDistancesGeometryDispatch.updateBefore(dimensionDistance.id)
       }
     },
     updateAfter(id) {
       let dimensionDistance = dimensionDistancesGeometryMapper.getFormPointId(id)
       if (dimensionDistance) {
+        if (!updatedOnce.has(dimensionDistance.id)) return
         dimensionDistancesGeometryDispatch.updateAfter(dimensionDistance.id)
+        updatedOnce.delete(dimensionDistance.id)
       }
     },
     updateCommit(index, position) {
       if (arcsGeometryMapper.getFormPointIndex(index)) {
         arcsGeometryDispatch.updateCommit(index, position)
       }
-      // if (dimensionDistancesGeometryMapper.getFormPointIndex(index)) {
-      //   dimensionDistancesGeometryDispatch.updateCommit(index, position)
-      // }
+      if (dimensionDistancesGeometryMapper.getFormPointIndex(index)) {
+        dimensionDistancesGeometryDispatch.updateCommit(index, position)
+      }
       return pointsGeometryManager.updateCommit(index, position)
     },
     updateApply(numerals) {
       pointsGeometryManager.updateApply(numerals)
     },
-    // updateReset(index, position) {
-    //   if (dimensionDistancesGeometryMapper.getFormPointIndex(index)) {
-    //     dimensionDistancesGeometryDispatch.updateReset(index, position)
-    //   }
-    // },
     updateImmediate(index, position) {
       let numerals = this.updateCommit(index, position)
       this.updateApply(numerals)
