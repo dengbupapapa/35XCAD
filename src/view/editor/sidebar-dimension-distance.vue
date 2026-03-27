@@ -9,7 +9,8 @@
             :step="0.001"
             :disabled="dimensionDistancesLengthGeometryDerived > 1"
             v-model:value="input"
-            @blur="onBlur"
+            @blur="onComplete"
+            @pressEnter="onComplete"
           />
         </a-collapse-panel>
       </a-collapse>
@@ -59,6 +60,7 @@ let input = ref(0)
 let numeral = computed({
   get() {
     let dimensionDistance = dimensionDistancesGeometryDerived.value[0]
+    if (!dimensionDistance) return
     let constraintsRelation = constraintsRelationConstraintQuery.get(
       dimensionDistance.constraintDistance,
     )
@@ -69,6 +71,7 @@ let numeral = computed({
   },
   set(value) {
     let dimensionDistance = dimensionDistancesGeometryDerived.value[0]
+    if (!dimensionDistance) return
     let constraintsRelation = constraintsRelationConstraintQuery.get(
       dimensionDistance.constraintDistance,
     )
@@ -80,7 +83,7 @@ let numeral = computed({
     constraintsConstraintManager.attach(constraint)
   },
 })
-function onBlur() {
+function onComplete() {
   numeral.value = input.value
 }
 watch(
