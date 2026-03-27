@@ -34,6 +34,7 @@ import { useArcs as useArcsGCSMapper, useLines as useLinesGCSMapper } from './so
 import { nanoid, assertIndexFormList } from '../utils/simple'
 import { cloneDeep, debounce } from 'lodash-es'
 let effectDebounceGlobal
+let constraintsBatchGlobal = []
 export function useConstraints(options) {
   let effectDdebounce = options?.effectDdebounce || false
   let constraintsProvideContext = useConstraintsProvideContext()
@@ -57,10 +58,9 @@ export function useConstraints(options) {
   let effectDdebouncePromiseManager = useEffectDdebouncePromise()
   let effectDdebouncePromiseQuery = useEffectDdebouncePromiseQuery()
 
-  let constraintsBatch = []
   function usageConstraintsBatch() {
     let numerals = []
-    constraintsBatch.forEach((constraint) => {
+    constraintsBatchGlobal.forEach((constraint) => {
       constraint.args.forEach((arg, index) => {
         /* [联动] 1
          * 找出与该约束有关的变量
@@ -120,12 +120,11 @@ export function useConstraints(options) {
         }
       })
     })
-    constraintsBatch = []
+    constraintsBatchGlobal = []
     return numerals
   }
   function updateGeometry() {
     let numeralsRelated = usageConstraintsBatch()
-
     let updatedPoints = new Set()
     function updated(ptr) {
       let numeralGCS = numeralsGCSQuery.getByPtr(ptr)
@@ -191,17 +190,17 @@ export function useConstraints(options) {
   }
 
   return {
-    updateNumerals(id, numerals) {
-      let constraint = constraintsQuery.get(id)
-      // if (constraint.numerals.length !== numerals.length) {
-      //   throw new Error('constraint.numerals.length !== numerals.length!')
-      // }
-      constraint.numerals.forEach((index, i) => {
-        constraint.args[index] = numerals[i]
-      })
-      // constraintsGCSManager.update(constraint)
-      // effect()
-    },
+    // updateNumerals(id, numerals) {
+    //   let constraint = constraintsQuery.get(id)
+    //   // if (constraint.numerals.length !== numerals.length) {
+    //   //   throw new Error('constraint.numerals.length !== numerals.length!')
+    //   // }
+    //   constraint.numerals.forEach((index, i) => {
+    //     constraint.args[index] = numerals[i]
+    //   })
+    //   // constraintsGCSManager.update(constraint)
+    //   // effect()
+    // },
     add(constraint, driving = true, tag = constraintsIncrementQuery.get()) {
       constraint.driving = driving
       constraint.tag = tag
@@ -225,7 +224,7 @@ export function useConstraints(options) {
       let constraintGCS = constraintsGCSManager.add(constraint)
       constraintGCS.creator = constraint.id
       constraint.gcs = constraintGCS.id
-      constraintsBatch.push(constraint)
+      constraintsBatchGlobal.push(constraint)
       effect()
     },
     disable(id) {

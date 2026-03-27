@@ -821,87 +821,87 @@ export function useSystems() {
   let constraintsGCSQuery = useConstraintsGCSQuery()
   let pointsGCSQuery = usePointsGCSQuery()
   let numeralsGCSQuery = useNumeralsGCSQuery()
-  if (!solverThrottle) {
-    solverThrottle = throttle(function () {
-      let system = systemsGCSQuery.active.handle
-      let result = resultsQuery.get(systemsGCSQuery.active.result)
-      if (constraintsGCSQuery.all().length === 0) return result
-      resultsManager.backup(systemsGCSQuery.active.result)
-      // system.declareUnknowns(unknownsSetGCSQuery.active.handle)
-      system.initSolution(Algorithm.DogLeg)
+  // if (!solverThrottle) {
+  //   solverThrottle = throttle(function () {
+  //     let system = systemsGCSQuery.active.handle
+  //     let result = resultsQuery.get(systemsGCSQuery.active.result)
+  //     if (constraintsGCSQuery.all().length === 0) return result
+  //     resultsManager.backup(systemsGCSQuery.active.result)
+  //     // system.declareUnknowns(unknownsSetGCSQuery.active.handle)
+  //     system.initSolution(Algorithm.DogLeg)
 
-      let status = system.solve(true, Algorithm.DogLeg, false)
-      //不论什么情况都要诊断，就算有最优解也有可能冗余
-      let diagnose = system.diagnose(Algorithm.DogLeg)
-      let conflictings = []
-      let hasConflicting = system.hasConflicting()
-      if (hasConflicting) {
-        let tags = new Tags()
-        system.getConflicting(tags)
-        for (let i = 0; i < tags.size(); i++) {
-          conflictings.push(tags.ptr(i))
-        }
-      }
-      let redundants = []
-      let hasRedundant = system.hasRedundant()
-      if (hasRedundant) {
-        let tags = new Tags()
-        system.getRedundant(tags)
-        for (let i = 0; i < tags.size(); i++) {
-          redundants.push(tags.ptr(i))
-        }
-      }
-      if (status != SolveStatus.Success.value && status != SolveStatus.Converged.value) {
-        resultsManager.update(systemsGCSQuery.active.result, {
-          status,
-          diagnose,
-          conflictings,
-          hasConflicting,
-          redundants,
-          hasRedundant,
-        })
-        this.reset()
-        //undoSolution
-        /* [问题]
-         * 是利用undoSolution还是直接clear
-         */
-        return result
-      }
-      system.applySolution()
-      let ds = new Dependents()
-      system.getDependentParams(ds)
-      let dependents = new Set() //[]
-      for (let i = 0; i < ds.size(); i++) {
-        dependents.add(ds.ptr(i))
-      }
+  //     let status = system.solve(true, Algorithm.DogLeg, false)
+  //     //不论什么情况都要诊断，就算有最优解也有可能冗余
+  //     let diagnose = system.diagnose(Algorithm.DogLeg)
+  //     let conflictings = []
+  //     let hasConflicting = system.hasConflicting()
+  //     if (hasConflicting) {
+  //       let tags = new Tags()
+  //       system.getConflicting(tags)
+  //       for (let i = 0; i < tags.size(); i++) {
+  //         conflictings.push(tags.ptr(i))
+  //       }
+  //     }
+  //     let redundants = []
+  //     let hasRedundant = system.hasRedundant()
+  //     if (hasRedundant) {
+  //       let tags = new Tags()
+  //       system.getRedundant(tags)
+  //       for (let i = 0; i < tags.size(); i++) {
+  //         redundants.push(tags.ptr(i))
+  //       }
+  //     }
+  //     if (status != SolveStatus.Success.value && status != SolveStatus.Converged.value) {
+  //       resultsManager.update(systemsGCSQuery.active.result, {
+  //         status,
+  //         diagnose,
+  //         conflictings,
+  //         hasConflicting,
+  //         redundants,
+  //         hasRedundant,
+  //       })
+  //       this.reset()
+  //       //undoSolution
+  //       /* [问题]
+  //        * 是利用undoSolution还是直接clear
+  //        */
+  //       return result
+  //     }
+  //     system.applySolution()
+  //     let ds = new Dependents()
+  //     system.getDependentParams(ds)
+  //     let dependents = new Set() //[]
+  //     for (let i = 0; i < ds.size(); i++) {
+  //       dependents.add(ds.ptr(i))
+  //     }
 
-      /*
-       * [优化]
-       * 获取求解信息获取方式通过遍历的方式低效
-       */
-      let dgs = new DependentsGroups()
-      system.getDependentParamsGroups(dgs)
-      let dependentsGroups = []
-      for (let r = 0; r < dgs.row(); r++) {
-        let column = new Set() //[]
-        for (let c = 0; c < dgs.column(r); c++) {
-          column.add(dgs.ptr(r, c))
-        }
-        dependentsGroups.push(column.values().toArray())
-      }
-      resultsManager.update(systemsGCSQuery.active.result, {
-        status,
-        dependents: dependents.values().toArray(),
-        dependentsGroups,
-        diagnose,
-        conflictings,
-        hasConflicting,
-        redundants,
-        hasRedundant,
-      })
-      return result
-    }, 0)
-  }
+  //     /*
+  //      * [优化]
+  //      * 获取求解信息获取方式通过遍历的方式低效
+  //      */
+  //     let dgs = new DependentsGroups()
+  //     system.getDependentParamsGroups(dgs)
+  //     let dependentsGroups = []
+  //     for (let r = 0; r < dgs.row(); r++) {
+  //       let column = new Set() //[]
+  //       for (let c = 0; c < dgs.column(r); c++) {
+  //         column.add(dgs.ptr(r, c))
+  //       }
+  //       dependentsGroups.push(column.values().toArray())
+  //     }
+  //     resultsManager.update(systemsGCSQuery.active.result, {
+  //       status,
+  //       dependents: dependents.values().toArray(),
+  //       dependentsGroups,
+  //       diagnose,
+  //       conflictings,
+  //       hasConflicting,
+  //       redundants,
+  //       hasRedundant,
+  //     })
+  //     return result
+  //   }, 0)
+  // }
 
   return {
     add() {
@@ -1036,7 +1036,85 @@ export function useSystems() {
     //   })
     //   return result
     // } /*, 16)*/,
-    solver: solverThrottle,
+    solver: function () {
+      let system = systemsGCSQuery.active.handle
+      let result = resultsQuery.get(systemsGCSQuery.active.result)
+      if (constraintsGCSQuery.all().length === 0) return result
+      resultsManager.backup(systemsGCSQuery.active.result)
+      // system.declareUnknowns(unknownsSetGCSQuery.active.handle)
+      system.initSolution(Algorithm.DogLeg)
+
+      let status = system.solve(true, Algorithm.DogLeg, false)
+      //不论什么情况都要诊断，就算有最优解也有可能冗余
+      let diagnose = system.diagnose(Algorithm.DogLeg)
+      let conflictings = []
+      let hasConflicting = system.hasConflicting()
+      if (hasConflicting) {
+        let tags = new Tags()
+        system.getConflicting(tags)
+        for (let i = 0; i < tags.size(); i++) {
+          conflictings.push(tags.ptr(i))
+        }
+      }
+      let redundants = []
+      let hasRedundant = system.hasRedundant()
+      if (hasRedundant) {
+        let tags = new Tags()
+        system.getRedundant(tags)
+        for (let i = 0; i < tags.size(); i++) {
+          redundants.push(tags.ptr(i))
+        }
+      }
+      if (status != SolveStatus.Success.value && status != SolveStatus.Converged.value) {
+        resultsManager.update(systemsGCSQuery.active.result, {
+          status,
+          diagnose,
+          conflictings,
+          hasConflicting,
+          redundants,
+          hasRedundant,
+        })
+        this.reset()
+        //undoSolution
+        /* [问题]
+         * 是利用undoSolution还是直接clear
+         */
+        return result
+      }
+      system.applySolution()
+      let ds = new Dependents()
+      system.getDependentParams(ds)
+      let dependents = new Set() //[]
+      for (let i = 0; i < ds.size(); i++) {
+        dependents.add(ds.ptr(i))
+      }
+
+      /*
+       * [优化]
+       * 获取求解信息获取方式通过遍历的方式低效
+       */
+      let dgs = new DependentsGroups()
+      system.getDependentParamsGroups(dgs)
+      let dependentsGroups = []
+      for (let r = 0; r < dgs.row(); r++) {
+        let column = new Set() //[]
+        for (let c = 0; c < dgs.column(r); c++) {
+          column.add(dgs.ptr(r, c))
+        }
+        dependentsGroups.push(column.values().toArray())
+      }
+      resultsManager.update(systemsGCSQuery.active.result, {
+        status,
+        dependents: dependents.values().toArray(),
+        dependentsGroups,
+        diagnose,
+        conflictings,
+        hasConflicting,
+        redundants,
+        hasRedundant,
+      })
+      return result
+    },
     active(index) {
       assertIndexFormList(systems, index, 'systems:active')
       systems.forEach((system, i) => {

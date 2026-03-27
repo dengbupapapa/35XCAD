@@ -4,9 +4,12 @@
     <div class="content">
       <a-collapse :bordered="false" v-model:activeKey="activeKey">
         <a-collapse-panel key="1" header="主要值">
-          <a-input
+          <a-input-number
+            style="width: 100%"
+            :step="0.001"
             :disabled="dimensionDistancesLengthGeometryDerived > 1"
-            v-model:value="inputValue"
+            v-model:value="input"
+            @blur="onBlur"
           />
         </a-collapse-panel>
       </a-collapse>
@@ -47,15 +50,13 @@ import {
   useConstraintsRelation as useConstraintsRelationConstraintQuery,
   useConstraints as useConstraintsConstraintQuery,
 } from './hooks/constraint-query'
-import {
-  useConstraintsRelation as useConstraintsRelationConstraintManager,
-  useConstraints as useConstraintsConstraintManager,
-} from './hooks/constraint-manager'
-let constraintsRelationConstraintManager = useConstraintsRelationConstraintManager()
+import { useConstraints as useConstraintsConstraintManager } from './hooks/constraint-manager'
+import { watch } from 'vue'
 let constraintsRelationConstraintQuery = useConstraintsRelationConstraintQuery()
-let constraintsConstraintManager = useConstraintsConstraintManager()
+let constraintsConstraintManager = useConstraintsConstraintManager({ effectDdebounce: true })
 let constraintsConstraintQuery = useConstraintsConstraintQuery()
-let inputValue = computed({
+let input = ref(0)
+let numeral = computed({
   get() {
     let dimensionDistance = dimensionDistancesGeometryDerived.value[0]
     let constraintsRelation = constraintsRelationConstraintQuery.get(
@@ -79,6 +80,16 @@ let inputValue = computed({
     constraintsConstraintManager.attach(constraint)
   },
 })
+function onBlur() {
+  numeral.value = input.value
+}
+watch(
+  () => numeral.value,
+  (numeral) => {
+    input.value = numeral
+  },
+  { immediate: true },
+)
 </script>
 <style scoped lang="less">
 .sidebar-dimension-distance {
