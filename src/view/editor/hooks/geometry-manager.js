@@ -12,6 +12,7 @@ import {
   usePolylinesHash as usePolylinesHashGeometry,
   useArcsHash as useArcsHashGeometry,
   useDimensionDistancesHash as useDimensionDistancesHashGeometry,
+  useDimensionDistancesCreatorHash as useDimensionDistancesCreatorHashGeometry,
   useDimensionAnglesHash as useDimensionAnglesHashGeometry,
 } from './geometry-provide-context.js'
 import {
@@ -888,14 +889,12 @@ export function useDimensionDistances() {
   let dimensionDistancesHashGeometry = useDimensionDistancesHashGeometry()
   let planesGeometryQuery = usePlanesGeometryQuery()
   let linesGeometryQuery = useLinesGeometryQuery()
-  let pointsGeometryQuery = usePointsGeometryQuery()
-  let pointsGeometryManager = usePoints()
-  let dimensionDistancesGeometryMapper = useDimensionDistancesGeometryMapper()
-  let toolTempGCSManager = useToolTempGCSManager()
+  let dimensionDistancesCreatorHashGeometry = useDimensionDistancesCreatorHashGeometry()
   return {
-    add(lines) {
+    add(lines, creator) {
       let dimensionDistance = {
         lines,
+        creator,
         id: nanoid(),
         plane: planesGeometryQuery?.active?.id,
       }
@@ -905,6 +904,9 @@ export function useDimensionDistances() {
       dimensionDistance.lines.forEach((id) => {
         let line = linesGeometryQuery.get(id)
         line.creator = dimensionDistance.id
+      })
+      dimensionDistance.creator.forEach((id) => {
+        dimensionDistancesCreatorHashGeometry.value[id] = dimensionDistance.id
       })
       dimensionDistancesGeometry.value.push(dimensionDistance)
       dimensionDistancesHashGeometry.value[dimensionDistance.id] = dimensionDistance
@@ -923,6 +925,9 @@ export function useDimensionDistances() {
       )
       let dimensionDistance = dimensionDistancesGeometry.value.splice(index, 1)[0]
       delete dimensionDistancesHashGeometry.value[dimensionDistance.id]
+      dimensionDistance.creator.forEach((id) => {
+        delete dimensionDistancesCreatorHashGeometry.value[id]
+      })
     },
     remove(dimensionDistance) {
       let index = dimensionDistancesGeometry.value.indexOf(dimensionDistance)
@@ -937,6 +942,9 @@ export function useDimensionDistances() {
       ;[...dimensionDistancesGeometry.value].forEach((dimensionDistance) => {
         dimensionDistancesGeometry.value.shift()
         delete dimensionDistancesHashGeometry.value[dimensionDistance.id]
+        dimensionDistance.creator.forEach((id) => {
+          delete dimensionDistancesCreatorHashGeometry.value[id]
+        })
       })
     },
   }

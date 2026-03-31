@@ -13,6 +13,7 @@ import {
   usePolylinesHash as usePolylinesHashGeometry,
   useArcsHash as useArcsHashGeometry,
   useDimensionDistancesHash as useDimensionDistancesHashGeometry,
+  useDimensionDistancesCreatorHash as useDimensionDistancesCreatorHashGeometry,
   useDimensionAnglesHash as useDimensionAnglesHashGeometry,
   useIncrement as useIncrementGeometry,
 } from './geometry-provide-context.js'
@@ -179,12 +180,19 @@ export function useArcs() {
 export function useDimensionDistances() {
   let dimensionDistances = useDimensionDistancesGeometry()
   let dimensionDistancesHash = useDimensionDistancesHashGeometry()
+  let dimensionDistancesCreatorHashGeometry = useDimensionDistancesCreatorHashGeometry()
   return {
     get(id) {
       return dimensionDistancesHash.value[id]
     },
     getByIndex(index) {
       return dimensionDistances.value[index]
+    },
+    getByCreator(id) {
+      let dimensionDistanceId = dimensionDistancesCreatorHashGeometry.value[id]
+      if (dimensionDistanceId) {
+        return dimensionDistancesHash.value[dimensionDistanceId]
+      }
     },
     indexOf(dimensionDistance) {
       return dimensionDistances.value.indexOf(dimensionDistance)
@@ -194,6 +202,9 @@ export function useDimensionDistances() {
     },
     hasById(id) {
       return !!this.get(id)
+    },
+    hasByCreator(id) {
+      return !!this.getByCreator(id)
     },
     all() {
       return dimensionDistances.value

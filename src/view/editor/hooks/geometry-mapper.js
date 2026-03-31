@@ -33,6 +33,7 @@ export function usePoints() {
   let linesGeometryQuery = useLinesGeometryQuery()
   let arcsGeometryQuery = useArcsGeometryQuery()
   let pointsGeometryQuery = usePointsGeometryQuery()
+  let dimensionDistancesGeometryQuery = useDimensionDistancesGeometryQuery()
   return {
     superior(batch) {
       if (!(batch instanceof Array)) {
@@ -58,6 +59,24 @@ export function usePoints() {
         },
       )
     },
+    subordinate(batch) {
+      if (!(batch instanceof Array)) {
+        batch = [batch]
+      }
+      return batch.reduce(
+        (prev, id) => {
+          if (dimensionDistancesGeometryQuery.hasByCreator(id)) {
+            let dimensionDistance = dimensionDistancesGeometryQuery.getByCreator(id)
+            prev.dimensionDistances.push(dimensionDistance.id)
+            return prev
+          }
+          return prev
+        },
+        {
+          dimensionDistances: [],
+        },
+      )
+    },
   }
 }
 export function useLines() {
@@ -79,9 +98,16 @@ export function useLines() {
         (prev, id) => {
           let line = linesGeometryQuery.get(id)
           prev.points.push(line.start, line.end)
+
+          if (dimensionDistancesGeometryQuery.hasByCreator(id)) {
+            let dimensionDistance = dimensionDistancesGeometryQuery.getByCreator(id)
+            prev.dimensionDistances.push(dimensionDistance.id)
+            return prev
+          }
+
           return prev
         },
-        { points: [] },
+        { points: [], dimensionDistances: [] },
       )
     },
     superior(batch) {

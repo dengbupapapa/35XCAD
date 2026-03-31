@@ -13,6 +13,7 @@ export default function useRegistry() {
   const arcsHash = ref({})
   const dimensionDistances = ref([])
   const dimensionDistancesHash = ref({})
+  const dimensionDistancesCreatorHash = ref({})
   const dimensionAngles = ref([])
   const dimensionAnglesHash = ref({})
   const increment = ref(0)
@@ -29,6 +30,7 @@ export default function useRegistry() {
   provide(arcsHashSymbol, arcsHash)
   provide(dimensionDistancesSymbol, dimensionDistances)
   provide(dimensionDistancesHashSymbol, dimensionDistancesHash)
+  provide(dimensionDistancesCreatorHashSymbol, dimensionDistancesCreatorHash)
   provide(dimensionAnglesSymbol, dimensionAngles)
   provide(dimensionAnglesHashSymbol, dimensionAnglesHash)
   provide(incrementSymbol, increment)
@@ -46,6 +48,8 @@ const polylinesHashSymbol = Symbol('polylines-hash')
 const arcsHashSymbol = Symbol('arcs-hash')
 const dimensionDistancesSymbol = Symbol('dimensionDistances')
 const dimensionDistancesHashSymbol = Symbol('dimensionDistances-hash')
+const dimensionDistancesCreatorHashSymbol = Symbol('dimensionDistances-creator-hash')
+
 const dimensionAnglesSymbol = Symbol('dimensionAngles')
 const dimensionAnglesHashSymbol = Symbol('dimensionAngles-hash')
 const incrementSymbol = Symbol('increment')
@@ -84,6 +88,9 @@ export function useDimensionDistances() {
 }
 export function useDimensionDistancesHash() {
   return inject(dimensionDistancesHashSymbol)
+}
+export function useDimensionDistancesCreatorHash() {
+  return inject(dimensionDistancesCreatorHashSymbol)
 }
 export function useDimensionAngles() {
   return inject(dimensionAnglesSymbol)

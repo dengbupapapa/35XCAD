@@ -33,26 +33,30 @@ export function usePoints() {
       pointsViewport.translation(index, position)
     },
     activate(id) {
-      let pointsGeometry = pointsGeometryQuery.get(id)
-      let index = pointsGeometryQuery.indexOf(pointsGeometry)
-      if (dimensionDistancesGeometryMapper.hasFormPointId(id)) {
-        pointsViewport.color(index, configGLStyle['dimension-distance-point-color-activated'])
-        pointsViewport.size(index, configGLStyle['dimension-distance-point-size-activated'])
-        return
-      }
-      pointsViewport.color(index, configGLStyle['point-color-activated'])
-      pointsViewport.size(index, configGLStyle['point-size-activated'])
+      setTimeout(() => {
+        let pointsGeometry = pointsGeometryQuery.get(id)
+        let index = pointsGeometryQuery.indexOf(pointsGeometry)
+        if (dimensionDistancesGeometryMapper.hasFormPointId(id)) {
+          pointsViewport.color(index, configGLStyle['dimension-distance-point-color-activated'])
+          pointsViewport.size(index, configGLStyle['dimension-distance-point-size-activated'])
+          return
+        }
+        pointsViewport.color(index, configGLStyle['point-color-activated'])
+        pointsViewport.size(index, configGLStyle['point-size-activated'])
+      })
     },
     deactivate(id) {
-      let pointsGeometry = pointsGeometryQuery.get(id)
-      let index = pointsGeometryQuery.indexOf(pointsGeometry)
-      if (dimensionDistancesGeometryMapper.hasFormPointId(id)) {
-        pointsViewport.color(index, configGLStyle['dimension-distance-point-color'])
-        pointsViewport.size(index, configGLStyle['dimension-distance-point-size'])
-        return
-      }
-      pointsViewport.color(index, configGLStyle['point-color'])
-      pointsViewport.color(index, configGLStyle['point-size'])
+      setTimeout(() => {
+        let pointsGeometry = pointsGeometryQuery.get(id)
+        let index = pointsGeometryQuery.indexOf(pointsGeometry)
+        if (dimensionDistancesGeometryMapper.hasFormPointId(id)) {
+          pointsViewport.color(index, configGLStyle['dimension-distance-point-color'])
+          pointsViewport.size(index, configGLStyle['dimension-distance-point-size'])
+          return
+        }
+        pointsViewport.color(index, configGLStyle['point-color'])
+        pointsViewport.color(index, configGLStyle['point-size'])
+      })
     },
     hover() {},
   }
@@ -87,26 +91,30 @@ export function useLines() {
       linesViewport.translation(index, start, end)
     },
     activate(id) {
-      let lineGeometry = linesGeometryQuery.get(id)
-      let index = linesGeometryQuery.indexOf(lineGeometry)
-      if (dimensionDistancesGeometryMapper.hasFormLineId(id)) {
-        linesViewport.lineColor(index, configGLStyle['dimension-distance-line-color-activated'])
-        linesViewport.lineWidth(index, configGLStyle['dimension-distance-line-width-activated'])
-        return
-      }
-      linesViewport.lineColor(index, configGLStyle['line-color-activated'])
-      linesViewport.lineWidth(index, configGLStyle['line-width-activated'])
+      setTimeout(() => {
+        let lineGeometry = linesGeometryQuery.get(id)
+        let index = linesGeometryQuery.indexOf(lineGeometry)
+        if (dimensionDistancesGeometryMapper.hasFormLineId(id)) {
+          linesViewport.lineColor(index, configGLStyle['dimension-distance-line-color-activated'])
+          linesViewport.lineWidth(index, configGLStyle['dimension-distance-line-width-activated'])
+          return
+        }
+        linesViewport.lineColor(index, configGLStyle['line-color-activated'])
+        linesViewport.lineWidth(index, configGLStyle['line-width-activated'])
+      })
     },
     deactivate(id) {
-      let lineGeometry = linesGeometryQuery.get(id)
-      let index = linesGeometryQuery.indexOf(lineGeometry)
-      if (dimensionDistancesGeometryMapper.hasFormLineId(id)) {
-        linesViewport.lineColor(index, configGLStyle['dimension-distance-line-color'])
-        linesViewport.lineWidth(index, configGLStyle['dimension-distance-line-width'])
-        return
-      }
-      linesViewport.lineColor(index, configGLStyle['line-color'])
-      linesViewport.lineWidth(index, configGLStyle['line-width'])
+      setTimeout(() => {
+        let lineGeometry = linesGeometryQuery.get(id)
+        let index = linesGeometryQuery.indexOf(lineGeometry)
+        if (dimensionDistancesGeometryMapper.hasFormLineId(id)) {
+          linesViewport.lineColor(index, configGLStyle['dimension-distance-line-color'])
+          linesViewport.lineWidth(index, configGLStyle['dimension-distance-line-width'])
+          return
+        }
+        linesViewport.lineColor(index, configGLStyle['line-color'])
+        linesViewport.lineWidth(index, configGLStyle['line-width'])
+      })
     },
     hover() {},
   }

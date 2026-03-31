@@ -83,11 +83,19 @@ export function useGeometrys() {
         dimensionDistances: dimensionDistancesSuperiorFromLines,
       } = linesGeometryMapper.superior([...geometryMap.lines, ...linesSuperiorFromPoints])
 
+      //反过来收集所从dimensionDistance
+      let { dimensionDistances: dimensionDistancesSubordinateFromPoints } =
+        pointsGeometryMapper.subordinate(geometryMap.points)
+      let { dimensionDistances: dimensionDistancesSubordinateFromLines } =
+        pointsGeometryMapper.subordinate([...geometryMap.lines, ...linesSuperiorFromPoints])
+
       //反过来收集相关所从lines
       let { lines: linesSubordinateFromDimensionDistances } =
         dimensionDistancesGeometryMapper.subordinate([
           ...geometryMap.dimensionDistances,
           ...dimensionDistancesSuperiorFromLines,
+          ...dimensionDistancesSubordinateFromPoints,
+          ...dimensionDistancesSubordinateFromLines,
         ])
       //多段线不用反向收集了，因为他不是单纯得一次性所有删除
       // let { lines: linesSubordinateFromPolylines } =polylinesGeometryMapper.subordinate([
@@ -109,6 +117,8 @@ export function useGeometrys() {
       // //polylines 不用直接移除，在移除line时去计算是否移除polyline
       // let { points: pointsSubordinateFromPolylines, lines: linesSubordinateFromPolylines } =
       //   polylinesGeometryMapper.subordinate(geometryMap.polylines)
+
+      //还需要收集有关联的（比如 点 或 线 被 尺寸约束的部分  ）
 
       let points = new Set([
         ...geometryMap.points,
@@ -340,30 +350,15 @@ export function useDimensionDistances() {
         dimensionDistancesGeometryManager.removeById(id)
       })
     },
-    /* [问题]
-     * 1、约束点被删除，要清理该约束（通过新增一个数据关系表记录？）
-     */
+
     addPonit2Point(point1Id, point2Id) {
       let pointGeometry1 = pointsGeometryQuery.get(point1Id)
       let pointGeometry2 = pointsGeometryQuery.get(point2Id)
+      //不是一个平面不让创建
+      if (pointGeometry1.plane !== pointGeometry2.plane) return
       /*
        * 创建主线
        */
-      // let mainPointStart = pointsGeometryManager.add([
-      //   pointGeometry1.x,
-      //   pointGeometry1.y,
-      //   pointGeometry1.z,
-      // ])
-      // let mainPointEnd = pointsGeometryManager.add([
-      //   pointGeometry2.x,
-      //   pointGeometry2.y,
-      //   pointGeometry2.z,
-      // ])
-      // let mainLine = linesGeometryManager.add(mainPointStart.id, mainPointEnd.id)
-
-      // /*
-      //  * 平移主线
-      //  */
       let plane = planesGeometryQuery.get(pointGeometry1.plane)
       let vector3Start = new Vector3(pointGeometry1.x, pointGeometry1.y, pointGeometry1.z)
       let vector3End = new Vector3(pointGeometry2.x, pointGeometry2.y, pointGeometry2.z)
@@ -379,16 +374,6 @@ export function useDimensionDistances() {
       vOffset *= (space / height) * 2
 
       let [xOffset, yOffset, zOffset] = planeCoords2worldCoords([uOffset, vOffset], plane)
-
-      // ;[mainPointStart, mainPointEnd].forEach((point) => {
-      //   let index = pointsGeometryQuery.indexOf(point)
-      //   pointsGeometryManager.updatePure(
-      //     index,
-      //     new Vector3(point.x, point.y, point.z)
-      //       .add(new Vector3(xOffset, yOffset, zOffset))
-      //       .toArray(),
-      //   )
-      // })
 
       let mainPointStart = pointsGeometryManager.add(
         new Vector3(pointGeometry1.x, pointGeometry1.y, pointGeometry1.z)
@@ -419,11 +404,10 @@ export function useDimensionDistances() {
       /*
        * 创建dimension数据
        */
-      let dimensionDistance = dimensionDistancesGeometryManager.add([
-        mainLine.id,
-        crossLine1.id,
-        crossLine2.id,
-      ])
+      let dimensionDistance = dimensionDistancesGeometryManager.add(
+        [mainLine.id, crossLine1.id, crossLine2.id],
+        [point1Id, point2Id],
+      )
 
       /*
        * 创建约束
@@ -452,6 +436,8 @@ export function useDimensionDistances() {
       constraintsDispatch.add('addConstraintP2PCoincident', [point2Id, crossPointStart2.id])
       constraintsDispatch.add('addConstraintP2PCoincident', [crossPointEnd2.id, mainPointEnd.id])
       switchConstraint(dimensionDistance.id, false)
+
+      return dimensionDistance
     },
 
     updateBefore(id) {

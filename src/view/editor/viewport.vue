@@ -24,21 +24,6 @@ import {
   useArcs as useArcsEntitie,
 } from './hooks/viewport-provide-context.js'
 import {
-  // useSelectPointClick,
-  useAddPointClick,
-  // useRemovePointClick,
-  useAddLineClick,
-  useAddPolylineClick,
-  useAddArcClick,
-  // useMovePointClick,
-  // useMoveLineClick,
-  useSelect,
-  useMove,
-  useDelete,
-  useControls,
-} from './hooks/viewport-behavior'
-import { useDimension } from './hooks/viewport-behavior-dimension'
-import {
   usePointsHash,
   useLinesHash,
   usePoints as usePointsGeometry,
@@ -124,22 +109,8 @@ raycaster.setLinesGeometry(linesGeometry.value)
 /*
  * 行为
  */
-// useSelectPointClick()
-useAddPointClick()
-// useRemovePointClick()
-// useMovePointClick()
 
-useAddLineClick()
-// useMoveLineClick()
-
-useAddPolylineClick()
-useAddArcClick()
-useSelect()
-useMove()
-useDelete()
-
-useControls()
-
-useDimension()
+import useViewportBehavior from './hooks/viewport-behavior'
+useViewportBehavior()
 </script>
 <style lang="less" scoped></style>

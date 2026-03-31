@@ -7,10 +7,12 @@
           <a-input-number
             style="width: 100%"
             :step="0.001"
+            :precision="3"
             :disabled="dimensionDistancesLengthGeometryDerived > 1"
             v-model:value="input"
             @blur="onComplete"
             @pressEnter="onComplete"
+            @change="onComplete"
           />
         </a-collapse-panel>
       </a-collapse>
