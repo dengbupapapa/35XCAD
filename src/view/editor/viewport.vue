@@ -22,6 +22,7 @@ import {
   usePoints as usePointsEntitie,
   useLines as useLinesEntitie,
   useArcs as useArcsEntitie,
+  useTexts as useTextsEntitie,
 } from './hooks/viewport-provide-context.js'
 import {
   usePointsHash,
@@ -42,6 +43,7 @@ const planesEntitie = usePlanesEntitie()
 const pointsEntitie = usePointsEntitie()
 const linesEntitie = useLinesEntitie()
 const arcsEntitie = useArcsEntitie()
+const textsEntitie = useTextsEntitie()
 
 renderer.setPixelRatio(window.devicePixelRatio)
 renderer.setClearColor(0x000000, 0.0)
@@ -52,6 +54,7 @@ scene.add(planesEntitie)
 scene.add(pointsEntitie)
 scene.add(linesEntitie)
 scene.add(arcsEntitie)
+scene.add(textsEntitie)
 
 //元素变化
 watch(elViewport, (element) => {
@@ -69,6 +72,7 @@ const ro = new ResizeObserver((entries, observer) => {
     pointsEntitie.resolution = [width, height]
     linesEntitie.resolution = [width, height]
     arcsEntitie.resolution = [width, height]
+    textsEntitie.resolution = [width, height]
   }
 })
 

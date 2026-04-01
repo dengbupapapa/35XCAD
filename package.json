@@ -16,6 +16,7 @@
   "dependencies": {
     "@ant-design/icons-vue": "^7.0.1",
     "@dagrejs/graphlib": "^4.0.1",
+    "@mapbox/tiny-sdf": "^2.0.7",
     "@vueuse/core": "^14.1.0",
     "ant-design-vue": "~4.2.6",
     "hotkeys-js": "^4.0.0",

@@ -1,6 +1,7 @@
 import {
   useSelectPoints as useSelectPointsInteractionManager,
   useSelectLines as useSelectLinesInteractionManager,
+  useSelectPointsStrict as useSelectPointsStrictInteractionManager,
 } from './interaction-manager'
 // import {
 //   useSelectPoints as useSelectPointsInteractionQuery,
@@ -46,6 +47,52 @@ export function useSelectGeometrys() {
     clear() {
       selectsPointsInteractionManager.clear()
       selectLinesInteractionManager.clear()
+    },
+    set(ids) {
+      if (!(ids instanceof Array)) {
+        ids = [ids]
+      }
+      this.clear()
+      this.push(ids)
+    },
+  }
+}
+
+export function useSelectGeometrysStrict() {
+  let selectPointsStrictInteractionManager = useSelectPointsStrictInteractionManager()
+  // let selectLinesInteractionManager = useSelectLinesInteractionManager()
+  let selectsPointsGeometryQuery = useSelectPointsGeometryQuery()
+  let selectLinesGeometryQuery = useSelectLinesGeometryQuery()
+  return {
+    push(ids) {
+      if (!(ids instanceof Array)) {
+        ids = [ids]
+      }
+      ids.forEach((id) => {
+        if (selectsPointsGeometryQuery.hasById(id)) {
+          selectPointsStrictInteractionManager.add(id)
+        }
+        // if (selectLinesGeometryQuery.hasById(id)) {
+        //   selectLinesInteractionManager.push(id)
+        // }
+      })
+    },
+    remove(ids) {
+      if (!(ids instanceof Array)) {
+        ids = [ids]
+      }
+      ids.forEach((id) => {
+        if (selectsPointsGeometryQuery.hasById(id)) {
+          selectPointsStrictInteractionManager.remove(id)
+        }
+        // if (selectLinesGeometryQuery.hasById(id)) {
+        //   selectLinesInteractionManager.remove(id)
+        // }
+      })
+    },
+    clear() {
+      selectPointsStrictInteractionManager.clear()
+      // selectLinesInteractionManager.clear()
     },
     set(ids) {
       if (!(ids instanceof Array)) {

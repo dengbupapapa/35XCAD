@@ -14,6 +14,12 @@ import {
   DoubleSide,
   FrontSide,
   BackSide,
+  DataTexture,
+  PlaneGeometry,
+  Mesh,
+  RedFormat,
+  UnsignedByteType,
+  Object3D,
 } from 'three'
 import config from '../config-gl-style.json'
 
@@ -866,3 +872,124 @@ export class Arcs {
     }
   `
 }
+
+import TinySDF from '@mapbox/tiny-sdf'
+const tinySdf = new TinySDF({
+  fontSize: 24, // Font size in pixels
+  fontFamily: 'sans-serif', // CSS font-family
+  fontWeight: 'normal', // CSS font-weight
+  fontStyle: 'normal', // CSS font-style
+  buffer: 3, // Whitespace buffer around a glyph in pixels
+  radius: 1, // How many pixels around the glyph shape to use for encoding distance
+  cutoff: 0.25, // How much of the radius (relative) is used for the inside part of the glyph
+})
+
+export class Texts {
+  impl
+  #resolution = new Vector2(500, 500)
+  #MAX_SDFS = 10000
+  #SDFS_MAP = new Map()
+  constructor() {
+    this.impl = new Group()
+    // new THREE.InstancedMesh( geometry, material, count );
+  }
+  set resolution(resolution) {
+    this.#resolution.set(...resolution)
+  }
+  get resolution() {
+    return this.#resolution.toArray()
+  }
+  #createSDFS(text) {
+    const bitmap = tinySdf.draw(text) // draw a single character
+    const texture = new DataTexture(
+      bitmap.data,
+      bitmap.width,
+      bitmap.height,
+      RedFormat,
+      UnsignedByteType,
+    )
+    texture.unpackAlignment = 1
+    texture.needsUpdate = true
+    // texture.minFilter = THREE.LinearFilter
+    // texture.magFilter = THREE.LinearFilter
+    const geometry = new PlaneGeometry(1, 1)
+    const material = new ShaderMaterial({
+      uniforms: {
+        uMap: { value: texture },
+        uResolution: { value: this.#resolution },
+        uFontSize: { value: 18 },
+      },
+      transparent: true,
+      vertexShader: Texts.shaderVertex,
+      fragmentShader: Texts.shaderFragment,
+      side: DoubleSide,
+    })
+    const instancedMesh = new InstancedMesh(geometry, material, this.#MAX_SDFS)
+    instancedMesh.count = 0
+    instancedMesh.frustumCulled = false
+    this.impl.add(instancedMesh)
+    this.#SDFS_MAP.set(text, instancedMesh)
+  }
+  add(text, position, normal = [0, 1, 0], color = config['point-color']) {
+    if (!this.#SDFS_MAP.has(text)) {
+      this.#createSDFS(text)
+    }
+    let sdfs = this.#SDFS_MAP.get(text)
+    let index = sdfs.count++
+    this.translation(index, text, normal, position)
+    return index
+  }
+  translation(index, text, normal, position) {
+    let sdfs = this.#SDFS_MAP.get(text)
+    normal = new Vector3(...normal)
+    dummy.position.set(position[0], position[1], position[2])
+    dummy.quaternion.setFromUnitVectors(new Vector3(0, 0, 1), normal)
+    dummy.updateMatrix()
+    sdfs.setMatrixAt(index, dummy.matrix)
+    sdfs.instanceMatrix.needsUpdate = true
+  }
+
+  static shaderVertex = `
+    uniform vec2 uResolution;   
+    uniform float uFontSize;    
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+
+      vec4 worldCenter = instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0);
+      vec4 clipCenter = projectionMatrix * modelViewMatrix * worldCenter;
+      mat3 m = mat3(instanceMatrix);
+      vec3 x = normalize(m[0]);
+      vec3 y = normalize(m[1]);
+      vec3 z = normalize(m[2]);
+      mat3 rotation = mat3(x, y, z);
+      vec3 rotated = rotation * position;
+      //因为是正交相机去除了透视矩阵，为了去除的缩放
+      vec4 clipPosition =  viewMatrix * vec4(rotated, 1.0);
+      vec2 pixel = uFontSize / uResolution * 2.0;
+    
+      clipCenter.xy += clipPosition.xy * pixel * clipCenter.w;
+    
+      gl_Position = clipCenter;
+    }
+  `
+
+  static shaderFragment = `
+    uniform sampler2D uMap;
+    varying vec2 vUv;
+
+    void main() {
+      vec2 uv = vec2(vUv.x, 1.0 - vUv.y);
+      vec4 tex = texture2D(uMap, uv);
+      if(tex.r==0.0){
+        discard;
+      }
+      float dist = tex.r;
+      float alpha = smoothstep(0.5 - 0.1, 0.5 + 0.1, dist);
+      gl_FragColor = vec4(1.0, 0.0, 0.0, alpha);
+      // gl_FragColor = vec4(1.0,0.0,0.0, tex.r);
+    }
+  `
+}
+
+const dummy = new Object3D()

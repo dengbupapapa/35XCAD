@@ -1,11 +1,13 @@
 import {
   usePoints as usePointsViewport,
   useLines as useLinesViewport,
+  useTexts as useTextsViewport,
 } from './viewport-provide-context'
 import { useDimensionDistances as useDimensionDistancesGeometryMapper } from './geometry-mapper'
 import {
   useLines as useLinesGeometryQuery,
   usePoints as usePointsGeometryQuery,
+  useChars as useCharsGeometryQuery,
 } from './geometry-query'
 import configGLStyle from '../config-gl-style.json'
 export function usePoints() {
@@ -117,5 +119,14 @@ export function useLines() {
       })
     },
     hover() {},
+  }
+}
+
+export function useChars() {
+  let textsViewport = useTextsViewport()
+  return {
+    add(text, position, normal) {
+      return textsViewport.add(text, position, normal)
+    },
   }
 }

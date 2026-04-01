@@ -120,7 +120,6 @@ export function useSelectPointsStrict() {
       if (!(ids instanceof Array)) {
         ids = [ids]
       }
-
       ids = ids.filter((id) => {
         return selectPointsStrictInteractionQuery.check(id)
       })

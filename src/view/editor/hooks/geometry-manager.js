@@ -14,6 +14,8 @@ import {
   useDimensionDistancesHash as useDimensionDistancesHashGeometry,
   useDimensionDistancesCreatorHash as useDimensionDistancesCreatorHashGeometry,
   useDimensionAnglesHash as useDimensionAnglesHashGeometry,
+  useChars as useCharsGeometry,
+  useCharsHash as useCharsHashGeometry,
 } from './geometry-provide-context.js'
 import {
   usePlanes as usePlanesGeometryQuery,
@@ -21,6 +23,7 @@ import {
   useLines as useLinesGeometryQuery,
   useArcs as useArcsGeometryQuery,
   usePolylines as usePolylinesGeometryQuery,
+  useChars as useCharsGeometryQuery,
   // useConstraints as useConstraintsGeometryQuery,
   // useConstraintsIncrement as useConstraintsIncrementGeometryQuery,
 } from './geometry-query.js'
@@ -57,6 +60,7 @@ import {
 import {
   usePoints as usePointsViewportManager,
   useLines as useLinesViewportManager,
+  useChars as useCharsViewportManager,
 } from './viewport-manager.js'
 import {
   nanoid,
@@ -891,9 +895,10 @@ export function useDimensionDistances() {
   let linesGeometryQuery = useLinesGeometryQuery()
   let dimensionDistancesCreatorHashGeometry = useDimensionDistancesCreatorHashGeometry()
   return {
-    add(lines, creator) {
+    add(lines, chars, creator) {
       let dimensionDistance = {
         lines,
+        chars,
         creator,
         id: nanoid(),
         plane: planesGeometryQuery?.active?.id,
@@ -1002,6 +1007,59 @@ export function useDimensionAngles() {
       ;[...dimensionAnglesGeometry.value].forEach((dimensionAngle) => {
         dimensionAnglesGeometry.value.shift()
         delete dimensionAnglesHashGeometry.value[dimensionAngle.id]
+      })
+    },
+  }
+}
+
+export function useChars() {
+  let charsGeometry = useCharsGeometry()
+  let charsHashGeometry = useCharsHashGeometry()
+  let planesGeometryQuery = usePlanesGeometryQuery()
+  let charsViewportManager = useCharsViewportManager()
+  return {
+    add(content, position) {
+      let char = {
+        x: position[0],
+        y: position[1],
+        z: position[2],
+        content,
+        id: nanoid(),
+        plane: planesGeometryQuery?.active?.id,
+      }
+      return this.attach(char)
+    },
+    attach(char) {
+      charsGeometry.value.push(char)
+      charsHashGeometry.value[char.id] = char
+      let plane = planesGeometryQuery.get(char.plane)
+      let index = charsViewportManager.add(char.content, [char.x, char.y, char.z], plane.normal)
+      char.index = index
+      return char
+    },
+    load(charsGeometry) {
+      charsGeometry.forEach((charGeometry) => {
+        this.attach(charGeometry)
+      })
+    },
+    removeByIndex(index) {
+      assertIndexFormList(charsGeometry.value, index, 'charsGeometry:removeByIndex')
+      let char = charsGeometry.value.splice(index, 1)[0]
+      delete charsHashGeometry.value[char.id]
+    },
+    remove(char) {
+      let index = charsGeometry.value.indexOf(char)
+      this.removeByIndex(index)
+    },
+    removeById(id) {
+      let char = charsHashGeometry.value[id]
+      let index = charsGeometry.value.indexOf(char)
+      this.removeByIndex(index)
+    },
+    clear() {
+      ;[...charsGeometry.value].forEach((char) => {
+        charsGeometry.value.shift()
+        delete charsHashGeometry.value[char.id]
       })
     },
   }

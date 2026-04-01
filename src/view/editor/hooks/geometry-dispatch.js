@@ -4,6 +4,7 @@ import {
   usePolylines as usePolylinesGeometryManager,
   useArcs as useArcsGeometryManager,
   useDimensionDistances as useDimensionDistancesGeometryManager,
+  useChars as useCharsGeometryManager,
 } from './geometry-manager'
 import {
   usePlanes as usePlanesGeometryQuery,
@@ -273,6 +274,7 @@ export function useDimensionDistances() {
   let constraintsDispatch = useConstraintsDispatch()
   let dimensionDistancesGeometryMapper = useDimensionDistancesGeometryMapper()
   let selectGeometrysInteractionDispatch = useSelectGeometrysInteractionDispatch()
+  let charsGeometryManager = useCharsGeometryManager()
 
   function setConstraintDistance(id, constraint) {
     let dimensionDistancesGeometry = dimensionDistancesGeometryQuery.get(id)
@@ -375,16 +377,14 @@ export function useDimensionDistances() {
 
       let [xOffset, yOffset, zOffset] = planeCoords2worldCoords([uOffset, vOffset], plane)
 
-      let mainPointStart = pointsGeometryManager.add(
-        new Vector3(pointGeometry1.x, pointGeometry1.y, pointGeometry1.z)
-          .add(new Vector3(xOffset, yOffset, zOffset))
-          .toArray(),
-      )
-      let mainPointEnd = pointsGeometryManager.add(
-        new Vector3(pointGeometry2.x, pointGeometry2.y, pointGeometry2.z)
-          .add(new Vector3(xOffset, yOffset, zOffset))
-          .toArray(),
-      )
+      let mainPointStartPosition = new Vector3(pointGeometry1.x, pointGeometry1.y, pointGeometry1.z)
+        .add(new Vector3(xOffset, yOffset, zOffset))
+        .toArray()
+      let mainPointEndPosition = new Vector3(pointGeometry2.x, pointGeometry2.y, pointGeometry2.z)
+        .add(new Vector3(xOffset, yOffset, zOffset))
+        .toArray()
+      let mainPointStart = pointsGeometryManager.add(mainPointStartPosition)
+      let mainPointEnd = pointsGeometryManager.add(mainPointEndPosition)
       let mainLine = linesGeometryManager.add(mainPointStart.id, mainPointEnd.id)
 
       /*
@@ -402,11 +402,28 @@ export function useDimensionDistances() {
       let crossLine2 = linesGeometryManager.add(crossPointStart2.id, crossPointEnd2.id)
 
       /*
+       * 创建数值
+       */
+      // let chars = vector3Line
+      //   .length()
+      //   .toString()
+      //   .split('')
+      //   .splice(0, 5)
+      //   .map((content, index) => {
+      //     let char = charsGeometryManager.add(
+      //       content,
+      //       new Vector3(...mainPointEndPosition).add(new Vector3(0.035 * index, 0, 0)).toArray(),
+      //     )
+      //     return char.id
+      //   })
+
+      /*
        * 创建dimension数据
        */
       let dimensionDistance = dimensionDistancesGeometryManager.add(
         [mainLine.id, crossLine1.id, crossLine2.id],
-        [point1Id, point2Id],
+        [],
+        [(point1Id, point2Id)],
       )
 
       /*

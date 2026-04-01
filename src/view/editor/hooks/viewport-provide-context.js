@@ -1,6 +1,6 @@
 import { provide, inject } from 'vue'
 import { Renderer, Scene, OrthographicCamera, Controls } from '../core/gl-viewport'
-import { Planes, Points, Lines, Arcs } from '../core/gl-entitie'
+import { Planes, Points, Lines, Arcs, Texts } from '../core/gl-entitie'
 import { Raycaster } from '../core/gl-query'
 
 export default function useRegistry() {
@@ -13,6 +13,7 @@ export default function useRegistry() {
   const points = new Points()
   const lines = new Lines()
   const arcs = new Arcs()
+  const texts = new Texts()
   provide(cameraSymbol, camera)
   provide(sceneSymbol, scene)
   provide(rendererSymbol, renderer)
@@ -22,6 +23,7 @@ export default function useRegistry() {
   provide(pointsSymbol, points)
   provide(linesSymbol, lines)
   provide(arcsSymbol, arcs)
+  provide(textsSymbol, texts)
 }
 
 const cameraSymbol = Symbol('camera')
@@ -33,6 +35,7 @@ const planesSymbol = Symbol('planes')
 const pointsSymbol = Symbol('points')
 const linesSymbol = Symbol('lines')
 const arcsSymbol = Symbol('arcs')
+const textsSymbol = Symbol('texts')
 export function useCamera() {
   return inject(cameraSymbol)
 }
@@ -59,4 +62,7 @@ export function useLines() {
 }
 export function useArcs() {
   return inject(arcsSymbol)
+}
+export function useTexts() {
+  return inject(textsSymbol)
 }

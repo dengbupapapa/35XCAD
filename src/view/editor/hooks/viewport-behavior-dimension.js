@@ -16,7 +16,10 @@ import {
   useSelectGeometrysStrict as useSelectGeometrysStrictInteractionQuery,
   useSelectGeometrys as useSelectGeometrysInteractionQuery,
 } from './interaction-query'
-import { useSelectGeometrys as useSelectGeometrysInteractionDispatch } from './interaction-dispatch'
+import {
+  useSelectGeometrys as useSelectGeometrysInteractionDispatch,
+  useSelectGeometrysStrict as useSelectGeometrysStrictInteractionDispatch,
+} from './interaction-dispatch'
 import { viewport2ndc } from '../utils/simple'
 
 /*
@@ -156,6 +159,7 @@ function useDimensionDistancePonit2Point() {
   return {
     onMousedown() {
       let selectPointsStrict = selectPointsStrictInteractionQuery.get()
+      // console.log(selectPointsStrict)
       if (selectPointsStrict.length !== 2) return false
       if (selectPointsStrict.some((id) => dimensionDistancesGeometryMapper.hasFormPointId(id))) {
         return false
@@ -163,7 +167,9 @@ function useDimensionDistancePonit2Point() {
       let dimensionDistance = dimensionDistancesGeometryDispatch.addPonit2Point(
         ...selectPointsStrict,
       )
-      dimensionDistancesGeometryDispatch.activate(dimensionDistance.lines[0])
+      setTimeout(() => {
+        dimensionDistancesGeometryDispatch.activate(dimensionDistance.lines[0])
+      })
       return true
     },
   }
@@ -177,22 +183,34 @@ export function useMove() {
   const modesManagerInteractions = useModesManagerInteractions()
   const moveViewportBehaviorCursor = useMoveViewportBehaviorCursor(false)
   const selectGeometrysInteractionQuery = useSelectGeometrysInteractionQuery()
+  const selectGeometrysStrictInteractionQuery = useSelectGeometrysStrictInteractionQuery()
   const helpersGeometryMapper = useHelpersGeometryMapper()
   const selectGeometrysInteractionDispatch = useSelectGeometrysInteractionDispatch()
+  const selectGeometrysStrictInteractionDispatch = useSelectGeometrysStrictInteractionDispatch()
   const renderer = useRenderer()
   const canvas = renderer.element()
 
   function onMousedown(event) {
-    // let selectedHelpersGeometry = selectGeometrysInteractionQuery.get().filter((id) => {
-    //   return helpersGeometryMapper.hasFormPointId(id) || helpersGeometryMapper.hasFormLineId(id)
-    // })
     let selectedNonHelpersGeometry = selectGeometrysInteractionQuery.get().filter((id) => {
       return !helpersGeometryMapper.hasFormPointId(id) && !helpersGeometryMapper.hasFormLineId(id)
     })
+    let selectedNonHelpersGeometryStrict = selectGeometrysStrictInteractionQuery
+      .get()
+      .filter((id) => {
+        return !helpersGeometryMapper.hasFormPointId(id) && !helpersGeometryMapper.hasFormLineId(id)
+      })
+    let hasNonHelpers = false
+
     if (selectedNonHelpersGeometry.length > 0) {
       selectGeometrysInteractionDispatch.set(selectedNonHelpersGeometry)
-      return
+      hasNonHelpers = true
     }
+    //一定要放后面因为selectGeometrysInteractionDispatch.set会有清理的严格类型的情况
+    if (selectedNonHelpersGeometryStrict.length > 0) {
+      selectGeometrysStrictInteractionDispatch.set(selectedNonHelpersGeometryStrict)
+      hasNonHelpers = true
+    }
+    if (hasNonHelpers) return
     moveViewportBehaviorCursor.onMousedown(event)
   }
   function onMousemove(event) {
