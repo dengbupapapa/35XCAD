@@ -3,29 +3,45 @@ import {
   useLines as useLinesViewport,
   useTexts as useTextsViewport,
 } from './viewport-provide-context'
-import { useDimensionDistances as useDimensionDistancesGeometryMapper } from './geometry-mapper'
+import {
+  useDimensionDistances as useDimensionDistancesGeometryMapper,
+  useTexts as useTextsGeometryMapper,
+} from './geometry-mapper'
 import {
   useLines as useLinesGeometryQuery,
   usePoints as usePointsGeometryQuery,
-  useChars as useCharsGeometryQuery,
+  useTexts as useTextsGeometryQuery,
+  usePlanes as usePlanesGeometryQuery,
 } from './geometry-query'
-import configGLStyle from '../config-gl-style.json'
+import configGLStyle from '../config-ui.json'
 export function usePoints() {
   let pointsViewport = usePointsViewport()
   let dimensionDistancesGeometryMapper = useDimensionDistancesGeometryMapper()
+  let textsGeometryMapper = useTextsGeometryMapper()
   let pointsGeometryQuery = usePointsGeometryQuery()
   return {
-    add(id, position) {
+    add(id) {
       setTimeout(() => {
+        let pointGeometry = pointsGeometryQuery.get(id)
+        if (textsGeometryMapper.hasFormPointId(id)) {
+          let text = textsGeometryMapper.getFormPointId(id)
+          if (dimensionDistancesGeometryMapper.hasFormText(text)) {
+            return pointsViewport.add(
+              [pointGeometry.x, pointGeometry.y, pointGeometry.z],
+              configGLStyle['dimension-distance-numerical-point-size'],
+              configGLStyle['dimension-distance-numerical-point-color'],
+            )
+          }
+        }
         if (dimensionDistancesGeometryMapper.hasFormPointId(id)) {
-          let pointGeometry = pointsGeometryQuery.get(id)
           return pointsViewport.add(
             [pointGeometry.x, pointGeometry.y, pointGeometry.z],
             configGLStyle['dimension-distance-point-size'],
             configGLStyle['dimension-distance-point-color'],
           )
         }
-        pointsViewport.add(position)
+
+        pointsViewport.add([pointGeometry.x, pointGeometry.y, pointGeometry.z])
       })
     },
     remove(index) {
@@ -70,12 +86,12 @@ export function useLines() {
   let linesGeometryQuery = useLinesGeometryQuery()
   let pointsGeometryQuery = usePointsGeometryQuery()
   return {
-    add(id, start, end) {
+    add(id) {
       setTimeout(() => {
+        let lineGeometry = linesGeometryQuery.get(id)
+        let pointGeometryStart = pointsGeometryQuery.get(lineGeometry.start)
+        let pointGeometryEnd = pointsGeometryQuery.get(lineGeometry.end)
         if (dimensionDistancesGeometryMapper.hasFormLineId(id)) {
-          let lineGeometry = linesGeometryQuery.get(id)
-          let pointGeometryStart = pointsGeometryQuery.get(lineGeometry.start)
-          let pointGeometryEnd = pointsGeometryQuery.get(lineGeometry.end)
           return linesViewport.add(
             [pointGeometryStart.x, pointGeometryStart.y, pointGeometryStart.z],
             [pointGeometryEnd.x, pointGeometryEnd.y, pointGeometryEnd.z],
@@ -83,7 +99,10 @@ export function useLines() {
             configGLStyle['dimension-distance-line-color'],
           )
         }
-        linesViewport.add(start, end)
+        linesViewport.add(
+          [pointGeometryStart.x, pointGeometryStart.y, pointGeometryStart.z],
+          [pointGeometryEnd.x, pointGeometryEnd.y, pointGeometryEnd.z],
+        )
       })
     },
     remove(index) {
@@ -122,11 +141,32 @@ export function useLines() {
   }
 }
 
-export function useChars() {
+export function useTexts() {
   let textsViewport = useTextsViewport()
+  let textsGeometryQuery = useTextsGeometryQuery()
+  let planesGeometryQuery = usePlanesGeometryQuery()
+  let pointsGeometryQuery = usePointsGeometryQuery()
   return {
-    add(text, position, normal) {
-      return textsViewport.add(text, position, normal)
+    add(id) {
+      let textGeometry = textsGeometryQuery.get(id)
+      let planeGeometry = planesGeometryQuery.get(textGeometry.plane)
+      let pointGeometry = pointsGeometryQuery.get(textGeometry.point)
+      return textsViewport.add(
+        textGeometry.content,
+        [pointGeometry.x, pointGeometry.y, pointGeometry.z],
+        planeGeometry,
+      )
+    },
+    translation(indexs, position, plane) {
+      textsViewport.translation(indexs, position, plane)
+    },
+    rotation(indexs, angle, center, plane) {
+      textsViewport.rotation(indexs, angle, center, plane)
+    },
+    remove(id) {
+      let textGeometry = textsGeometryQuery.get(id)
+      console.log(textGeometry)
+      textsViewport.remove(textGeometry.indexs)
     },
   }
 }

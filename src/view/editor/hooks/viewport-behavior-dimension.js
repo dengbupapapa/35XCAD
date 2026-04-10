@@ -10,7 +10,10 @@ import {
   useHelpers as useHelpersGeometryMapper,
 } from './geometry-mapper'
 import useModesManagerInteractions from './modes-manager-interactions.js'
-import { useSelectPointsStrict as useSelectPointsStrictInteractionManager } from './interaction-manager.js'
+import {
+  useSelectPointsStrict as useSelectPointsStrictInteractionManager,
+  useSelectPoints as useSelectPointsInteractionManager,
+} from './interaction-manager.js'
 import {
   useSelectPointsStrict as useSelectPointsStrictInteractionQuery,
   useSelectGeometrysStrict as useSelectGeometrysStrictInteractionQuery,
@@ -33,6 +36,7 @@ export function useSelect() {
   const canvas = renderer.element()
   const selectGeometrysInteractionDispatch = useSelectGeometrysInteractionDispatch()
   const selectPointsStrictInteractionManager = useSelectPointsStrictInteractionManager()
+  const selectPointsInteractionManager = useSelectPointsInteractionManager()
   const selectPoints = useSelectPoints()
   const selectLines = useSelectLines()
   const dimensionDistancePonit2Point = useDimensionDistancePonit2Point()
@@ -49,7 +53,8 @@ export function useSelect() {
     }
     // selectLines.onMousedown(state, event)
     if (dimensionDistancePonit2Point.onMousedown()) {
-      selectPointsStrictInteractionManager.clear()
+      selectPointsInteractionManager.clear()
+      // selectPointsStrictInteractionManager.clear()
     }
   }
 
@@ -159,7 +164,6 @@ function useDimensionDistancePonit2Point() {
   return {
     onMousedown() {
       let selectPointsStrict = selectPointsStrictInteractionQuery.get()
-      // console.log(selectPointsStrict)
       if (selectPointsStrict.length !== 2) return false
       if (selectPointsStrict.some((id) => dimensionDistancesGeometryMapper.hasFormPointId(id))) {
         return false

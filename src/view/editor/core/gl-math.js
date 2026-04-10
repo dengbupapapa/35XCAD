@@ -86,6 +86,9 @@ export class Vector2 {
   angle(...args) {
     return this.impl.angle(...args.map(({ impl }) => impl))
   }
+  angleTo(...args) {
+    return this.impl.angleTo(...args.map(({ impl }) => impl))
+  }
   set x(x) {
     this.impl.x = x
   }

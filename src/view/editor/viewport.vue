@@ -2,17 +2,19 @@
   <div ref="viewport" style="width: 100%; height: 100%">
     <!-- <points /> -->
     <!-- <planes /> -->
-    <lines />
-    <arcs />
+    <Lines />
+    <Arcs />
+    <Texts />
   </div>
 </template>
 <script setup>
 import { useTemplateRef, watch } from 'vue'
 import ResizeObserver from 'resize-observer-polyfill'
 // import Planes from './planes.vue'
-import Points from './points.vue'
+// import Points from './points.vue'
 import Lines from './lines.vue'
 import Arcs from './arcs.vue'
+import Texts from './texts.vue'
 import {
   useCamera,
   useScene,
@@ -44,12 +46,13 @@ const pointsEntitie = usePointsEntitie()
 const linesEntitie = useLinesEntitie()
 const arcsEntitie = useArcsEntitie()
 const textsEntitie = useTextsEntitie()
-
 renderer.setPixelRatio(window.devicePixelRatio)
 renderer.setClearColor(0x000000, 0.0)
 renderer.setAnimationLoop(() => {
+  renderer.resetState()
   renderer.render(scene, camera)
 })
+
 scene.add(planesEntitie)
 scene.add(pointsEntitie)
 scene.add(linesEntitie)

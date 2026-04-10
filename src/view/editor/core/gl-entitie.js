@@ -20,8 +20,12 @@ import {
   RedFormat,
   UnsignedByteType,
   Object3D,
+  CanvasTexture,
+  MeshBasicMaterial,
+  Quaternion,
 } from 'three'
-import config from '../config-gl-style.json'
+import configUI from '../config-ui.json'
+import { planeCoords2worldCoords } from '../utils/simple'
 
 export class Plane {
   impl
@@ -67,8 +71,10 @@ export class Planes {
     this.#activated = index
   }
   get active() {
-    let { normal, constant } = this.impl.children[this.#activated]?.plane
-    return new Plane(normal.toArray(), constant)
+    if (this.impl.children[this.#activated]?.plane) {
+      let { normal, constant } = this.impl.children[this.#activated]?.plane
+      return new Plane(normal.toArray(), constant)
+    }
   }
   #assertIndex(index) {
     if (index < 0 || index >= this.impl.children.length) {
@@ -108,10 +114,10 @@ export class Points {
       // transparent: true,
       side: DoubleSide,
       uniforms: {
-        // size: { value: config['point-size'] },
+        // size: { value: configUI['point-size'] },
         resolution: { value: this.#resolution },
-        // color: { value: new Vector4(...config['point-color']) },
-        // colorActived: { value: new Vector4(...config['point-color-actived']) },
+        // color: { value: new Vector4(...configUI['point-color']) },
+        // colorActived: { value: new Vector4(...configUI['point-color-actived']) },
       },
     })
 
@@ -129,7 +135,7 @@ export class Points {
     attributeSize.array.set([value], index * 1)
     attributeSize.needsUpdate = true
   }
-  add(position, size = config['point-size'], color = config['point-color']) {
+  add(position, size = configUI['point-size'], color = configUI['point-color']) {
     let index = this.impl.count++
 
     this.color(index, color)
@@ -222,11 +228,11 @@ export class Lines {
       // depthTest: true,
       side: DoubleSide,
       uniforms: {
-        // lineWidth: { value: config['line-width'] },
-        pointWidth: { value: config['point-size'] },
+        // lineWidth: { value: configUI['line-width'] },
+        pointWidth: { value: configUI['point-size'] },
         resolution: { value: this.#resolution },
-        // color: { value: new Vector4(...config['line-color']) },
-        // colorActived: { value: new Vector4(...config['line-color-actived']) },
+        // color: { value: new Vector4(...configUI['line-color']) },
+        // colorActived: { value: new Vector4(...configUI['line-color-actived']) },
       },
     })
     this.impl = new InstancedMesh(geometry, material, this.#MAX_LINES)
@@ -244,7 +250,7 @@ export class Lines {
     attributeLineWidth.array.set([value], index * 1)
     attributeLineWidth.needsUpdate = true
   }
-  add(start, end, lineWidth = config['line-width'], lineColor = config['line-color']) {
+  add(start, end, lineWidth = configUI['line-width'], lineColor = configUI['line-color']) {
     let index = this.impl.count++
     this.lineWidth(index, lineWidth)
     this.lineColor(index, lineColor)
@@ -367,10 +373,10 @@ export class Arc {
       // depthTest: true,
       side: DoubleSide,
       uniforms: {
-        lineWidth: { value: config['line-width'] },
-        pointWidth: { value: config['point-size'] },
+        lineWidth: { value: configUI['line-width'] },
+        pointWidth: { value: configUI['point-size'] },
         resolution: { value: this.#resolution },
-        color: { value: new Vector4(...config['line-color']) },
+        color: { value: new Vector4(...configUI['line-color']) },
         center: { value: pointCenter },
         start: { value: pointStart },
         end: { value: pointEnd },
@@ -588,9 +594,9 @@ export class Arcs {
       // depthTest: true,
       side: DoubleSide,
       uniforms: {
-        color: { value: new Vector4(...config['line-color']) },
-        lineWidth: { value: config['line-width'] },
-        pointWidth: { value: config['point-size'] },
+        color: { value: new Vector4(...configUI['line-color']) },
+        lineWidth: { value: configUI['line-width'] },
+        pointWidth: { value: configUI['point-size'] },
         resolution: { value: this.#resolution },
       },
     })
@@ -875,23 +881,120 @@ export class Arcs {
 
 import TinySDF from '@mapbox/tiny-sdf'
 const tinySdf = new TinySDF({
-  fontSize: 24, // Font size in pixels
+  fontSize: configUI['dimension-distance-numerical-font-size'], // Font size in pixels
   fontFamily: 'sans-serif', // CSS font-family
   fontWeight: 'normal', // CSS font-weight
   fontStyle: 'normal', // CSS font-style
-  buffer: 3, // Whitespace buffer around a glyph in pixels
-  radius: 1, // How many pixels around the glyph shape to use for encoding distance
+  buffer: 0, // Whitespace buffer around a glyph in pixels
+  radius: 0, // How many pixels around the glyph shape to use for encoding distance
   cutoff: 0.25, // How much of the radius (relative) is used for the inside part of the glyph
 })
+
+const dummy = new Object3D()
+
+class Atlas {
+  constructor() {
+    this.canvas = document.createElement('canvas')
+    this.ctx = this.canvas.getContext('2d')
+    // let div = document.createElement('div')
+    // document.body.append(div)
+    // div.append(this.canvas)
+    // div.style.position = 'fixed'
+    // div.style.zIndex = 123
+    // div.style.top = 0
+    // div.style.right = 0
+    // div.style.backgroundColor = '#000'
+
+    this.width = 256
+    this.height = configUI['dimension-distance-numerical-font-size']
+    this.canvas.width = this.width
+    this.canvas.height = this.height
+    this.x = 0
+    this.y = 0
+    this.map = new Map()
+  }
+  addText(text) {
+    if (this.map.has(text)) return this.map.get(text)
+    let bmp = tinySdf.draw(text)
+    let imageData = this.ctx.createImageData(bmp.width, bmp.height)
+    let data = imageData.data
+
+    for (let i = 0; i < bmp.data.length; i++) {
+      let v = bmp.data[i]
+      let j = i * 4
+
+      data[j] = 255
+      data[j + 1] = 255
+      data[j + 2] = 255
+      data[j + 3] = v
+    }
+    this.ctx.putImageData(imageData, this.x, this.y + this.height - bmp.glyphTop)
+
+    let glyph = {
+      u0: this.x / this.width,
+      v0: this.y / this.height,
+      u1: (this.x + bmp.width) / this.width,
+      v1: (this.y + bmp.height) / this.height,
+      width: bmp.width,
+      height: bmp.height,
+      glyphTop: bmp.glyphTop,
+    }
+    this.map.set(text, glyph)
+
+    this.x += bmp.width
+
+    return glyph
+  }
+}
 
 export class Texts {
   impl
   #resolution = new Vector2(500, 500)
-  #MAX_SDFS = 10000
-  #SDFS_MAP = new Map()
+  #MAX_TEXTS = 10000
+  #atlas
+  #texture
   constructor() {
-    this.impl = new Group()
-    // new THREE.InstancedMesh( geometry, material, count );
+    this.#atlas = new Atlas()
+    this.#texture = new CanvasTexture(this.#atlas.canvas)
+    const geometry = new PlaneGeometry(1, 1)
+    const material = new ShaderMaterial({
+      uniforms: {
+        uMap: { value: this.#texture },
+        uResolution: { value: this.#resolution },
+      },
+      transparent: true,
+      vertexShader: Texts.shaderVertex,
+      fragmentShader: Texts.shaderFragment,
+      side: DoubleSide,
+    })
+
+    // const material = new MeshBasicMaterial()
+
+    geometry.setAttribute(
+      'aUv',
+      new InstancedBufferAttribute(new Float32Array(this.#MAX_TEXTS * 4), 4),
+    )
+    geometry.setAttribute(
+      'aSize',
+      new InstancedBufferAttribute(new Float32Array(this.#MAX_TEXTS * 2), 2),
+    )
+    geometry.setAttribute(
+      'aOffset',
+      new InstancedBufferAttribute(new Float32Array(this.#MAX_TEXTS * 3), 3),
+    )
+    geometry.setAttribute(
+      'aoOffset',
+      new InstancedBufferAttribute(new Float32Array(this.#MAX_TEXTS * 3), 3),
+    )
+    geometry.setAttribute(
+      'aColor',
+      new InstancedBufferAttribute(new Float32Array(this.#MAX_TEXTS * 4), 4),
+    )
+    const instancedMesh = new InstancedMesh(geometry, material, this.#MAX_TEXTS)
+    instancedMesh.count = 0
+    instancedMesh.frustumCulled = false
+    this.impl = instancedMesh
+    // console.log(instancedMesh)
   }
   set resolution(resolution) {
     this.#resolution.set(...resolution)
@@ -899,97 +1002,391 @@ export class Texts {
   get resolution() {
     return this.#resolution.toArray()
   }
-  #createSDFS(text) {
-    const bitmap = tinySdf.draw(text) // draw a single character
-    const texture = new DataTexture(
-      bitmap.data,
-      bitmap.width,
-      bitmap.height,
-      RedFormat,
-      UnsignedByteType,
-    )
-    texture.unpackAlignment = 1
-    texture.needsUpdate = true
-    // texture.minFilter = THREE.LinearFilter
-    // texture.magFilter = THREE.LinearFilter
-    const geometry = new PlaneGeometry(1, 1)
-    const material = new ShaderMaterial({
-      uniforms: {
-        uMap: { value: texture },
-        uResolution: { value: this.#resolution },
-        uFontSize: { value: 18 },
-      },
-      transparent: true,
-      vertexShader: Texts.shaderVertex,
-      fragmentShader: Texts.shaderFragment,
-      side: DoubleSide,
+  color(indexs, value) {
+    indexs.forEach((index) => {
+      const attributeColor = this.impl.geometry.attributes.aColor
+      attributeColor.array.set(value, index * 4)
+      attributeColor.needsUpdate = true
     })
-    const instancedMesh = new InstancedMesh(geometry, material, this.#MAX_SDFS)
-    instancedMesh.count = 0
-    instancedMesh.frustumCulled = false
-    this.impl.add(instancedMesh)
-    this.#SDFS_MAP.set(text, instancedMesh)
   }
-  add(text, position, normal = [0, 1, 0], color = config['point-color']) {
-    if (!this.#SDFS_MAP.has(text)) {
-      this.#createSDFS(text)
-    }
-    let sdfs = this.#SDFS_MAP.get(text)
-    let index = sdfs.count++
-    this.translation(index, text, normal, position)
-    return index
+  add(text, position, plane, color = configUI['dimension-distance-numerical-font-color']) {
+    let indexs = []
+    let offsetX = 0
+    let { normal } = plane
+    text
+      .split('')
+      // .splice(0, configUI['dimension-distance-numerical-precision'])
+      .forEach((text) => {
+        let index = this.impl.count++
+        let { u0, u1, v0, v1, width, height, glyphTop } = this.#atlas.addText(text)
+        let offsetUV = new Vector2(offsetX, height)
+          .divide(this.#resolution)
+          .multiplyScalar(2)
+          .toArray()
+        let offset = planeCoords2worldCoords(offsetUV, plane)
+        // console.log({ text, u0, v0, u1, v1, width, height })
+        this.impl.geometry.attributes.aUv.array.set([u0, u1, v0, v1], index * 4)
+        this.impl.geometry.attributes.aUv.needsUpdate = true
+        this.impl.geometry.attributes.aSize.array.set([width, height], index * 2)
+        this.impl.geometry.attributes.aSize.needsUpdate = true
+        this.impl.geometry.attributes.aOffset.array.set(offset, index * 3)
+        this.impl.geometry.attributes.aOffset.needsUpdate = true
+        this.impl.geometry.attributes.aoOffset.array.set(offset, index * 3)
+        this.impl.geometry.attributes.aoOffset.needsUpdate = true
+        offsetX += width
+        indexs.push(index)
+      })
+    this.#texture.needsUpdate = true
+    this.color(indexs, color)
+    this.translation(indexs, position, plane)
+    return { indexs }
   }
-  translation(index, text, normal, position) {
-    let sdfs = this.#SDFS_MAP.get(text)
+  translation(indexs, position, plane) {
+    let { normal } = plane
     normal = new Vector3(...normal)
-    dummy.position.set(position[0], position[1], position[2])
-    dummy.quaternion.setFromUnitVectors(new Vector3(0, 0, 1), normal)
-    dummy.updateMatrix()
-    sdfs.setMatrixAt(index, dummy.matrix)
-    sdfs.instanceMatrix.needsUpdate = true
+    indexs.forEach((index) => {
+      // this.impl.getMatrixAt(index, dummy.matrix)
+      dummy.position.set(position[0], position[1], position[2])
+      dummy.quaternion.setFromUnitVectors(new Vector3(0, 0, 1), normal)
+      dummy.updateMatrix()
+      this.impl.setMatrixAt(index, dummy.matrix)
+      this.impl.instanceMatrix.needsUpdate = true
+    })
+  }
+  rotation(indexs, angle, center, plane) {
+    let axis = new Vector3(...plane.normal).normalize()
+    let origin = new Vector3(...center)
+    let quaternion = new Quaternion().setFromAxisAngle(axis, angle)
+    console.log(angle)
+    indexs.forEach((index) => {
+      let x = this.impl.geometry.attributes.aoOffset.getX(index)
+      let y = this.impl.geometry.attributes.aoOffset.getY(index)
+      let z = this.impl.geometry.attributes.aoOffset.getZ(index)
+
+      let position = new Vector3(x, y, z)
+
+      position.applyQuaternion(quaternion)
+
+      this.impl.geometry.attributes.aOffset.array.set(position.toArray(), index * 3)
+
+      // this.impl.getMatrixAt(index, dummy.matrix)
+      // dummy.position.sub(origin)
+      // dummy.position.applyQuaternion(quaternion)
+      // dummy.position.add(origin)
+      // dummy.updateMatrix()
+      // this.impl.setMatrixAt(index, dummy.matrix)
+    })
+
+    this.impl.geometry.attributes.aOffset.needsUpdate = true
+    this.impl.instanceMatrix.needsUpdate = true
+  }
+  remove(indexs) {
+    console.log(indexs)
+    indexs.forEach((index) => {
+      let last = this.impl.count - 1
+
+      if (index !== last) {
+        // 把最后一个点挪过来
+        const aUv = this.impl.geometry.attributes.aUv
+        aUv.array.copyWithin(index * 4, last * 4, last * 4 + 4)
+        aUv.needsUpdate = true
+
+        const aSize = this.impl.geometry.attributes.aSize
+        aSize.array.copyWithin(index * 2, last * 2, last * 2 + 2)
+        aSize.needsUpdate = true
+
+        const aOffset = this.impl.geometry.attributes.aOffset
+        aOffset.array.copyWithin(index * 3, last * 3, last * 3 + 3)
+        aOffset.needsUpdate = true
+
+        const aColor = this.impl.geometry.attributes.aColor
+        aColor.array.copyWithin(index * 4, last * 4, last * 4 + 4)
+        aColor.needsUpdate = true
+      }
+      this.impl.count--
+      this.impl.computeBoundingSphere()
+      this.impl.computeBoundingBox()
+    })
   }
 
   static shaderVertex = `
-    uniform vec2 uResolution;   
-    uniform float uFontSize;    
+    uniform vec2 uResolution;
+    attribute vec2 aSize;
+    attribute vec4 aUv;
+    attribute vec3 aOffset;
+    attribute vec4 aColor;
     varying vec2 vUv;
+    varying vec4 vAuv;
+    varying vec4 vColor;
     void main() {
       vUv = uv;
+      vAuv = aUv;
+      vColor = aColor;
 
-      vec4 worldCenter = instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0);
-      vec4 clipCenter = projectionMatrix * modelViewMatrix * worldCenter;
       mat3 m = mat3(instanceMatrix);
       vec3 x = normalize(m[0]);
       vec3 y = normalize(m[1]);
       vec3 z = normalize(m[2]);
+
+      vec4 worldCenter = instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0);
+      worldCenter.xyz+= (aOffset / projectionMatrix[0][0]);
+      vec4 clipCenter = projectionMatrix * modelViewMatrix * worldCenter;
+
       mat3 rotation = mat3(x, y, z);
       vec3 rotated = rotation * position;
-      //因为是正交相机去除了透视矩阵，为了去除的缩放
+
+      //跟随视图矩阵
       vec4 clipPosition =  viewMatrix * vec4(rotated, 1.0);
-      vec2 pixel = uFontSize / uResolution * 2.0;
-    
+      vec2 pixel = aSize / uResolution * 2.0;
+
+      // clipCenter.x += offset.x;
       clipCenter.xy += clipPosition.xy * pixel * clipCenter.w;
-    
+
       gl_Position = clipCenter;
+
     }
   `
 
   static shaderFragment = `
     uniform sampler2D uMap;
     varying vec2 vUv;
+    varying vec4 vAuv;
+    varying vec4 vColor;
 
     void main() {
+
       vec2 uv = vec2(vUv.x, 1.0 - vUv.y);
-      vec4 tex = texture2D(uMap, uv);
+      float au = mix(vAuv.x, vAuv.y, vUv.x);
+      float av = mix(vAuv.z, vAuv.w, vUv.y);
+      vec2 auv = vec2(au, av);
+      vec4 tex = texture2D(uMap, auv);
       if(tex.r==0.0){
         discard;
       }
       float dist = tex.r;
       float alpha = smoothstep(0.5 - 0.1, 0.5 + 0.1, dist);
-      gl_FragColor = vec4(1.0, 0.0, 0.0, alpha);
-      // gl_FragColor = vec4(1.0,0.0,0.0, tex.r);
+      gl_FragColor = vec4(vColor.xyz, vColor.w*dist);
     }
   `
 }
 
-const dummy = new Object3D()
+// export class Texts {
+//   impl
+//   #resolution = new Vector2(500, 500)
+//   #MAX_TEXTS = 10000
+//   #atlas
+//   #texture
+//   constructor() {
+//     this.#atlas = new Atlas()
+//     this.#texture = new CanvasTexture(this.#atlas.canvas)
+//     const geometry = new PlaneGeometry(1, 1)
+//     const material = new ShaderMaterial({
+//       uniforms: {
+//         uMap: { value: this.#texture },
+//         uResolution: { value: this.#resolution },
+//       },
+//       transparent: true,
+//       vertexShader: Texts.shaderVertex,
+//       fragmentShader: Texts.shaderFragment,
+//       side: DoubleSide,
+//     })
+
+//     // const material = new MeshBasicMaterial()
+
+//     geometry.setAttribute(
+//       'aUv',
+//       new InstancedBufferAttribute(new Float32Array(this.#MAX_TEXTS * 4), 4),
+//     )
+//     geometry.setAttribute(
+//       'aSize',
+//       new InstancedBufferAttribute(new Float32Array(this.#MAX_TEXTS * 2), 2),
+//     )
+//     geometry.setAttribute(
+//       'aOffset',
+//       new InstancedBufferAttribute(new Float32Array(this.#MAX_TEXTS * 3), 3),
+//     )
+//     geometry.setAttribute(
+//       'aColor',
+//       new InstancedBufferAttribute(new Float32Array(this.#MAX_TEXTS * 4), 4),
+//     )
+//     const instancedMesh = new InstancedMesh(geometry, material, this.#MAX_TEXTS)
+//     instancedMesh.count = 0
+//     instancedMesh.frustumCulled = false
+//     this.impl = instancedMesh
+//     // console.log(instancedMesh)
+//   }
+//   set resolution(resolution) {
+//     this.#resolution.set(...resolution)
+//   }
+//   get resolution() {
+//     return this.#resolution.toArray()
+//   }
+//   color(indexs, value) {
+//     indexs.forEach((index) => {
+//       const attributeColor = this.impl.geometry.attributes.aColor
+//       attributeColor.array.set(value, index * 4)
+//       attributeColor.needsUpdate = true
+//     })
+//   }
+//   add(text, position, plane, color = configUI['dimension-distance-numerical-font-color']) {
+//     let indexs = []
+//     let offsetX = 0
+//     let { normal } = plane
+//     text
+//       .split('')
+//       // .splice(0, configUI['dimension-distance-numerical-precision'])
+//       .forEach((text) => {
+//         let index = this.impl.count++
+//         let { u0, u1, v0, v1, width, height, glyphTop } = this.#atlas.addText(text)
+//         let offsetUV = new Vector2(offsetX, glyphTop)
+//           .divide(this.#resolution)
+//           .multiplyScalar(2)
+//           .toArray()
+//         let offset = planeCoords2worldCoords(offsetUV, plane)
+//         // console.log({ text, u0, v0, u1, v1, width, height })
+//         this.impl.geometry.attributes.aUv.array.set([u0, u1, v0, v1], index * 4)
+//         this.impl.geometry.attributes.aUv.needsUpdate = true
+//         this.impl.geometry.attributes.aSize.array.set([width, height], index * 2)
+//         this.impl.geometry.attributes.aSize.needsUpdate = true
+//         this.impl.geometry.attributes.aOffset.array.set(offset, index * 3)
+//         this.impl.geometry.attributes.aOffset.needsUpdate = true
+//         offsetX += width
+//         indexs.push(index)
+//       })
+//     this.#texture.needsUpdate = true
+//     this.color(indexs, color)
+//     this.translation(indexs, position, plane)
+//     return { indexs }
+//   }
+//   translation(indexs, position, plane) {
+//     let { normal } = plane
+//     indexs.forEach((index) => {
+//       normal = new Vector3(...normal)
+
+//       let x = this.impl.geometry.attributes.aOffset.getX(index)
+//       let y = this.impl.geometry.attributes.aOffset.getY(index)
+//       let z = this.impl.geometry.attributes.aOffset.getZ(index)
+
+//       // this.impl.getMatrixAt(index, dummy.matrix)
+//       dummy.position.set(position[0] + x, position[1] + y, position[2] + z)
+//       dummy.quaternion.setFromUnitVectors(new Vector3(0, 0, 1), normal)
+//       dummy.updateMatrix()
+//       this.impl.setMatrixAt(index, dummy.matrix)
+//       this.impl.instanceMatrix.needsUpdate = true
+//     })
+//   }
+//   rotation(indexs, angle, center, plane) {
+//     let axis = new Vector3(...plane.normal).normalize()
+//     let origin = new Vector3(...center)
+//     let quaternion = new Quaternion().setFromAxisAngle(axis, angle)
+//     console.log(angle)
+//     indexs.forEach((index) => {
+//       // let x = this.impl.geometry.attributes.aOffset.getX(index)
+//       // let y = this.impl.geometry.attributes.aOffset.getY(index)
+//       // let z = this.impl.geometry.attributes.aOffset.getZ(index)
+
+//       // let position = new Vector3(x, y, z)
+
+//       // position.applyQuaternion(quaternion)
+
+//       // this.impl.geometry.attributes.aOffset.array.set(position.toArray(), index * 3)
+
+//       this.impl.getMatrixAt(index, dummy.matrix)
+//       dummy.position.sub(origin)
+//       dummy.position.applyQuaternion(quaternion)
+//       dummy.position.add(origin)
+//       dummy.updateMatrix()
+//       this.impl.setMatrixAt(index, dummy.matrix)
+//     })
+
+//     this.impl.geometry.attributes.aOffset.needsUpdate = true
+//     this.impl.instanceMatrix.needsUpdate = true
+//   }
+//   remove(indexs) {
+//     indexs.forEach((index) => {
+//       let last = this.impl.count - 1
+
+//       if (index !== last) {
+//         // 把最后一个点挪过来
+//         const aUv = this.impl.geometry.attributes.aUv
+//         aUv.array.copyWithin(index * 4, last * 4, last * 4 + 4)
+//         aUv.needsUpdate = true
+
+//         const aSize = this.impl.geometry.attributes.aSize
+//         aSize.array.copyWithin(index * 2, last * 2, last * 2 + 2)
+//         aSize.needsUpdate = true
+
+//         const aOffset = this.impl.geometry.attributes.aOffset
+//         aOffset.array.copyWithin(index * 3, last * 3, last * 3 + 3)
+//         aOffset.needsUpdate = true
+
+//         const aColor = this.impl.geometry.attributes.aColor
+//         aColor.array.copyWithin(index * 4, last * 4, last * 4 + 4)
+//         aColor.needsUpdate = true
+//       }
+//       this.impl.count--
+//       this.impl.computeBoundingSphere()
+//       this.impl.computeBoundingBox()
+//     })
+//   }
+
+//   static shaderVertex = `
+//     uniform vec2 uResolution;
+//     attribute vec2 aSize;
+//     attribute vec4 aUv;
+//     attribute vec3 aOffset;
+//     attribute vec4 aColor;
+//     varying vec2 vUv;
+//     varying vec4 vAuv;
+//     varying vec4 vColor;
+//     void main() {
+//       vUv = uv;
+//       vAuv = aUv;
+//       vColor = aColor;
+
+//       mat3 m = mat3(instanceMatrix);
+//       vec3 x = normalize(m[0]);
+//       vec3 y = normalize(m[1]);
+//       vec3 z = normalize(m[2]);
+
+//       vec4 worldCenter = instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0);
+//       // worldCenter.xyz+= (aOffset / projectionMatrix[0][0]);
+//       vec4 clipCenter = projectionMatrix * modelViewMatrix * worldCenter;
+
+//       mat3 rotation = mat3(x, y, z);
+//       vec3 rotated = rotation * position;
+
+//       //跟随视图矩阵
+//       vec4 clipPosition =  viewMatrix * vec4(rotated, 1.0);
+//       vec2 pixel = aSize / uResolution * 2.0;
+
+//       // clipCenter.x += offset.x;
+//       clipCenter.xy += clipPosition.xy * pixel * clipCenter.w;
+
+//       gl_Position = clipCenter;
+
+//     }
+//   `
+
+//   static shaderFragment = `
+//     uniform sampler2D uMap;
+//     varying vec2 vUv;
+//     varying vec4 vAuv;
+//     varying vec4 vColor;
+
+//     void main() {
+
+//       vec2 uv = vec2(vUv.x, 1.0 - vUv.y);
+//       float au = mix(vAuv.x, vAuv.y, vUv.x);
+//       float av = mix(vAuv.z, vAuv.w, vUv.y);
+//       vec2 auv = vec2(au, av);
+//       vec4 tex = texture2D(uMap, auv);
+//       if(tex.r==0.0){
+//         discard;
+//       }
+//       float dist = tex.r;
+//       float alpha = smoothstep(0.5 - 0.1, 0.5 + 0.1, dist);
+//       gl_FragColor = vec4(vColor.xyz, vColor.w*dist);
+//     }
+//   `
+// }

@@ -4,6 +4,7 @@ import {
   usePoints as usePointsGeometryQuery,
   usePolylines as usePolylinesGeometryQuery,
   useDimensionDistances as useDimensionDistancesGeometryQuery,
+  useTexts as useTextsGeometryQuery,
 } from './geometry-query.js'
 
 export function useGeometry() {
@@ -33,6 +34,7 @@ export function usePoints() {
   let linesGeometryQuery = useLinesGeometryQuery()
   let arcsGeometryQuery = useArcsGeometryQuery()
   let pointsGeometryQuery = usePointsGeometryQuery()
+  let textsGeometryMapper = useTexts()
   let dimensionDistancesGeometryQuery = useDimensionDistancesGeometryQuery()
   return {
     superior(batch) {
@@ -50,12 +52,17 @@ export function usePoints() {
             let line = linesGeometryQuery.getFormPoint(point)
             prev.lines.push(line.id)
           }
+          if (textsGeometryMapper.hasFormPoint(point)) {
+            let text = textsGeometryMapper.getFormPoint(point)
+            prev.texts.push(text.id)
+          }
 
           return prev
         },
         {
           arcs: [],
           lines: [],
+          texts: [],
         },
       )
     },
@@ -212,6 +219,7 @@ export function useDimensionDistances() {
   let pointsGeometryQuery = usePointsGeometryQuery()
   let linesGeometryQuery = useLinesGeometryQuery()
   let dimensionDistancesGeometryQuery = useDimensionDistancesGeometryQuery()
+  let textsGeometryQuery = useTextsGeometryQuery()
   return {
     getFormPointIndex(index) {
       let point = pointsGeometryQuery.getByIndex(index)
@@ -241,15 +249,30 @@ export function useDimensionDistances() {
             prev.points.push(line.start, line.end)
           })
           prev.lines.push(...dimensionDistance.lines)
+          prev.texts.push(dimensionDistance.text)
+          let textGeometry = textsGeometryQuery.get(dimensionDistance.text)
+          prev.points.push(textGeometry.point)
           return prev
         },
-        { points: [], lines: [] },
+        { points: [], lines: [], texts: [] },
       )
     },
     getFormPoint(point) {
       let line = linesGeometryQuery.get(point?.creator)
-      let dimensionDistance = dimensionDistancesGeometryQuery.get(line?.creator)
-      return dimensionDistance
+      let text = textsGeometryQuery.get(point?.creator)
+
+      return (
+        dimensionDistancesGeometryQuery.get(line?.creator) ||
+        dimensionDistancesGeometryQuery.get(text?.creator)
+      )
+      // if (textsGeometryMapper.hasFormPoint(point)) {
+      //   let text = textsGeometryMapper.getFormPoint(point)
+      //   if (this.hasFormText(text)) {
+      //     return dimensionDistancesGeometryQuery.get(text?.creator)
+      //   }
+      // }
+      // let dimensionDistance = dimensionDistancesGeometryQuery.get(line?.creator)
+      // return dimensionDistance
     },
     hasFormPoint(point) {
       return !!this.getFormPoint(point)
@@ -275,17 +298,55 @@ export function useDimensionDistances() {
     hasFormLineId(id) {
       return !!this.getFormLineId(id)
     },
+
+    getFormText(text) {
+      let dimensionDistance = dimensionDistancesGeometryQuery.get(text?.creator)
+      return dimensionDistance
+    },
+    getFormTextId(id) {
+      let text = textsGeometryQuery.get(id)
+      return this.getFormText(text)
+    },
+    hasFormText(text) {
+      return !!this.getFormText(text)
+    },
+    hasFormTextId(id) {
+      return !!this.getFormTextId(id)
+    },
+  }
+}
+
+export function useTexts() {
+  let pointsGeometryQuery = usePointsGeometryQuery()
+  let textsGeometryQuery = useTextsGeometryQuery()
+  return {
+    getFormPoint(point) {
+      let text = textsGeometryQuery.get(point?.creator)
+      return text
+    },
+    getFormPointId(id) {
+      let point = pointsGeometryQuery.get(id)
+      return this.getFormPoint(point)
+    },
+    hasFormPoint(point) {
+      return !!this.getFormPoint(point)
+    },
+    hasFormPointId(id) {
+      return !!this.getFormPointId(id)
+    },
   }
 }
 
 export function useHelpers() {
   let dimensionDistancesGeometryMapper = useDimensionDistances()
+  let pointsGeometryQuery = usePointsGeometryQuery()
   return {
     hasFormPoint(point) {
       return dimensionDistancesGeometryMapper.hasFormPoint(point)
     },
     hasFormPointId(id) {
-      return dimensionDistancesGeometryMapper.hasFormPointId(id)
+      let point = pointsGeometryQuery.get(id)
+      return this.hasFormPoint(point)
     },
     hasFormLine(line) {
       return dimensionDistancesGeometryMapper.hasFormLine(line)

@@ -4,7 +4,7 @@ import {
   usePolylines as usePolylinesGeometryManager,
   useArcs as useArcsGeometryManager,
   useDimensionDistances as useDimensionDistancesGeometryManager,
-  useChars as useCharsGeometryManager,
+  useTexts as useTextsGeometryManager,
 } from './geometry-manager'
 import {
   usePlanes as usePlanesGeometryQuery,
@@ -13,6 +13,7 @@ import {
   usePolylines as usePolylinesGeometryQuery,
   useArcs as useArcsGeometryQuery,
   useDimensionDistances as useDimensionDistancesGeometryQuery,
+  useTexts as useTextsGeometryQuery,
 } from './geometry-query'
 import {
   usePoints as usePointsGeometryMapper,
@@ -29,6 +30,7 @@ export function useGeometrys() {
   let polylinesGeometryQuery = usePolylinesGeometryQuery()
   let arcsGeometryQuery = useArcsGeometryQuery()
   let dimensionDistancesGeometryQuery = useDimensionDistancesGeometryQuery()
+  let textsGeometryQuery = useTextsGeometryQuery()
 
   let pointsGeometryMapper = usePointsGeometryMapper()
   let linesGeometryMapper = useLinesGeometryMapper()
@@ -44,6 +46,7 @@ export function useGeometrys() {
   let linesGeometryDispatch = useLines()
   let pointsGeometryDispatch = usePoints()
   let dimensionDistancesGeometryDispatch = useDimensionDistances()
+  let textsGeometryDispatch = useTexts()
 
   return {
     remove(batch) {
@@ -67,17 +70,22 @@ export function useGeometrys() {
           if (dimensionDistancesGeometryQuery.hasById(id)) {
             prev.dimensionDistances.push(id)
           }
+          if (textsGeometryQuery.hasById(id)) {
+            prev.texts.push(id)
+          }
           return prev
         },
-        { points: [], lines: [], polylines: [], arcs: [], dimensionDistances: [] },
+        { points: [], lines: [], polylines: [], arcs: [], dimensionDistances: [], texts: [] },
       )
-
       /*
        * 收集关系移除项
        */
       //收集points所属
-      let { lines: linesSuperiorFromPoints, arcs: arcsSuperiorFromPoints } =
-        pointsGeometryMapper.superior(geometryMap.points)
+      let {
+        lines: linesSuperiorFromPoints,
+        arcs: arcsSuperiorFromPoints,
+        texts: textsSuperiorFromPoints,
+      } = pointsGeometryMapper.superior(geometryMap.points)
       //收集lines所属
       let {
         // polylines: polylinesSuperiorFromLines,
@@ -91,13 +99,16 @@ export function useGeometrys() {
         pointsGeometryMapper.subordinate([...geometryMap.lines, ...linesSuperiorFromPoints])
 
       //反过来收集相关所从lines
-      let { lines: linesSubordinateFromDimensionDistances } =
-        dimensionDistancesGeometryMapper.subordinate([
-          ...geometryMap.dimensionDistances,
-          ...dimensionDistancesSuperiorFromLines,
-          ...dimensionDistancesSubordinateFromPoints,
-          ...dimensionDistancesSubordinateFromLines,
-        ])
+      let {
+        points: pointsSubordinateFromDimensionDistances,
+        lines: linesSubordinateFromDimensionDistances,
+        texts: textsSubordinateFromDimensionDistances,
+      } = dimensionDistancesGeometryMapper.subordinate([
+        ...geometryMap.dimensionDistances,
+        ...dimensionDistancesSuperiorFromLines,
+        ...dimensionDistancesSubordinateFromPoints,
+        ...dimensionDistancesSubordinateFromLines,
+      ])
       //多段线不用反向收集了，因为他不是单纯得一次性所有删除
       // let { lines: linesSubordinateFromPolylines } =polylinesGeometryMapper.subordinate([
       //   ...geometryMap.polylines,
@@ -125,6 +136,7 @@ export function useGeometrys() {
         ...geometryMap.points,
         ...pointsSubordinateFromLines,
         ...pointsSubordinateFromArcs,
+        ...pointsSubordinateFromDimensionDistances,
         // ...pointsSubordinateFromPolylines,
       ])
       let lines = new Set([
@@ -138,6 +150,14 @@ export function useGeometrys() {
       let dimensionDistances = new Set([
         ...geometryMap.dimensionDistances,
         ...dimensionDistancesSuperiorFromLines,
+        ...dimensionDistancesSubordinateFromPoints,
+        ...dimensionDistancesSubordinateFromLines,
+      ])
+
+      let texts = new Set([
+        ...geometryMap.texts,
+        ...textsSuperiorFromPoints,
+        ...textsSubordinateFromDimensionDistances,
       ])
 
       //开始移除
@@ -152,6 +172,7 @@ export function useGeometrys() {
       //约束操作调整为 async，准确的完成以下操作
       function clearGeometry() {
         dimensionDistancesGeometryDispatch.removeById([...dimensionDistances])
+        textsGeometryDispatch.removeById([...texts])
         arcsGeometryDispatch.removeById([...arcs])
         // polylinesGeometryDispatch.removeById(polylines)
         linesGeometryDispatch.removeById([...lines])
@@ -259,6 +280,7 @@ import { useRenderer } from './viewport-provide-context'
 import { worldCoords2planeCoords, planeCoords2worldCoords } from '../utils/simple'
 import { useDimensionDistances as useDimensionDistancesGeometryMapper } from './geometry-mapper'
 import { useSelectGeometrys as useSelectGeometrysInteractionDispatch } from './interaction-dispatch.js'
+import configUI from '../config-ui.json'
 const space = 50
 let updatedOnceDimensionDistance = new Set()
 export function useDimensionDistances() {
@@ -274,7 +296,7 @@ export function useDimensionDistances() {
   let constraintsDispatch = useConstraintsDispatch()
   let dimensionDistancesGeometryMapper = useDimensionDistancesGeometryMapper()
   let selectGeometrysInteractionDispatch = useSelectGeometrysInteractionDispatch()
-  let charsGeometryManager = useCharsGeometryManager()
+  let textsGeometryDispatch = useTexts()
 
   function setConstraintDistance(id, constraint) {
     let dimensionDistancesGeometry = dimensionDistancesGeometryQuery.get(id)
@@ -404,26 +426,17 @@ export function useDimensionDistances() {
       /*
        * 创建数值
        */
-      // let chars = vector3Line
-      //   .length()
-      //   .toString()
-      //   .split('')
-      //   .splice(0, 5)
-      //   .map((content, index) => {
-      //     let char = charsGeometryManager.add(
-      //       content,
-      //       new Vector3(...mainPointEndPosition).add(new Vector3(0.035 * index, 0, 0)).toArray(),
-      //     )
-      //     return char.id
-      //   })
-
+      let number = vector3Line.length()
+      let numberPrecision = configUI['dimension-distance-numerical-precision']
+      let text = number.toFixed(numberPrecision)
+      let textGeometry = textsGeometryDispatch.add(text, mainLine.id)
       /*
        * 创建dimension数据
        */
       let dimensionDistance = dimensionDistancesGeometryManager.add(
         [mainLine.id, crossLine1.id, crossLine2.id],
-        [],
-        [(point1Id, point2Id)],
+        textGeometry.id,
+        [point1Id, point2Id],
       )
 
       /*
@@ -516,37 +529,32 @@ export function useHelpers() {
   }
 }
 
-/* [增强]
- * 1、dimensionDistances增加独立选取
- * 2、删除功能关联dimensionDistances
- * 3、渲染模块系统性加入样式规则（颜色、几何大小）
- * 4、约束注册功能增加隐式标记
- * 5、dimensionDistances增加操作约束（只能在dimension方向上移动——角度）
- */
+export function useTexts() {
+  let linesGeometryQuery = useLinesGeometryQuery()
+  let pointsGeometryManager = usePointsGeometryManager()
+  let textsGeometryManager = useTextsGeometryManager()
+  let constraintsDispatch = useConstraintsDispatch()
+  return {
+    add(content, lineRefer) {
+      let lineReferGeometry = linesGeometryQuery.get(lineRefer)
+      let pointGeometry = pointsGeometryManager.clone(lineReferGeometry.start)
+      pointsGeometryManager.attach(pointGeometry)
+      let textGeometry = textsGeometryManager.add(content, pointGeometry.id, lineRefer)
 
-/*
- * 1、每种几何都建立1对多影响思路
- * 2、分解成多个hooks
- * 要包含：收集能力，处理能力（如polyline分解成多段）
- * 3、约束不要考虑掉了（在solver-gcs里可以针对性处理逻辑）
- */
+      constraintsDispatch.add('addConstraintP2PCoincident', [
+        lineReferGeometry.start,
+        pointGeometry.id,
+      ])
 
-/*
- * 解除约束会影响几何数据（在solver-gcs里定义unattach）
- * 删除几何会影响约束（当前这个文件处理？）
- * 删除几何会影响其他几何（当前这个文件能处理）
- *
- * 先处理约束再处理几何
- */
-
-/*
- * 1、先收集到最小单位 点和线
- * 2、从哪个开始删（线），删点要不要把线另一头也删了（不删吧）
- * 3、要修改相关的几何的属性（creator）
- * 4、polyline和以后的rectangle这些不要直接删，而是删除线或者点的时候看还有子项没
- */
-
-/*
- * 1、点和弧、线，先来回收集
- * 2、多段线怎么处理，有属于要删除多段线的 线 就不单独删除了
- */
+      return textGeometry
+    },
+    removeById(batch) {
+      if (!(batch instanceof Array)) {
+        batch = [batch]
+      }
+      batch.forEach((id) => {
+        textsGeometryManager.removeById(id)
+      })
+    },
+  }
+}

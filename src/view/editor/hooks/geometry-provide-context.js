@@ -17,8 +17,8 @@ export default function useRegistry() {
   const dimensionAngles = ref([])
   const dimensionAnglesHash = ref({})
   const increment = ref(0)
-  const chars = ref([])
-  const charsHash = ref({})
+  const texts = ref([])
+  const textsHash = ref({})
 
   provide(pointsSymbol, points)
   provide(planesSymbol, planes)
@@ -36,8 +36,8 @@ export default function useRegistry() {
   provide(dimensionAnglesSymbol, dimensionAngles)
   provide(dimensionAnglesHashSymbol, dimensionAnglesHash)
   provide(incrementSymbol, increment)
-  provide(charsSymbol, chars)
-  provide(charsHashSymbol, charsHash)
+  provide(textsSymbol, texts)
+  provide(textsHashSymbol, textsHash)
 }
 
 const planesSymbol = Symbol('planes')
@@ -58,8 +58,8 @@ const dimensionAnglesSymbol = Symbol('dimensionAngles')
 const dimensionAnglesHashSymbol = Symbol('dimensionAngles-hash')
 const incrementSymbol = Symbol('increment')
 
-const charsHashSymbol = Symbol('charsHash')
-const charsSymbol = Symbol('chars')
+const textsSymbol = Symbol('texts')
+const textsHashSymbol = Symbol('textsHash')
 export function usePlanes() {
   return inject(planesSymbol)
 }
@@ -108,9 +108,9 @@ export function useDimensionAnglesHash() {
 export function useIncrement() {
   return inject(incrementSymbol)
 }
-export function useCharsHash() {
-  return inject(charsHashSymbol)
+export function useTexts() {
+  return inject(textsSymbol)
 }
-export function useChars() {
-  return inject(charsSymbol)
+export function useTextsHash() {
+  return inject(textsHashSymbol)
 }

@@ -1,0 +1,23 @@
+{
+  "point-size": 6,
+  "point-size-activated": 6,
+  "point-color": [0, 0, 0, 1],
+  "point-color-activated": [0.07, 0.58, 0.85, 1],
+  "line-width": 2,
+  "line-width-activated": 2,
+  "line-color": [0.5, 0.5, 0.5, 1],
+  "line-color-activated": [0.07, 0.58, 0.85, 1],
+  "dimension-distance-point-size": 2,
+  "dimension-distance-point-size-activated": 3,
+  "dimension-distance-point-color": [0, 0, 0, 0.3],
+  "dimension-distance-point-color-activated": [0.8, 0.2, 0.8, 1],
+  "dimension-distance-line-width": 1,
+  "dimension-distance-line-width-activated": 2,
+  "dimension-distance-line-color": [0, 0, 0, 0.3],
+  "dimension-distance-line-color-activated": [0.8, 0.2, 0.8, 1],
+  "dimension-distance-numerical-precision": 3,
+  "dimension-distance-numerical-font-size": 18,
+  "dimension-distance-numerical-font-color": [0.3, 0.3, 0.3, 0.3],
+  "dimension-distance-numerical-point-size": 0,
+  "dimension-distance-numerical-point-color": [0, 0, 0, 0]
+}

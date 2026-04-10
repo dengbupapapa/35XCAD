@@ -14,8 +14,8 @@ import {
   useDimensionDistancesHash as useDimensionDistancesHashGeometry,
   useDimensionDistancesCreatorHash as useDimensionDistancesCreatorHashGeometry,
   useDimensionAnglesHash as useDimensionAnglesHashGeometry,
-  useChars as useCharsGeometry,
-  useCharsHash as useCharsHashGeometry,
+  useTexts as useTextsGeometry,
+  useTextsHash as useTextsHashGeometry,
 } from './geometry-provide-context.js'
 import {
   usePlanes as usePlanesGeometryQuery,
@@ -23,7 +23,7 @@ import {
   useLines as useLinesGeometryQuery,
   useArcs as useArcsGeometryQuery,
   usePolylines as usePolylinesGeometryQuery,
-  useChars as useCharsGeometryQuery,
+  useTexts as useTextsGeometryQuery,
   // useConstraints as useConstraintsGeometryQuery,
   // useConstraintsIncrement as useConstraintsIncrementGeometryQuery,
 } from './geometry-query.js'
@@ -60,7 +60,7 @@ import {
 import {
   usePoints as usePointsViewportManager,
   useLines as useLinesViewportManager,
-  useChars as useCharsViewportManager,
+  useTexts as useTextsViewportManager,
 } from './viewport-manager.js'
 import {
   nanoid,
@@ -207,7 +207,7 @@ export function usePoints() {
       pointsGeometry.value.push(point)
       pointsHashGeometry.value[point.id] = point
       // selectPointsInteractioManager.push(point.id)
-      pointsViewportManager.add(point.id, [point.x, point.y, point.z])
+      pointsViewportManager.add(point.id)
       return point
     },
     load(pointsGeometry) {
@@ -502,7 +502,7 @@ export function useLines() {
       end.creator = line.id
       linesGeometry.value.push(line) //我们的架构是否一定两个点在同一plane？
       linesHashGeometry.value[line.id] = line
-      linesViewportManager.add(line.id, [start.x, start.y, start.z], [end.x, end.y, end.z])
+      linesViewportManager.add(line.id)
       return line
     },
     load(lines) {
@@ -893,12 +893,13 @@ export function useDimensionDistances() {
   let dimensionDistancesHashGeometry = useDimensionDistancesHashGeometry()
   let planesGeometryQuery = usePlanesGeometryQuery()
   let linesGeometryQuery = useLinesGeometryQuery()
+  let textsGeometryQuery = useTextsGeometryQuery()
   let dimensionDistancesCreatorHashGeometry = useDimensionDistancesCreatorHashGeometry()
   return {
-    add(lines, chars, creator) {
+    add(lines, text, creator) {
       let dimensionDistance = {
         lines,
-        chars,
+        text,
         creator,
         id: nanoid(),
         plane: planesGeometryQuery?.active?.id,
@@ -910,6 +911,8 @@ export function useDimensionDistances() {
         let line = linesGeometryQuery.get(id)
         line.creator = dimensionDistance.id
       })
+      let text = textsGeometryQuery.get(dimensionDistance.text)
+      text.creator = dimensionDistance.id
       dimensionDistance.creator.forEach((id) => {
         dimensionDistancesCreatorHashGeometry.value[id] = dimensionDistance.id
       })
@@ -1012,54 +1015,58 @@ export function useDimensionAngles() {
   }
 }
 
-export function useChars() {
-  let charsGeometry = useCharsGeometry()
-  let charsHashGeometry = useCharsHashGeometry()
+export function useTexts() {
+  let textsGeometry = useTextsGeometry()
+  let textsHashGeometry = useTextsHashGeometry()
   let planesGeometryQuery = usePlanesGeometryQuery()
-  let charsViewportManager = useCharsViewportManager()
+  let pointsGeometryQuery = usePointsGeometryQuery()
+  let textsViewportManager = useTextsViewportManager()
   return {
-    add(content, position) {
-      let char = {
-        x: position[0],
-        y: position[1],
-        z: position[2],
+    add(content, point, lineRefer) {
+      let text = {
+        point,
+        line: lineRefer,
         content,
         id: nanoid(),
         plane: planesGeometryQuery?.active?.id,
       }
-      return this.attach(char)
+      return this.attach(text)
     },
-    attach(char) {
-      charsGeometry.value.push(char)
-      charsHashGeometry.value[char.id] = char
-      let plane = planesGeometryQuery.get(char.plane)
-      let index = charsViewportManager.add(char.content, [char.x, char.y, char.z], plane.normal)
-      char.index = index
-      return char
+    attach(text) {
+      textsGeometry.value.push(text)
+      textsHashGeometry.value[text.id] = text
+      let pointGeometry = pointsGeometryQuery.get(text.point)
+      pointGeometry.creator = text.id
+      // let planeGeometry = planesGeometryQuery.get(text.plane)
+      let { indexs } = textsViewportManager.add(text.id)
+      text.indexs = indexs
+      return text
     },
-    load(charsGeometry) {
-      charsGeometry.forEach((charGeometry) => {
-        this.attach(charGeometry)
+    load(textsGeometry) {
+      textsGeometry.forEach((textGeometry) => {
+        this.attach(textGeometry)
       })
     },
     removeByIndex(index) {
-      assertIndexFormList(charsGeometry.value, index, 'charsGeometry:removeByIndex')
-      let char = charsGeometry.value.splice(index, 1)[0]
-      delete charsHashGeometry.value[char.id]
+      assertIndexFormList(textsGeometry.value, index, 'textsGeometry:removeByIndex')
+      let text = textsGeometry.value[index]
+      textsViewportManager.remove(text.id)
+      textsGeometry.value.splice(index, 1)[0]
+      delete textsHashGeometry.value[text.id]
     },
-    remove(char) {
-      let index = charsGeometry.value.indexOf(char)
+    remove(text) {
+      let index = textsGeometry.value.indexOf(text)
       this.removeByIndex(index)
     },
     removeById(id) {
-      let char = charsHashGeometry.value[id]
-      let index = charsGeometry.value.indexOf(char)
+      let text = textsHashGeometry.value[id]
+      let index = textsGeometry.value.indexOf(text)
       this.removeByIndex(index)
     },
     clear() {
-      ;[...charsGeometry.value].forEach((char) => {
-        charsGeometry.value.shift()
-        delete charsHashGeometry.value[char.id]
+      ;[...textsGeometry.value].forEach((text) => {
+        textsGeometry.value.shift()
+        delete textsHashGeometry.value[text.id]
       })
     },
   }

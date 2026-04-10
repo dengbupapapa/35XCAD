@@ -39,6 +39,9 @@ export class Renderer {
   element() {
     return this.impl.domElement
   }
+  resetState() {
+    return this.impl.resetState()
+  }
 }
 
 export class Scene {

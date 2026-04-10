@@ -4,8 +4,8 @@ import {
   useLines as useLinesGeometryManager,
   usePolylines as usePolylinesGeometryManager,
   useArcs as useArcsGeometryManager,
+  useTexts as useTextsGeometryManager,
   useDimensionDistances as useDimensionDistancesGeometryManager,
-  //   useConstraintsIncrement as useConstraintsIncrementGeometryManager,
 } from './geometry-manager'
 import {
   useConstraints as useConstraintsManager,
@@ -21,6 +21,7 @@ export function useLoader() {
   let linesGeometryManager = useLinesGeometryManager()
   let polylinesGeometryManager = usePolylinesGeometryManager()
   let arcsGeometryManager = useArcsGeometryManager()
+  let textsGeometryManager = useTextsGeometryManager()
   let dimensionDistancesGeometryManager = useDimensionDistancesGeometryManager()
   let constraintsManager = useConstraintsManager({ effectDdebounce: true })
   let constraintsIncrementManager = useConstraintsIncrementManager()
@@ -28,15 +29,16 @@ export function useLoader() {
   return {
     json(data) {
       let {
-        planes,
-        points,
-        lines,
-        polylines,
-        arcs,
-        dimensionDistances,
-        constraints,
-        constraintsIncrement,
-        constraintsRelation,
+        planes = [],
+        points = [],
+        lines = [],
+        polylines = [],
+        arcs = [],
+        texts = [],
+        dimensionDistances = [],
+        constraints = [],
+        constraintsIncrement = [],
+        constraintsRelation = [],
       } = data
       let index = planes.findIndex(({ active }) => active) || 0
       planesGeometryManager.load(cloneDeep(planes))
@@ -46,6 +48,7 @@ export function useLoader() {
       linesGeometryManager.load(cloneDeep(lines))
       polylinesGeometryManager.load(cloneDeep(polylines))
       arcsGeometryManager.load(cloneDeep(arcs))
+      textsGeometryManager.load(cloneDeep(texts))
       dimensionDistancesGeometryManager.load(cloneDeep(dimensionDistances))
       constraintsManager.load(cloneDeep(constraints))
       constraintsIncrementManager.set(constraintsIncrement)
@@ -65,6 +68,7 @@ export function useClear() {
   let linesGeometryManager = useLinesGeometryManager()
   let polylinesGeometryManager = usePolylinesGeometryManager()
   let arcsGeometryManager = useArcsGeometryManager()
+  let textsGeometryManager = useTextsGeometryManager()
   let dimensionDistancesGeometryManager = useDimensionDistancesGeometryManager()
   let constraintsManager = useConstraintsManager()
   let constraintsIncrementManager = useConstraintsIncrementManager()
@@ -80,6 +84,7 @@ export function useClear() {
       selectPointsStrict.clear()
       selectLines.clear()
       dimensionDistancesGeometryManager.clear()
+      textsGeometryManager.clear()
       arcsGeometryManager.clear()
       polylinesGeometryManager.clear()
       linesGeometryManager.clear()
@@ -94,6 +99,7 @@ export function useClear() {
     },
     geometry() {
       dimensionDistancesGeometryManager.clear()
+      textsGeometryManager.clear()
       arcsGeometryManager.clear()
       polylinesGeometryManager.clear()
       linesGeometryManager.clear()
@@ -110,6 +116,7 @@ export function empty() {
     lines: [],
     polylines: [],
     arcs: [],
+    texts: [],
     dimensionDistances: [],
     constraints: [],
     constraintsIncrement: 0,

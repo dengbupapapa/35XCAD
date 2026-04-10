@@ -20,6 +20,7 @@ import {
   useLines as useLinesQuery,
   usePolylines as usePolylinesQuery,
   useArcs as useArcsQuery,
+  useTexts as useTextsGeometryQuery,
   useDimensionDistances as useDimensionDistancesQuery,
 } from './hooks/geometry-query'
 import {
@@ -33,6 +34,7 @@ let pointsQuery = usePointsQuery()
 let linesQuery = useLinesQuery()
 let polylinesQuery = usePolylinesQuery()
 let arcsQuery = useArcsQuery()
+let textsQuery = useTextsGeometryQuery()
 let dimensionDistancesQuery = useDimensionDistancesQuery()
 let constraintsQuery = useConstraintsQuery()
 let constraintsIncrementQuery = useConstraintsIncrementQuery()
@@ -44,6 +46,7 @@ function onSave() {
   data.value.lines = cloneDeep(toRaw(linesQuery.all()))
   data.value.polylines = cloneDeep(toRaw(polylinesQuery.all()))
   data.value.arcs = cloneDeep(toRaw(arcsQuery.all()))
+  data.value.texts = cloneDeep(toRaw(textsQuery.all()))
   data.value.dimensionDistances = cloneDeep(toRaw(dimensionDistancesQuery.all()))
   data.value.constraints = cloneDeep(toRaw(constraintsQuery.all()))
   data.value.constraintsIncrement = toRaw(constraintsIncrementQuery.get())
@@ -66,12 +69,14 @@ import { onMounted } from 'vue'
 let loader = useLoader()
 
 onMounted(function load() {
-  let { planes } = data.value
-  if (planes.length === 0) {
-    loader.empty()
-  } else {
-    loader.json(cloneDeep(data.value))
-  }
+  setTimeout(() => {
+    let { planes } = data.value
+    if (planes.length === 0) {
+      loader.empty()
+    } else {
+      loader.json(cloneDeep(data.value))
+    }
+  })
 })
 
 // import { useDependencyGraph } from './hooks/data-manager'

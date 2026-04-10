@@ -7,7 +7,7 @@
           <a-input-number
             style="width: 100%"
             :step="0.001"
-            :precision="3"
+            :precision="configUI['dimension-distance-numerical-precision']"
             :disabled="dimensionDistancesLengthGeometryDerived > 1"
             v-model:value="input"
             @blur="onComplete"
@@ -26,6 +26,7 @@ import iconfont from '@/assets/iconfont/iconfont.js?url'
 const Icon = createFromIconfontCN({
   scriptUrl: iconfont, // 在 iconfont.cn 上生成
 })
+import configUI from './config-ui.json'
 /*
  * 选中数量
  */

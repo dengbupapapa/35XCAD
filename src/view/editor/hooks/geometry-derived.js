@@ -4,12 +4,14 @@ import {
   usePoints as usePointsGeometry,
   useLines as useLinesGeometry,
   useArcs as useArcsGeometry,
+  useTexts as useTextsGeometry,
   // useConstraints as useConstraintsGeometry,
   usePlanesHash as usePlanesHashGeometry,
   usePointsHash as usePointsHashGeometry,
   useLinesHash as useLinesHashGeometry,
   useArcsHash as useArcsHashGeometry,
   usePolylines as usePolylinesGeometry,
+  useTextsHash as useTextsHashGeometry,
   // useConstraintsHash as useConstraintsHashGeometry,
   // useConstraintsIncrement as useConstraintsIncrementGeometry,
 } from './geometry-provide-context.js'
@@ -65,6 +67,50 @@ export function useArcPoints(id) {
   })
 }
 
+export function useText(id) {
+  let texts = useTextsHashGeometry()
+  return computed(() => {
+    return texts.value[id]
+  })
+}
+export function useTextPoint(id) {
+  let text = useText(id)
+  let pointsHash = usePointsHashGeometry()
+  return computed(() => {
+    let { point } = text.value
+    let pointGeometry = pointsHash.value[point]
+    return pointGeometry
+  })
+}
+export function useTextPlane(id) {
+  let text = useText(id)
+  let planesHash = usePlanesHashGeometry()
+  return computed(() => {
+    let { plane } = text.value
+    let planeGeometry = planesHash.value[plane]
+    return planeGeometry
+  })
+}
+export function useTextLine(id) {
+  let text = useText(id)
+  let linesHash = useLinesHashGeometry()
+  return computed(() => {
+    let { line } = text.value
+    let lineGeometry = linesHash.value?.[line]
+    return lineGeometry
+  })
+}
+
+export function useTextLinePoints(id) {
+  let line = useTextLine(id)
+  let pointsHash = usePointsHashGeometry()
+  return computed(() => {
+    let pointStart = pointsHash.value[line.value?.start]
+    let pointEnd = pointsHash.value[line.value?.end]
+    return [pointStart, pointEnd]
+  })
+}
+
 export function usePlanes() {
   let plane = usePlanesGeometry()
   return computed(() => {
@@ -96,18 +142,20 @@ export function usePolylines() {
   })
 }
 
-// export function useConstraints() {
-//   let constraintsGeometry = useConstraintsGeometry()
-//   return computed(() => {
-//     return constraintsGeometry.value
-//   })
-// }
-// export function useConstraintsIncrement() {
-//   let constraintsIncrementGeometry = useConstraintsIncrementGeometry()
-//   return computed(() => {
-//     return constraintsIncrementGeometry.value
-//   })
-// }
+export function useTexts() {
+  let texts = useTextsGeometry()
+  return computed(() => {
+    return texts.value
+  })
+}
+
+export function useTextsHash() {
+  let textsHash = useTextsHashGeometry()
+  return computed(() => {
+    return textsHash.value
+  })
+}
+
 export function usePlanesHash() {
   let planesHash = usePlanesHashGeometry()
   return computed(() => {

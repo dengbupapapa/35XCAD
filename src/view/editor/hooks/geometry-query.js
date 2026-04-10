@@ -16,8 +16,8 @@ import {
   useDimensionDistancesCreatorHash as useDimensionDistancesCreatorHashGeometry,
   useDimensionAnglesHash as useDimensionAnglesHashGeometry,
   useIncrement as useIncrementGeometry,
-  useChars as useCharsGeometry,
-  useCharsHash as useCharsHashGeometry,
+  useTexts as useTextsGeometry,
+  useTextsHash as useTextsHashGeometry,
 } from './geometry-provide-context.js'
 
 export function usePlanes() {
@@ -239,27 +239,27 @@ export function useDimensionAngles() {
   }
 }
 
-export function useChars() {
-  let chars = useCharsGeometry()
-  let charsHash = useCharsHashGeometry()
+export function useTexts() {
+  let texts = useTextsGeometry()
+  let textsHash = useTextsHashGeometry()
   return {
     get(id) {
-      return charsHash.value[id]
+      return textsHash.value[id]
     },
     getByIndex(index) {
-      return chars.value[index]
+      return texts.value[index]
     },
-    indexOf(char) {
-      return chars.value.indexOf(char)
+    indexOf(text) {
+      return texts.value.indexOf(text)
     },
-    has(char) {
-      return chars.value.includes(char)
+    has(text) {
+      return texts.value.includes(text)
     },
     hasById(id) {
       return !!this.get(id)
     },
     all() {
-      return chars.value
+      return texts.value
     },
   }
 }
