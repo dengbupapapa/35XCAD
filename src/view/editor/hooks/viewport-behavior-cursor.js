@@ -61,7 +61,7 @@ export function useSelect() {
     if (event.button !== 0) return
     let rect = canvas.getBoundingClientRect()
     let { x, y } = viewport2ndc(rect, { x: event.clientX, y: event.clientY })
-    raycaster.setFromRenderer(renderer)
+    // raycaster.setFromRenderer(renderer)
     raycaster.setFromCamera([x, y], camera)
     let state = { x, y }
     if (!selectPoints.onMousedown(state, event) && !selectLines.onMousedown(state, event)) {
@@ -269,7 +269,7 @@ export function useMove(autoEnable = true) {
     let rect = canvas.getBoundingClientRect()
     let { x, y } = viewport2ndc(rect, { x: event.clientX, y: event.clientY })
     raycaster.setFromCamera([x, y], camera)
-    raycaster.setFromRenderer(renderer)
+    // raycaster.setFromRenderer(renderer)
     let state = { x, y }
     activeted = movePoints.onMousedown(state, event) || moveLines.onMousedown(state, event)
     if (activeted) {
@@ -283,7 +283,7 @@ export function useMove(autoEnable = true) {
     let rect = canvas.getBoundingClientRect()
     let { x, y } = viewport2ndc(rect, { x: event.clientX, y: event.clientY })
     raycaster.setFromCamera([x, y], camera)
-    raycaster.setFromRenderer(renderer)
+    // raycaster.setFromRenderer(renderer)
     let state = { x, y }
     movePoints.onMousemove(state, event)
     moveLines.onMousemove(state, event)

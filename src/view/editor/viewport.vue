@@ -92,15 +92,15 @@ const ro = new ResizeObserver((entries, observer) => {
 /*
  * 全局射线添加数据
  */
-let raycaster = useRaycaster()
-let pointsHash = usePointsHash()
-let linesHash = useLinesHash()
-let pointsGeometry = usePointsGeometry()
-let linesGeometry = useLinesGeometry()
-raycaster.setPointsHash(pointsHash.value)
-raycaster.setLinesHash(linesHash.value)
-raycaster.setPointsGeometry(pointsGeometry.value)
-raycaster.setLinesGeometry(linesGeometry.value)
+// let raycaster = useRaycaster()
+// let pointsHash = usePointsHash()
+// let linesHash = useLinesHash()
+// let pointsGeometry = usePointsGeometry()
+// let linesGeometry = useLinesGeometry()
+// raycaster.setPointsHash(pointsHash.value)
+// raycaster.setLinesHash(linesHash.value)
+// raycaster.setPointsGeometry(pointsGeometry.value)
+// raycaster.setLinesGeometry(linesGeometry.value)
 
 // //测试arc
 // import { Arc } from './core/gl-entitie'

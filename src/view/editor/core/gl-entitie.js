@@ -1072,13 +1072,30 @@ export class Texts {
     let axis = new Vector3(...normal).normalize()
     let quaternion = new Quaternion().setFromAxisAngle(axis, angle)
     let offsetX = 0
+    let maxHeight = 0
+    let left = 0
+    indexs.forEach((index, i) => {
+      let atlaIndex = this.impl.geometry.attributes.aAtlaIndex.getX(index)
+      let { width, height, glyphTop } = this.#atlas.getByIndex(atlaIndex)
+      maxHeight = Math.max(maxHeight, height)
+      if (i === 0) {
+        left = width / 2
+      }
+    })
     indexs.forEach((index) => {
       /*
        * 基于字体宽度角度修改偏移
        */
+      /*
+       * [问题]
+       * 偏移在相机平移时位置有问题
+       */
       let atlaIndex = this.impl.geometry.attributes.aAtlaIndex.getX(index)
-      let { width, glyphTop } = this.#atlas.getByIndex(atlaIndex)
-      let offsetUV = new Vector2(offsetX, 0).divide(this.#resolution).multiplyScalar(2).toArray()
+      let { width, height, glyphTop } = this.#atlas.getByIndex(atlaIndex)
+      let offsetUV = new Vector2(offsetX + left, maxHeight)
+        .divide(this.#resolution)
+        .multiplyScalar(2)
+        .toArray()
       let offset = planeCoords2worldCoords(offsetUV, plane)
       offset = new Vector3(...offset).applyQuaternion(quaternion).toArray()
       this.impl.geometry.attributes.aOffset.array.set(offset, index * 3)

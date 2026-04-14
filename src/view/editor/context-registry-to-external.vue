@@ -1,6 +1,5 @@
 <template></template>
 <script setup>
-import { ConstraintResolver } from './core/data-constraint.js'
 import {
   useConstraints as useConstraintsManager,
   useConstraintsRelation as useConstraintsRelationManager,
@@ -17,8 +16,13 @@ import {
   useConstraintsRelation as useConstraintsRelationQuery,
 } from './hooks/constraint-query.js'
 
-import { usePolylines as usePolylinesGeometryMapper } from './hooks/geometry-mapper'
+import {
+  usePolylines as usePolylinesGeometryMapper,
+  useHelpers as useHelpersGeometryMapper,
+} from './hooks/geometry-mapper'
 import { usePolylines as usePolylinesGeometryManager } from './hooks/geometry-manager'
+
+import { useRenderer } from './hooks/viewport-provide-context.js'
 
 let constraintsQuery = useConstraintsQuery()
 let constraintsRelationQuery = useConstraintsRelationQuery()
@@ -31,7 +35,10 @@ let linesGeometryQuery = useLinesGeometryQuery()
 let arcsGeometryQuery = useArcsGeometryQuery()
 let polylinesGeometryMapper = usePolylinesGeometryMapper()
 let polylinesGeometryManager = usePolylinesGeometryManager()
+let renderer = useRenderer()
+let helpersGeometryMapper = useHelpersGeometryMapper()
 
+import { ConstraintResolver } from './core/data-constraint.js'
 ConstraintResolver.setContext('constraintsQuery', constraintsQuery)
 ConstraintResolver.setContext('constraintsRelationQuery', constraintsRelationQuery)
 ConstraintResolver.setContext('constraintsManager', constraintsManager)
@@ -43,4 +50,12 @@ ConstraintResolver.setContext('linesGeometryQuery', linesGeometryQuery)
 ConstraintResolver.setContext('arcsGeometryQuery', arcsGeometryQuery)
 ConstraintResolver.setContext('polylinesGeometryMapper', polylinesGeometryMapper)
 ConstraintResolver.setContext('polylinesGeometryManager', polylinesGeometryManager)
+
+import { Raycaster } from './core/gl-query'
+Raycaster.setContext('planesGeometryQuery', planesGeometryQuery)
+Raycaster.setContext('pointsGeometryQuery', pointsGeometryQuery)
+Raycaster.setContext('linesGeometryQuery', linesGeometryQuery)
+Raycaster.setContext('arcsGeometryQuery', arcsGeometryQuery)
+Raycaster.setContext('renderer', renderer)
+Raycaster.setContext('helpersGeometryMapper', helpersGeometryMapper)
 </script>
