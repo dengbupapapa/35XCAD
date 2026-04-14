@@ -19,6 +19,7 @@ export default function useRegistry() {
   const increment = ref(0)
   const texts = ref([])
   const textsHash = ref({})
+  const textsCharIndexHash = ref({})
 
   provide(pointsSymbol, points)
   provide(planesSymbol, planes)
@@ -38,6 +39,7 @@ export default function useRegistry() {
   provide(incrementSymbol, increment)
   provide(textsSymbol, texts)
   provide(textsHashSymbol, textsHash)
+  provide(textsCharIndexHashSymbol, textsCharIndexHash)
 }
 
 const planesSymbol = Symbol('planes')
@@ -60,6 +62,7 @@ const incrementSymbol = Symbol('increment')
 
 const textsSymbol = Symbol('texts')
 const textsHashSymbol = Symbol('textsHash')
+const textsCharIndexHashSymbol = Symbol('textsCharIndexHash')
 export function usePlanes() {
   return inject(planesSymbol)
 }
@@ -113,4 +116,7 @@ export function useTexts() {
 }
 export function useTextsHash() {
   return inject(textsHashSymbol)
+}
+export function useTextsCharIndexHash() {
+  return inject(textsCharIndexHashSymbol)
 }

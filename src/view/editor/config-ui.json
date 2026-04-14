@@ -16,7 +16,7 @@
   "dimension-distance-line-color": [0, 0, 0, 0.3],
   "dimension-distance-line-color-activated": [0.8, 0.2, 0.8, 1],
   "dimension-distance-numerical-precision": 3,
-  "dimension-distance-numerical-font-size": 18,
+  "dimension-distance-numerical-font-size": 28,
   "dimension-distance-numerical-font-color": [0.3, 0.3, 0.3, 0.3],
   "dimension-distance-numerical-point-size": 0,
   "dimension-distance-numerical-point-color": [0, 0, 0, 0]

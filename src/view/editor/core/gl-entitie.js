@@ -929,7 +929,6 @@ class Atlas {
       data[j + 3] = v
     }
     this.ctx.putImageData(imageData, this.x, this.y + this.height - bmp.glyphTop)
-
     let glyph = {
       u0: this.x / this.width,
       v0: this.y / this.height,
@@ -945,8 +944,15 @@ class Atlas {
 
     return glyph
   }
+  indexOf(text) {
+    return this.map.keys().toArray().indexOf(text)
+  }
+  getByIndex(index) {
+    return this.map.values().toArray()[index]
+  }
 }
 
+import { worldCoords2planeCoords } from '../utils/simple'
 export class Texts {
   impl
   #resolution = new Vector2(500, 500)
@@ -983,12 +989,16 @@ export class Texts {
       new InstancedBufferAttribute(new Float32Array(this.#MAX_TEXTS * 3), 3),
     )
     geometry.setAttribute(
-      'aoOffset',
-      new InstancedBufferAttribute(new Float32Array(this.#MAX_TEXTS * 3), 3),
+      'aAtlaIndex',
+      new InstancedBufferAttribute(new Float32Array(this.#MAX_TEXTS * 1), 1),
     )
     geometry.setAttribute(
       'aColor',
       new InstancedBufferAttribute(new Float32Array(this.#MAX_TEXTS * 4), 4),
+    )
+    geometry.setAttribute(
+      'aAngle',
+      new InstancedBufferAttribute(new Float32Array(this.#MAX_TEXTS * 1), 1),
     )
     const instancedMesh = new InstancedMesh(geometry, material, this.#MAX_TEXTS)
     instancedMesh.count = 0
@@ -1009,83 +1019,81 @@ export class Texts {
       attributeColor.needsUpdate = true
     })
   }
-  add(text, position, plane, color = configUI['dimension-distance-numerical-font-color']) {
+  #angleFromPlaneDirection(d, p) {
+    let [u, v] = worldCoords2planeCoords(d, p)
+    return Math.atan2(v, u)
+  }
+  add(
+    text,
+    position,
+    direction,
+    plane,
+    color = configUI['dimension-distance-numerical-font-color'],
+  ) {
     let indexs = []
-    let offsetX = 0
-    let { normal } = plane
     text
       .split('')
       // .splice(0, configUI['dimension-distance-numerical-precision'])
       .forEach((text) => {
         let index = this.impl.count++
-        let { u0, u1, v0, v1, width, height, glyphTop } = this.#atlas.addText(text)
-        let offsetUV = new Vector2(offsetX, height)
-          .divide(this.#resolution)
-          .multiplyScalar(2)
-          .toArray()
-        let offset = planeCoords2worldCoords(offsetUV, plane)
-        // console.log({ text, u0, v0, u1, v1, width, height })
+        let { u0, u1, v0, v1, width, height } = this.#atlas.addText(text)
+        let atlaIndex = this.#atlas.indexOf(text)
         this.impl.geometry.attributes.aUv.array.set([u0, u1, v0, v1], index * 4)
         this.impl.geometry.attributes.aUv.needsUpdate = true
         this.impl.geometry.attributes.aSize.array.set([width, height], index * 2)
         this.impl.geometry.attributes.aSize.needsUpdate = true
-        this.impl.geometry.attributes.aOffset.array.set(offset, index * 3)
-        this.impl.geometry.attributes.aOffset.needsUpdate = true
-        this.impl.geometry.attributes.aoOffset.array.set(offset, index * 3)
-        this.impl.geometry.attributes.aoOffset.needsUpdate = true
-        offsetX += width
+        this.impl.geometry.attributes.aAtlaIndex.array.set([atlaIndex], index * 1)
+        this.impl.geometry.attributes.aAtlaIndex.needsUpdate = true
         indexs.push(index)
       })
     this.#texture.needsUpdate = true
     this.color(indexs, color)
-    this.translation(indexs, position, plane)
+    this.translation(indexs, position, direction, plane)
     return { indexs }
   }
-  translation(indexs, position, plane) {
+  translation(indexs, position, direction, plane) {
     let { normal } = plane
-    normal = new Vector3(...normal)
+    let angle = this.#angleFromPlaneDirection(direction, plane)
+
+    let axis = new Vector3(...normal).normalize()
+    let quaternion = new Quaternion().setFromAxisAngle(axis, angle)
+    let offsetX = 0
     indexs.forEach((index) => {
-      // this.impl.getMatrixAt(index, dummy.matrix)
+      /*
+       * 基于字体宽度角度修改偏移
+       */
+      let atlaIndex = this.impl.geometry.attributes.aAtlaIndex.getX(index)
+      let { width, glyphTop } = this.#atlas.getByIndex(atlaIndex)
+      let offsetUV = new Vector2(offsetX, 0).divide(this.#resolution).multiplyScalar(2).toArray()
+      let offset = planeCoords2worldCoords(offsetUV, plane)
+      offset = new Vector3(...offset).applyQuaternion(quaternion).toArray()
+      this.impl.geometry.attributes.aOffset.array.set(offset, index * 3)
+      this.impl.geometry.attributes.aOffset.needsUpdate = true
+      this.impl.geometry.attributes.aAngle.array.set([angle], index * 1)
+      this.impl.geometry.attributes.aAngle.needsUpdate = true
+      offsetX += width
+
+      /*
+       * 自旋和基于法向量朝向
+       */
+      this.impl.getMatrixAt(index, dummy.matrix)
+      dummy.matrix.decompose(dummy.position, dummy.quaternion, dummy.scale)
       dummy.position.set(position[0], position[1], position[2])
-      dummy.quaternion.setFromUnitVectors(new Vector3(0, 0, 1), normal)
+      dummy.quaternion.setFromUnitVectors(new Vector3(0, 0, 1), new Vector3(...normal))
+      dummy.quaternion.premultiply(quaternion)
       dummy.updateMatrix()
       this.impl.setMatrixAt(index, dummy.matrix)
       this.impl.instanceMatrix.needsUpdate = true
     })
   }
-  rotation(indexs, angle, center, plane) {
-    let axis = new Vector3(...plane.normal).normalize()
-    let origin = new Vector3(...center)
-    let quaternion = new Quaternion().setFromAxisAngle(axis, angle)
-    console.log(angle)
-    indexs.forEach((index) => {
-      let x = this.impl.geometry.attributes.aoOffset.getX(index)
-      let y = this.impl.geometry.attributes.aoOffset.getY(index)
-      let z = this.impl.geometry.attributes.aoOffset.getZ(index)
-
-      let position = new Vector3(x, y, z)
-
-      position.applyQuaternion(quaternion)
-
-      this.impl.geometry.attributes.aOffset.array.set(position.toArray(), index * 3)
-
-      // this.impl.getMatrixAt(index, dummy.matrix)
-      // dummy.position.sub(origin)
-      // dummy.position.applyQuaternion(quaternion)
-      // dummy.position.add(origin)
-      // dummy.updateMatrix()
-      // this.impl.setMatrixAt(index, dummy.matrix)
-    })
-
-    this.impl.geometry.attributes.aOffset.needsUpdate = true
-    this.impl.instanceMatrix.needsUpdate = true
-  }
   remove(indexs) {
-    console.log(indexs)
+    let changeMap = new Map()
+    indexs = [...indexs]
+    indexs.sort((a, b) => b - a)
     indexs.forEach((index) => {
       let last = this.impl.count - 1
-
       if (index !== last) {
+        changeMap.set(last, index)
         // 把最后一个点挪过来
         const aUv = this.impl.geometry.attributes.aUv
         aUv.array.copyWithin(index * 4, last * 4, last * 4 + 4)
@@ -1099,14 +1107,26 @@ export class Texts {
         aOffset.array.copyWithin(index * 3, last * 3, last * 3 + 3)
         aOffset.needsUpdate = true
 
+        const aAtlaIndex = this.impl.geometry.attributes.aAtlaIndex
+        aAtlaIndex.array.copyWithin(index * 1, last * 1, last * 1 + 1)
+        aAtlaIndex.needsUpdate = true
+
         const aColor = this.impl.geometry.attributes.aColor
         aColor.array.copyWithin(index * 4, last * 4, last * 4 + 4)
         aColor.needsUpdate = true
+        const aAngle = this.impl.geometry.attributes.aAngle
+        aAngle.array.copyWithin(index * 1, last * 1, last * 1 + 1)
+        aAngle.needsUpdate = true
+
+        this.impl.getMatrixAt(last, dummy.matrix)
+        this.impl.setMatrixAt(index, dummy.matrix)
       }
       this.impl.count--
-      this.impl.computeBoundingSphere()
-      this.impl.computeBoundingBox()
     })
+    this.impl.computeBoundingSphere()
+    this.impl.computeBoundingBox()
+    this.impl.instanceMatrix.needsUpdate = true
+    return new Map([...changeMap].reverse())
   }
 
   static shaderVertex = `
@@ -1115,6 +1135,7 @@ export class Texts {
     attribute vec4 aUv;
     attribute vec3 aOffset;
     attribute vec4 aColor;
+    attribute float aAngle;
     varying vec2 vUv;
     varying vec4 vAuv;
     varying vec4 vColor;
@@ -1127,19 +1148,26 @@ export class Texts {
       vec3 x = normalize(m[0]);
       vec3 y = normalize(m[1]);
       vec3 z = normalize(m[2]);
+      mat3 rotation = mat3(x, y, z);
 
       vec4 worldCenter = instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0);
       worldCenter.xyz+= (aOffset / projectionMatrix[0][0]);
       vec4 clipCenter = projectionMatrix * modelViewMatrix * worldCenter;
 
-      mat3 rotation = mat3(x, y, z);
       vec3 rotated = rotation * position;
 
       //跟随视图矩阵
       vec4 clipPosition =  viewMatrix * vec4(rotated, 1.0);
+
+      // float s = sin(aAngle);
+      // float c = cos(aAngle);
+      // clipPosition.xy = vec2(
+      //   clipPosition.x * abs(c) + clipPosition.y * abs(s),
+      //   clipPosition.x * abs(s) + clipPosition.y * abs(c)
+      // );
+
       vec2 pixel = aSize / uResolution * 2.0;
 
-      // clipCenter.x += offset.x;
       clipCenter.xy += clipPosition.xy * pixel * clipCenter.w;
 
       gl_Position = clipCenter;
@@ -1166,227 +1194,7 @@ export class Texts {
       float dist = tex.r;
       float alpha = smoothstep(0.5 - 0.1, 0.5 + 0.1, dist);
       gl_FragColor = vec4(vColor.xyz, vColor.w*dist);
+      // gl_FragColor += vec4(1.0,.0,.0,0.5);
     }
   `
 }
-
-// export class Texts {
-//   impl
-//   #resolution = new Vector2(500, 500)
-//   #MAX_TEXTS = 10000
-//   #atlas
-//   #texture
-//   constructor() {
-//     this.#atlas = new Atlas()
-//     this.#texture = new CanvasTexture(this.#atlas.canvas)
-//     const geometry = new PlaneGeometry(1, 1)
-//     const material = new ShaderMaterial({
-//       uniforms: {
-//         uMap: { value: this.#texture },
-//         uResolution: { value: this.#resolution },
-//       },
-//       transparent: true,
-//       vertexShader: Texts.shaderVertex,
-//       fragmentShader: Texts.shaderFragment,
-//       side: DoubleSide,
-//     })
-
-//     // const material = new MeshBasicMaterial()
-
-//     geometry.setAttribute(
-//       'aUv',
-//       new InstancedBufferAttribute(new Float32Array(this.#MAX_TEXTS * 4), 4),
-//     )
-//     geometry.setAttribute(
-//       'aSize',
-//       new InstancedBufferAttribute(new Float32Array(this.#MAX_TEXTS * 2), 2),
-//     )
-//     geometry.setAttribute(
-//       'aOffset',
-//       new InstancedBufferAttribute(new Float32Array(this.#MAX_TEXTS * 3), 3),
-//     )
-//     geometry.setAttribute(
-//       'aColor',
-//       new InstancedBufferAttribute(new Float32Array(this.#MAX_TEXTS * 4), 4),
-//     )
-//     const instancedMesh = new InstancedMesh(geometry, material, this.#MAX_TEXTS)
-//     instancedMesh.count = 0
-//     instancedMesh.frustumCulled = false
-//     this.impl = instancedMesh
-//     // console.log(instancedMesh)
-//   }
-//   set resolution(resolution) {
-//     this.#resolution.set(...resolution)
-//   }
-//   get resolution() {
-//     return this.#resolution.toArray()
-//   }
-//   color(indexs, value) {
-//     indexs.forEach((index) => {
-//       const attributeColor = this.impl.geometry.attributes.aColor
-//       attributeColor.array.set(value, index * 4)
-//       attributeColor.needsUpdate = true
-//     })
-//   }
-//   add(text, position, plane, color = configUI['dimension-distance-numerical-font-color']) {
-//     let indexs = []
-//     let offsetX = 0
-//     let { normal } = plane
-//     text
-//       .split('')
-//       // .splice(0, configUI['dimension-distance-numerical-precision'])
-//       .forEach((text) => {
-//         let index = this.impl.count++
-//         let { u0, u1, v0, v1, width, height, glyphTop } = this.#atlas.addText(text)
-//         let offsetUV = new Vector2(offsetX, glyphTop)
-//           .divide(this.#resolution)
-//           .multiplyScalar(2)
-//           .toArray()
-//         let offset = planeCoords2worldCoords(offsetUV, plane)
-//         // console.log({ text, u0, v0, u1, v1, width, height })
-//         this.impl.geometry.attributes.aUv.array.set([u0, u1, v0, v1], index * 4)
-//         this.impl.geometry.attributes.aUv.needsUpdate = true
-//         this.impl.geometry.attributes.aSize.array.set([width, height], index * 2)
-//         this.impl.geometry.attributes.aSize.needsUpdate = true
-//         this.impl.geometry.attributes.aOffset.array.set(offset, index * 3)
-//         this.impl.geometry.attributes.aOffset.needsUpdate = true
-//         offsetX += width
-//         indexs.push(index)
-//       })
-//     this.#texture.needsUpdate = true
-//     this.color(indexs, color)
-//     this.translation(indexs, position, plane)
-//     return { indexs }
-//   }
-//   translation(indexs, position, plane) {
-//     let { normal } = plane
-//     indexs.forEach((index) => {
-//       normal = new Vector3(...normal)
-
-//       let x = this.impl.geometry.attributes.aOffset.getX(index)
-//       let y = this.impl.geometry.attributes.aOffset.getY(index)
-//       let z = this.impl.geometry.attributes.aOffset.getZ(index)
-
-//       // this.impl.getMatrixAt(index, dummy.matrix)
-//       dummy.position.set(position[0] + x, position[1] + y, position[2] + z)
-//       dummy.quaternion.setFromUnitVectors(new Vector3(0, 0, 1), normal)
-//       dummy.updateMatrix()
-//       this.impl.setMatrixAt(index, dummy.matrix)
-//       this.impl.instanceMatrix.needsUpdate = true
-//     })
-//   }
-//   rotation(indexs, angle, center, plane) {
-//     let axis = new Vector3(...plane.normal).normalize()
-//     let origin = new Vector3(...center)
-//     let quaternion = new Quaternion().setFromAxisAngle(axis, angle)
-//     console.log(angle)
-//     indexs.forEach((index) => {
-//       // let x = this.impl.geometry.attributes.aOffset.getX(index)
-//       // let y = this.impl.geometry.attributes.aOffset.getY(index)
-//       // let z = this.impl.geometry.attributes.aOffset.getZ(index)
-
-//       // let position = new Vector3(x, y, z)
-
-//       // position.applyQuaternion(quaternion)
-
-//       // this.impl.geometry.attributes.aOffset.array.set(position.toArray(), index * 3)
-
-//       this.impl.getMatrixAt(index, dummy.matrix)
-//       dummy.position.sub(origin)
-//       dummy.position.applyQuaternion(quaternion)
-//       dummy.position.add(origin)
-//       dummy.updateMatrix()
-//       this.impl.setMatrixAt(index, dummy.matrix)
-//     })
-
-//     this.impl.geometry.attributes.aOffset.needsUpdate = true
-//     this.impl.instanceMatrix.needsUpdate = true
-//   }
-//   remove(indexs) {
-//     indexs.forEach((index) => {
-//       let last = this.impl.count - 1
-
-//       if (index !== last) {
-//         // 把最后一个点挪过来
-//         const aUv = this.impl.geometry.attributes.aUv
-//         aUv.array.copyWithin(index * 4, last * 4, last * 4 + 4)
-//         aUv.needsUpdate = true
-
-//         const aSize = this.impl.geometry.attributes.aSize
-//         aSize.array.copyWithin(index * 2, last * 2, last * 2 + 2)
-//         aSize.needsUpdate = true
-
-//         const aOffset = this.impl.geometry.attributes.aOffset
-//         aOffset.array.copyWithin(index * 3, last * 3, last * 3 + 3)
-//         aOffset.needsUpdate = true
-
-//         const aColor = this.impl.geometry.attributes.aColor
-//         aColor.array.copyWithin(index * 4, last * 4, last * 4 + 4)
-//         aColor.needsUpdate = true
-//       }
-//       this.impl.count--
-//       this.impl.computeBoundingSphere()
-//       this.impl.computeBoundingBox()
-//     })
-//   }
-
-//   static shaderVertex = `
-//     uniform vec2 uResolution;
-//     attribute vec2 aSize;
-//     attribute vec4 aUv;
-//     attribute vec3 aOffset;
-//     attribute vec4 aColor;
-//     varying vec2 vUv;
-//     varying vec4 vAuv;
-//     varying vec4 vColor;
-//     void main() {
-//       vUv = uv;
-//       vAuv = aUv;
-//       vColor = aColor;
-
-//       mat3 m = mat3(instanceMatrix);
-//       vec3 x = normalize(m[0]);
-//       vec3 y = normalize(m[1]);
-//       vec3 z = normalize(m[2]);
-
-//       vec4 worldCenter = instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0);
-//       // worldCenter.xyz+= (aOffset / projectionMatrix[0][0]);
-//       vec4 clipCenter = projectionMatrix * modelViewMatrix * worldCenter;
-
-//       mat3 rotation = mat3(x, y, z);
-//       vec3 rotated = rotation * position;
-
-//       //跟随视图矩阵
-//       vec4 clipPosition =  viewMatrix * vec4(rotated, 1.0);
-//       vec2 pixel = aSize / uResolution * 2.0;
-
-//       // clipCenter.x += offset.x;
-//       clipCenter.xy += clipPosition.xy * pixel * clipCenter.w;
-
-//       gl_Position = clipCenter;
-
-//     }
-//   `
-
-//   static shaderFragment = `
-//     uniform sampler2D uMap;
-//     varying vec2 vUv;
-//     varying vec4 vAuv;
-//     varying vec4 vColor;
-
-//     void main() {
-
-//       vec2 uv = vec2(vUv.x, 1.0 - vUv.y);
-//       float au = mix(vAuv.x, vAuv.y, vUv.x);
-//       float av = mix(vAuv.z, vAuv.w, vUv.y);
-//       vec2 auv = vec2(au, av);
-//       vec4 tex = texture2D(uMap, auv);
-//       if(tex.r==0.0){
-//         discard;
-//       }
-//       float dist = tex.r;
-//       float alpha = smoothstep(0.5 - 0.1, 0.5 + 0.1, dist);
-//       gl_FragColor = vec4(vColor.xyz, vColor.w*dist);
-//     }
-//   `
-// }

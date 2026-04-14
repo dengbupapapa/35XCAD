@@ -16,6 +16,7 @@ import {
   useDimensionAnglesHash as useDimensionAnglesHashGeometry,
   useTexts as useTextsGeometry,
   useTextsHash as useTextsHashGeometry,
+  useTextsCharIndexHash as useTextsCharIndexHashGeometry,
 } from './geometry-provide-context.js'
 import {
   usePlanes as usePlanesGeometryQuery,
@@ -1018,8 +1019,10 @@ export function useDimensionAngles() {
 export function useTexts() {
   let textsGeometry = useTextsGeometry()
   let textsHashGeometry = useTextsHashGeometry()
+  let textsCharIndexHashGeometry = useTextsCharIndexHashGeometry()
   let planesGeometryQuery = usePlanesGeometryQuery()
   let pointsGeometryQuery = usePointsGeometryQuery()
+  let textsGeometryQuery = useTextsGeometryQuery()
   let textsViewportManager = useTextsViewportManager()
   return {
     add(content, point, lineRefer) {
@@ -1040,7 +1043,23 @@ export function useTexts() {
       // let planeGeometry = planesGeometryQuery.get(text.plane)
       let { indexs } = textsViewportManager.add(text.id)
       text.indexs = indexs
+      indexs.forEach((index) => {
+        textsCharIndexHashGeometry.value[index] = text.id
+      })
       return text
+    },
+    addCharIndex(id, index) {
+      let text = textsGeometryQuery.get(id)
+      if (text.indexs.includes(index)) return
+      text.indexs.push(index)
+      textsCharIndexHashGeometry.value[index] = id
+    },
+    removeCharIndex(id, index) {
+      let text = textsGeometryQuery.get(id)
+      if (!text.indexs.includes(index)) return
+      let i = text.indexs.indexOf(index)
+      text.indexs.splice(i, 1)
+      delete textsCharIndexHashGeometry.value[index]
     },
     load(textsGeometry) {
       textsGeometry.forEach((textGeometry) => {
@@ -1050,7 +1069,15 @@ export function useTexts() {
     removeByIndex(index) {
       assertIndexFormList(textsGeometry.value, index, 'textsGeometry:removeByIndex')
       let text = textsGeometry.value[index]
-      textsViewportManager.remove(text.id)
+      let changeMap = textsViewportManager.remove(text.id)
+      changeMap.forEach((indexAfter, indexBefore) => {
+        let text = textsGeometryQuery.getByCharIndex(indexBefore)
+        this.removeCharIndex(text.id, indexBefore)
+        this.addCharIndex(text.id, indexAfter)
+      })
+      text.indexs.forEach((index) => {
+        delete textsCharIndexHashGeometry.value[index]
+      })
       textsGeometry.value.splice(index, 1)[0]
       delete textsHashGeometry.value[text.id]
     },
@@ -1065,6 +1092,9 @@ export function useTexts() {
     },
     clear() {
       ;[...textsGeometry.value].forEach((text) => {
+        text.indexs.forEach((index) => {
+          delete textsCharIndexHashGeometry.value[index]
+        })
         textsGeometry.value.shift()
         delete textsHashGeometry.value[text.id]
       })

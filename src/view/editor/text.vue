@@ -22,36 +22,38 @@ const textsViewportManager = useTextsViewportManager()
 
 //更新实体
 watch(
-  textPoint,
-  (textPoint) => {
-    if (!textPoint) return
+  [textPoint, textLinePoints],
+  ([textPoint, textLinePoints]) => {
+    if (!textPoint || !textLinePoints) return
+    let [start, end] = textLinePoints
     textsViewportManager.translation(
       props.text.indexs,
       [textPoint.x, textPoint.y, textPoint.z],
+      [end.x - start.x, end.y - start.y, end.z - start.z],
       textPlane.value,
     )
   },
   { deep: true, immediate: true },
 )
-let textLineAngle = computed(() => {
-  let [start, end] = textLinePoints.value
-  if (!start || !end) return
-  let [startU, startV] = worldCoords2planeCoords([start.x, start.y, start.z], textPlane.value)
-  let [endU, endV] = worldCoords2planeCoords([end.x, end.y, end.z], textPlane.value)
-  let angle = new Vector2(startU, startV).angleTo(new Vector2(endU, endV))
-  return angle
-})
-watch(
-  textLineAngle,
-  (textLineAngle) => {
-    // textsViewportManager.rotation(
-    //   props.text.indexs,
-    //   textLineAngle,
-    //   [textPoint.value.x, textPoint.value.y, textPoint.value.z],
-    //   textPlane.value,
-    // )
-  },
-  { immediate: true },
-)
+// let textLineAngle = computed(() => {
+//   let [start, end] = textLinePoints.value
+//   if (!start || !end) return
+//   let [startU, startV] = worldCoords2planeCoords([start.x, start.y, start.z], textPlane.value)
+//   let [endU, endV] = worldCoords2planeCoords([end.x, end.y, end.z], textPlane.value)
+//   let angle = new Vector2(startU, startV).angleTo(new Vector2(endU, endV))
+//   return angle
+// })
+// watch(
+//   textLineAngle,
+//   (textLineAngle) => {
+//     // textsViewportManager.rotation(
+//     //   props.text.indexs,
+//     //   textLineAngle,
+//     //   [textPoint.value.x, textPoint.value.y, textPoint.value.z],
+//     //   textPlane.value,
+//     // )
+//   },
+//   { immediate: true },
+// )
 </script>
 <template></template>

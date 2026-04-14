@@ -13,6 +13,7 @@ import {
   useTexts as useTextsGeometryQuery,
   usePlanes as usePlanesGeometryQuery,
 } from './geometry-query'
+import { useTexts as useTextsGeometryManager } from './geometry-manager'
 import configGLStyle from '../config-ui.json'
 export function usePoints() {
   let pointsViewport = usePointsViewport()
@@ -146,27 +147,36 @@ export function useTexts() {
   let textsGeometryQuery = useTextsGeometryQuery()
   let planesGeometryQuery = usePlanesGeometryQuery()
   let pointsGeometryQuery = usePointsGeometryQuery()
+  let linesGeometryQuery = useLinesGeometryQuery()
+  // let textsGeometryManager = useTextsGeometryManager()
   return {
     add(id) {
       let textGeometry = textsGeometryQuery.get(id)
       let planeGeometry = planesGeometryQuery.get(textGeometry.plane)
       let pointGeometry = pointsGeometryQuery.get(textGeometry.point)
+      let lineGeometry = linesGeometryQuery.get(textGeometry.line)
+      let pointStart = pointsGeometryQuery.get(lineGeometry.start)
+      let pointEnd = pointsGeometryQuery.get(lineGeometry.end)
+
       return textsViewport.add(
         textGeometry.content,
         [pointGeometry.x, pointGeometry.y, pointGeometry.z],
+        [pointEnd.x - pointStart.x, pointEnd.y - pointStart.y, pointEnd.z - pointStart.z],
         planeGeometry,
       )
     },
-    translation(indexs, position, plane) {
-      textsViewport.translation(indexs, position, plane)
+    translation(indexs, position, direction, plane) {
+      textsViewport.translation(indexs, position, direction, plane)
     },
     rotation(indexs, angle, center, plane) {
       textsViewport.rotation(indexs, angle, center, plane)
     },
     remove(id) {
       let textGeometry = textsGeometryQuery.get(id)
-      console.log(textGeometry)
-      textsViewport.remove(textGeometry.indexs)
+      let indexs = textGeometry.indexs
+      let changeMap = textsViewport.remove(indexs)
+
+      return changeMap
     },
   }
 }
