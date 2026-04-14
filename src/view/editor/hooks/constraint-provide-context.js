@@ -2,6 +2,7 @@ import { provide, inject, ref } from 'vue'
 
 export default function useRegistry() {
   const constraints = ref([])
+  console.log(constraints)
   const constraintsHash = ref({})
   const constraintsPlaneHash = ref({})
   const constraintsIncrement = ref(0)

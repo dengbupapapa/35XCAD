@@ -1048,6 +1048,10 @@ export function useTexts() {
       })
       return text
     },
+    content(id, value) {
+      let text = textsGeometryQuery.get(id)
+      textsViewportManager.content(text.indexs, value)
+    },
     addCharIndex(id, index) {
       let text = textsGeometryQuery.get(id)
       if (text.indexs.includes(index)) return

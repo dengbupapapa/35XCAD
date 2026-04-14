@@ -52,9 +52,9 @@ export function usePoints() {
       pointsViewport.translation(index, position)
     },
     activate(id) {
+      let pointsGeometry = pointsGeometryQuery.get(id)
+      let index = pointsGeometryQuery.indexOf(pointsGeometry)
       setTimeout(() => {
-        let pointsGeometry = pointsGeometryQuery.get(id)
-        let index = pointsGeometryQuery.indexOf(pointsGeometry)
         if (dimensionDistancesGeometryMapper.hasFormPointId(id)) {
           pointsViewport.color(index, configGLStyle['dimension-distance-point-color-activated'])
           pointsViewport.size(index, configGLStyle['dimension-distance-point-size-activated'])
@@ -65,9 +65,9 @@ export function usePoints() {
       })
     },
     deactivate(id) {
+      let pointsGeometry = pointsGeometryQuery.get(id)
+      let index = pointsGeometryQuery.indexOf(pointsGeometry)
       setTimeout(() => {
-        let pointsGeometry = pointsGeometryQuery.get(id)
-        let index = pointsGeometryQuery.indexOf(pointsGeometry)
         if (dimensionDistancesGeometryMapper.hasFormPointId(id)) {
           pointsViewport.color(index, configGLStyle['dimension-distance-point-color'])
           pointsViewport.size(index, configGLStyle['dimension-distance-point-size'])
@@ -88,10 +88,10 @@ export function useLines() {
   let pointsGeometryQuery = usePointsGeometryQuery()
   return {
     add(id) {
+      let lineGeometry = linesGeometryQuery.get(id)
+      let pointGeometryStart = pointsGeometryQuery.get(lineGeometry.start)
+      let pointGeometryEnd = pointsGeometryQuery.get(lineGeometry.end)
       setTimeout(() => {
-        let lineGeometry = linesGeometryQuery.get(id)
-        let pointGeometryStart = pointsGeometryQuery.get(lineGeometry.start)
-        let pointGeometryEnd = pointsGeometryQuery.get(lineGeometry.end)
         if (dimensionDistancesGeometryMapper.hasFormLineId(id)) {
           return linesViewport.add(
             [pointGeometryStart.x, pointGeometryStart.y, pointGeometryStart.z],
@@ -113,9 +113,9 @@ export function useLines() {
       linesViewport.translation(index, start, end)
     },
     activate(id) {
+      let lineGeometry = linesGeometryQuery.get(id)
+      let index = linesGeometryQuery.indexOf(lineGeometry)
       setTimeout(() => {
-        let lineGeometry = linesGeometryQuery.get(id)
-        let index = linesGeometryQuery.indexOf(lineGeometry)
         if (dimensionDistancesGeometryMapper.hasFormLineId(id)) {
           linesViewport.lineColor(index, configGLStyle['dimension-distance-line-color-activated'])
           linesViewport.lineWidth(index, configGLStyle['dimension-distance-line-width-activated'])
@@ -126,9 +126,9 @@ export function useLines() {
       })
     },
     deactivate(id) {
+      let lineGeometry = linesGeometryQuery.get(id)
+      let index = linesGeometryQuery.indexOf(lineGeometry)
       setTimeout(() => {
-        let lineGeometry = linesGeometryQuery.get(id)
-        let index = linesGeometryQuery.indexOf(lineGeometry)
         if (dimensionDistancesGeometryMapper.hasFormLineId(id)) {
           linesViewport.lineColor(index, configGLStyle['dimension-distance-line-color'])
           linesViewport.lineWidth(index, configGLStyle['dimension-distance-line-width'])
@@ -165,11 +165,11 @@ export function useTexts() {
         planeGeometry,
       )
     },
-    translation(indexs, position, direction, plane) {
-      textsViewport.translation(indexs, position, direction, plane)
+    transform(indexs, position, direction, plane) {
+      textsViewport.transform(indexs, position, direction, plane)
     },
-    rotation(indexs, angle, center, plane) {
-      textsViewport.rotation(indexs, angle, center, plane)
+    content(indexs, value) {
+      textsViewport.content(indexs, value)
     },
     remove(id) {
       let textGeometry = textsGeometryQuery.get(id)

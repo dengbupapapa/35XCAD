@@ -7,6 +7,7 @@
           <a-input-number
             style="width: 100%"
             :step="0.001"
+            :max="max"
             :precision="configUI['dimension-distance-numerical-precision']"
             :disabled="dimensionDistancesLengthGeometryDerived > 1"
             v-model:value="input"
@@ -55,11 +56,19 @@ import {
   useConstraints as useConstraintsConstraintQuery,
 } from './hooks/constraint-query'
 import { useConstraints as useConstraintsConstraintManager } from './hooks/constraint-manager'
+import { useTexts as useTextsGeometryManager } from './hooks/geometry-manager'
 import { watch } from 'vue'
 let constraintsRelationConstraintQuery = useConstraintsRelationConstraintQuery()
 let constraintsConstraintManager = useConstraintsConstraintManager({ effectDdebounce: true })
 let constraintsConstraintQuery = useConstraintsConstraintQuery()
+let textsGeometryManager = useTextsGeometryManager()
 let input = ref(0)
+/*
+ * [问题]
+ * 数值不能太大了，求解器的矩阵梯度会出问题
+ * 之后有单位系统了再去解决
+ */
+let max = 5
 let numeral = computed({
   get() {
     let dimensionDistance = dimensionDistancesGeometryDerived.value[0]
@@ -84,6 +93,10 @@ let numeral = computed({
     args[numerals[0]] = value
     constraintsConstraintManager.removeById(constraintId)
     constraintsConstraintManager.attach(constraint)
+    //修改text
+    let numberPrecision = configUI['dimension-distance-numerical-precision']
+    let content = value.toFixed(numberPrecision)
+    textsGeometryManager.content(dimensionDistance.text, content)
   },
 })
 function onComplete() {

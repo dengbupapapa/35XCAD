@@ -913,7 +913,7 @@ class Atlas {
     this.y = 0
     this.map = new Map()
   }
-  addText(text) {
+  addChar(text) {
     if (this.map.has(text)) return this.map.get(text)
     let bmp = tinySdf.draw(text)
     let imageData = this.ctx.createImageData(bmp.width, bmp.height)
@@ -1034,24 +1034,38 @@ export class Texts {
     text
       .split('')
       // .splice(0, configUI['dimension-distance-numerical-precision'])
-      .forEach((text) => {
+      .forEach((char) => {
         let index = this.impl.count++
-        let { u0, u1, v0, v1, width, height } = this.#atlas.addText(text)
-        let atlaIndex = this.#atlas.indexOf(text)
-        this.impl.geometry.attributes.aUv.array.set([u0, u1, v0, v1], index * 4)
-        this.impl.geometry.attributes.aUv.needsUpdate = true
-        this.impl.geometry.attributes.aSize.array.set([width, height], index * 2)
-        this.impl.geometry.attributes.aSize.needsUpdate = true
-        this.impl.geometry.attributes.aAtlaIndex.array.set([atlaIndex], index * 1)
-        this.impl.geometry.attributes.aAtlaIndex.needsUpdate = true
+        // let { u0, u1, v0, v1, width, height } = this.#atlas.addChar(char)
+        // let atlaIndex = this.#atlas.indexOf(char)
+        // this.impl.geometry.attributes.aUv.array.set([u0, u1, v0, v1], index * 4)
+        // this.impl.geometry.attributes.aUv.needsUpdate = true
+        // this.impl.geometry.attributes.aSize.array.set([width, height], index * 2)
+        // this.impl.geometry.attributes.aSize.needsUpdate = true
+        // this.impl.geometry.attributes.aAtlaIndex.array.set([atlaIndex], index * 1)
+        // this.impl.geometry.attributes.aAtlaIndex.needsUpdate = true
         indexs.push(index)
       })
-    this.#texture.needsUpdate = true
+    this.content(indexs, text)
     this.color(indexs, color)
-    this.translation(indexs, position, direction, plane)
+    this.transform(indexs, position, direction, plane)
     return { indexs }
   }
-  translation(indexs, position, direction, plane) {
+  content(indexs, text) {
+    text.split('').forEach((char, i) => {
+      let index = indexs[i]
+      let { u0, u1, v0, v1, width, height } = this.#atlas.addChar(char)
+      let atlaIndex = this.#atlas.indexOf(char)
+      this.impl.geometry.attributes.aUv.array.set([u0, u1, v0, v1], index * 4)
+      this.impl.geometry.attributes.aUv.needsUpdate = true
+      this.impl.geometry.attributes.aSize.array.set([width, height], index * 2)
+      this.impl.geometry.attributes.aSize.needsUpdate = true
+      this.impl.geometry.attributes.aAtlaIndex.array.set([atlaIndex], index * 1)
+      this.impl.geometry.attributes.aAtlaIndex.needsUpdate = true
+    })
+    this.#texture.needsUpdate = true
+  }
+  transform(indexs, position, direction, plane) {
     let { normal } = plane
     let angle = this.#angleFromPlaneDirection(direction, plane)
 

@@ -26,7 +26,7 @@ watch(
   ([textPoint, textLinePoints]) => {
     if (!textPoint || !textLinePoints) return
     let [start, end] = textLinePoints
-    textsViewportManager.translation(
+    textsViewportManager.transform(
       props.text.indexs,
       [textPoint.x, textPoint.y, textPoint.z],
       [end.x - start.x, end.y - start.y, end.z - start.z],
