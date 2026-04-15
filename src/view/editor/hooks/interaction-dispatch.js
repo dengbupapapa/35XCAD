@@ -2,31 +2,32 @@ import {
   useSelectPoints as useSelectPointsInteractionManager,
   useSelectLines as useSelectLinesInteractionManager,
   useSelectPointsStrict as useSelectPointsStrictInteractionManager,
+  useSelectLinesStrict as useSelectLinesStrictInteractionManager,
 } from './interaction-manager'
 // import {
 //   useSelectPoints as useSelectPointsInteractionQuery,
 //   useSelectLines as useSelectLinesInteractionQuery,
 // } from './interaction-query'
 import {
-  usePoints as useSelectPointsGeometryQuery,
-  useLines as useSelectLinesGeometryQuery,
+  usePoints as usePointsGeometryQuery,
+  useLines as useLinesGeometryQuery,
 } from './geometry-query'
 
 export function useSelectGeometrys() {
   let selectsPointsInteractionManager = useSelectPointsInteractionManager()
   let selectLinesInteractionManager = useSelectLinesInteractionManager()
-  let selectsPointsGeometryQuery = useSelectPointsGeometryQuery()
-  let selectLinesGeometryQuery = useSelectLinesGeometryQuery()
+  let pointsGeometryQuery = usePointsGeometryQuery()
+  let linesGeometryQuery = useLinesGeometryQuery()
   return {
     push(ids) {
       if (!(ids instanceof Array)) {
         ids = [ids]
       }
       ids.forEach((id) => {
-        if (selectsPointsGeometryQuery.hasById(id)) {
+        if (pointsGeometryQuery.hasById(id)) {
           selectsPointsInteractionManager.push(id)
         }
-        if (selectLinesGeometryQuery.hasById(id)) {
+        if (linesGeometryQuery.hasById(id)) {
           selectLinesInteractionManager.push(id)
         }
       })
@@ -36,10 +37,10 @@ export function useSelectGeometrys() {
         ids = [ids]
       }
       ids.forEach((id) => {
-        if (selectsPointsGeometryQuery.hasById(id)) {
+        if (pointsGeometryQuery.hasById(id)) {
           selectsPointsInteractionManager.remove(id)
         }
-        if (selectLinesGeometryQuery.hasById(id)) {
+        if (linesGeometryQuery.hasById(id)) {
           selectLinesInteractionManager.remove(id)
         }
       })
@@ -60,21 +61,21 @@ export function useSelectGeometrys() {
 
 export function useSelectGeometrysStrict() {
   let selectPointsStrictInteractionManager = useSelectPointsStrictInteractionManager()
-  // let selectLinesInteractionManager = useSelectLinesInteractionManager()
-  let selectsPointsGeometryQuery = useSelectPointsGeometryQuery()
-  let selectLinesGeometryQuery = useSelectLinesGeometryQuery()
+  let selectLinesStrictInteractionManager = useSelectLinesStrictInteractionManager()
+  let pointsGeometryQuery = usePointsGeometryQuery()
+  let linesGeometryQuery = useLinesGeometryQuery()
   return {
     push(ids) {
       if (!(ids instanceof Array)) {
         ids = [ids]
       }
       ids.forEach((id) => {
-        if (selectsPointsGeometryQuery.hasById(id)) {
+        if (pointsGeometryQuery.hasById(id)) {
           selectPointsStrictInteractionManager.add(id)
         }
-        // if (selectLinesGeometryQuery.hasById(id)) {
-        //   selectLinesInteractionManager.push(id)
-        // }
+        if (linesGeometryQuery.hasById(id)) {
+          selectLinesStrictInteractionManager.add(id)
+        }
       })
     },
     remove(ids) {
@@ -82,17 +83,17 @@ export function useSelectGeometrysStrict() {
         ids = [ids]
       }
       ids.forEach((id) => {
-        if (selectsPointsGeometryQuery.hasById(id)) {
+        if (pointsGeometryQuery.hasById(id)) {
           selectPointsStrictInteractionManager.remove(id)
         }
-        // if (selectLinesGeometryQuery.hasById(id)) {
-        //   selectLinesInteractionManager.remove(id)
-        // }
+        if (linesGeometryQuery.hasById(id)) {
+          selectLinesStrictInteractionManager.remove(id)
+        }
       })
     },
     clear() {
       selectPointsStrictInteractionManager.clear()
-      // selectLinesInteractionManager.clear()
+      selectLinesStrictInteractionManager.clear()
     },
     set(ids) {
       if (!(ids instanceof Array)) {

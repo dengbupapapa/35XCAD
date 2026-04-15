@@ -527,6 +527,7 @@ export function useConstraints() {
          */
         if (points instanceof Array && points.includes(index)) {
           let pointGeometry = pointsGeometryQuery.get(arg)
+          // console.log(pointGeometry, index, data)
           let pointGCS = pointsGCSQuery.get(pointGeometry.gcs)
           args2Constraint.push(pointGCS.id)
           args2System.push(pointGCS.handle)

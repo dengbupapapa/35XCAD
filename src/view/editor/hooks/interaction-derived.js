@@ -1,27 +1,34 @@
 import { computed } from 'vue'
 import {
-  useSelectPointsStrict as useSelectPointsStrictInteraction,
   useSelectPoints as useSelectPointsInteraction,
+  useSelectPointsStrict as useSelectPointsStrictInteraction,
   useSelectLines as useSelectLinesInteraction,
+  useSelectLinesStrict as useSelectLinesStrictInteraction,
   useActiveElement as useActiveElementInteraction,
 } from './interaction-provide-context'
 
-export function useSelectPointsStrict() {
-  let selectPointsStrictInteraction = useSelectPointsStrictInteraction()
-  return computed(() => {
-    return selectPointsStrictInteraction.value
-  })
-}
 export function useSelectPoints() {
   let selectsPointsInteraction = useSelectPointsInteraction()
   return computed(() => {
     return selectsPointsInteraction.value
   })
 }
+export function useSelectPointsStrict() {
+  let selectPointsStrictInteraction = useSelectPointsStrictInteraction()
+  return computed(() => {
+    return selectPointsStrictInteraction.value
+  })
+}
 export function useSelectLines() {
   let selectLinesInteraction = useSelectLinesInteraction()
   return computed(() => {
     return selectLinesInteraction.value
+  })
+}
+export function useSelectLinesStrict() {
+  let selectLinesStrictInteraction = useSelectLinesStrictInteraction()
+  return computed(() => {
+    return selectLinesStrictInteraction.value
   })
 }
 
@@ -35,9 +42,9 @@ export function useHasSelect() {
 
 export function useSelectGeometrysStrict() {
   let selectPointsStrict = useSelectPointsStrict()
-  let selectLines = useSelectLines()
+  let selectLinesStrict = useSelectLinesStrict()
   return computed(() => {
-    return [...selectPointsStrict.value, ...selectLines.value]
+    return [...selectPointsStrict.value, ...selectLinesStrict.value]
   })
 }
 export function useSelectGeometrys() {

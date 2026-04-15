@@ -4,9 +4,11 @@ export default function useRegistry() {
   const selectPoints = ref([])
   const selectPointsStrict = ref([])
   const selectLines = ref([])
+  const selectLinesStrict = ref([])
   provide(selectPointsSymbol, selectPoints)
   provide(selectPointsStrictSymbol, selectPointsStrict)
   provide(selectLinesSymbol, selectLines)
+  provide(selectLinesStrictSymbol, selectLinesStrict)
 
   const selectableConstraints = ref([])
   provide(selectableConstraintsSymbol, selectableConstraints)
@@ -27,6 +29,7 @@ export default function useRegistry() {
 const selectPointsSymbol = Symbol('selectPoints')
 const selectPointsStrictSymbol = Symbol('selectPointsStrict')
 const selectLinesSymbol = Symbol('selectLines')
+const selectLinesStrictSymbol = Symbol('selectLinesStrict')
 const selectableConstraintsSymbol = Symbol('selectableConstraints')
 const activeElementSymbol = Symbol('activeElement')
 export function useSelectPoints() {
@@ -37,6 +40,9 @@ export function useSelectPointsStrict() {
 }
 export function useSelectLines() {
   return inject(selectLinesSymbol)
+}
+export function useSelectLinesStrict() {
+  return inject(selectLinesStrictSymbol)
 }
 export function useSelectableConstraints() {
   return inject(selectableConstraintsSymbol)

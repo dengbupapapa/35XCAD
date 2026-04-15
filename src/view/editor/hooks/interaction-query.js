@@ -2,6 +2,7 @@ import {
   useSelectPoints as useSelectPointsInteraction,
   useSelectPointsStrict as useSelectPointsStrictInteraction,
   useSelectLines as useSelectLinesInteraction,
+  useSelectLinesStrict as useSelectLinesStrictInteraction,
   useActiveElement as useActiveElementInteraction,
 } from './interaction-provide-context'
 
@@ -48,15 +49,30 @@ export function useSelectLines() {
   }
 }
 
-export function useSelectGeometrysStrict() {
-  let selectPointsStrict = useSelectPointsStrictInteraction()
-  let selectLines = useSelectLinesInteraction()
+export function useSelectLinesStrict() {
+  let selectsLinesStrict = useSelectLinesStrictInteraction()
   return {
     get() {
-      return [...selectPointsStrict.value, ...selectLines.value]
+      return selectsLinesStrict.value
     },
     includes(id) {
-      return [...selectPointsStrict.value, ...selectLines.value].includes(id)
+      return selectsLinesStrict.value.includes(id)
+    },
+    check(id) {
+      return typeof id === 'string'
+    },
+  }
+}
+
+export function useSelectGeometrysStrict() {
+  let selectPointsStrict = useSelectPointsStrictInteraction()
+  let selectLinesStrict = useSelectLinesStrictInteraction()
+  return {
+    get() {
+      return [...selectPointsStrict.value, ...selectLinesStrict.value]
+    },
+    includes(id) {
+      return [...selectPointsStrict.value, ...selectLinesStrict.value].includes(id)
     },
     check(id) {
       return typeof id === 'string'

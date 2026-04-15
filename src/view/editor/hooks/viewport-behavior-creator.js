@@ -3,7 +3,6 @@ import {
   useCamera,
   useRenderer,
   useRaycaster,
-  useControls as useControlsImpl,
   usePlanes as usePlanesEntitie,
 } from './viewport-provide-context'
 import {
@@ -12,34 +11,11 @@ import {
   usePolylines as usePolylinesGeometryManager,
   useArcs as useArcsGeometryManager,
 } from './geometry-manager.js'
-import {
-  usePoints as usePointsGeometryQuery,
-  useLines as useLinesGeometryQuery,
-} from './geometry-query.js'
-import { useArcs as useArcsGeometryMapper } from './geometry-mapper'
-import {
-  useGeometrys as useGeometrysDispatch,
-  useHelpers as useHelpersGeometryDispatch,
-} from './geometry-dispatch.js'
-import useGeometryUpdater from './geometry-updater'
+
 import useModesManagerInteractions from './modes-manager-interactions.js'
-import {
-  useSelectPoints as useSelectPointsInteractionManager,
-  useSelectPointsStrict as useSelectPointsStrictInteractionManager,
-  useSelectLines as useSelectLinesInteractionManager,
-} from './interaction-manager.js'
-import {
-  useSelectPoints as useSelectPointsInteractionQuery,
-  useSelectPointsStrict as useSelectPointsStrictInteractionQuery,
-  useSelectLines as useSelectLinesInteractionQuery,
-  useSelectGeometrys as useSelectGeometrysInteractionQuery,
-  useActiveElement as useActiveElementInteractionQuery,
-} from './interaction-query'
-import { useSelectGeometrys as useSelectGeometrysInteractionDispatch } from './interaction-dispatch'
+
 import { useConstraints as useConstraintsDispatch } from './constraint-dispatch'
-import { Vector3 } from '../core/gl-math'
 import { viewport2ndc } from '../utils/simple'
-import { throttle } from 'lodash-es'
 
 /* [优化]
  * 后面同一个事件要统一抽离到一个事件里去管理，解决多次计算问题;

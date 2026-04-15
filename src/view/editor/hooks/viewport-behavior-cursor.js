@@ -27,16 +27,15 @@ import {
   useSelectPoints as useSelectPointsInteractionManager,
   useSelectPointsStrict as useSelectPointsStrictInteractionManager,
   useSelectLines as useSelectLinesInteractionManager,
+  useSelectLinesStrict as useSelectLinesStrictInteractionManager,
 } from './interaction-manager.js'
 import {
   useSelectPoints as useSelectPointsInteractionQuery,
-  useSelectPointsStrict as useSelectPointsStrictInteractionQuery,
   useSelectLines as useSelectLinesInteractionQuery,
   useSelectGeometrys as useSelectGeometrysInteractionQuery,
   useActiveElement as useActiveElementInteractionQuery,
 } from './interaction-query'
 import { useSelectGeometrys as useSelectGeometrysInteractionDispatch } from './interaction-dispatch'
-import { useConstraints as useConstraintsDispatch } from './constraint-dispatch'
 import { Vector3 } from '../core/gl-math'
 import { viewport2ndc } from '../utils/simple'
 import { throttle } from 'lodash-es'
@@ -50,9 +49,6 @@ export function useSelect() {
   const raycaster = useRaycaster()
   const modesManagerInteractions = useModesManagerInteractions()
   const canvas = renderer.element()
-  const selectPointsInteractionManager = useSelectPointsInteractionManager()
-  // const selectPointsStrictInteractionManager = useSelectPointsStrictInteractionManager()
-  const selectLinesInteractionManager = useSelectLinesInteractionManager()
   const selectGeometrysInteractionDispatch = useSelectGeometrysInteractionDispatch()
   const selectPoints = useSelectPoints()
   const selectLines = useSelectLines()
@@ -184,6 +180,7 @@ export function useSelectLines() {
   const raycaster = useRaycaster()
   const linesGeometryQuery = useLinesGeometryQuery()
   const selectLinesInteractionQuery = useSelectLinesInteractionQuery()
+  const selectLinesStrictInteractionManager = useSelectLinesStrictInteractionManager()
   const selectGeometrysInteractionDispatch = useSelectGeometrysInteractionDispatch()
   const helpersGeometryDispatch = useHelpersGeometryDispatch()
 
@@ -205,7 +202,7 @@ export function useSelectLines() {
         return false
       }
       let line = linesGeometryQuery.getByIndex(index)
-
+      selectLinesStrictInteractionManager.add(line.id)
       if (event.ctrlKey || event.shiftKey) {
         if (selectLinesInteractionQuery.includes(line.id)) {
           lineRemove = line
@@ -214,6 +211,7 @@ export function useSelectLines() {
       } else {
         if (!selectLinesInteractionQuery.includes(line.id)) {
           selectGeometrysInteractionDispatch.set([line.id, line.start, line.end])
+          selectLinesStrictInteractionManager.add(line.id)
         }
       }
       helpersGeometryDispatch.activate(line.id)

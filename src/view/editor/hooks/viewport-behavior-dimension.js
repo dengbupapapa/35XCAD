@@ -13,9 +13,11 @@ import useModesManagerInteractions from './modes-manager-interactions.js'
 import {
   useSelectPointsStrict as useSelectPointsStrictInteractionManager,
   useSelectPoints as useSelectPointsInteractionManager,
+  useSelectLinesStrict as useSelectLinesStrictInteractionManager,
 } from './interaction-manager.js'
 import {
   useSelectPointsStrict as useSelectPointsStrictInteractionQuery,
+  useSelectLinesStrict as useSelectLinesStrictInteractionQuery,
   useSelectGeometrysStrict as useSelectGeometrysStrictInteractionQuery,
   useSelectGeometrys as useSelectGeometrysInteractionQuery,
 } from './interaction-query'
@@ -35,11 +37,12 @@ export function useSelect() {
   const modesManagerInteractions = useModesManagerInteractions()
   const canvas = renderer.element()
   const selectGeometrysInteractionDispatch = useSelectGeometrysInteractionDispatch()
-  const selectPointsStrictInteractionManager = useSelectPointsStrictInteractionManager()
-  const selectPointsInteractionManager = useSelectPointsInteractionManager()
+  // const selectPointsStrictInteractionManager = useSelectPointsStrictInteractionManager()
+  // const selectPointsInteractionManager = useSelectPointsInteractionManager()
   const selectPoints = useSelectPoints()
   const selectLines = useSelectLines()
   const dimensionDistancePonit2Point = useDimensionDistancePonit2Point()
+  const dimensionDistancePonit2Line = useDimensionDistancePonit2Line()
 
   function onMousedown(event) {
     if (event.button !== 0) return
@@ -52,10 +55,13 @@ export function useSelect() {
       selectGeometrysInteractionDispatch.clear()
     }
     // selectLines.onMousedown(state, event)
-    if (dimensionDistancePonit2Point.onMousedown()) {
-      selectPointsInteractionManager.clear()
+    if (dimensionDistancePonit2Point.onMousedown() || dimensionDistancePonit2Line.onMousedown()) {
+      selectGeometrysInteractionDispatch.clear()
       // selectPointsStrictInteractionManager.clear()
     }
+    // if (dimensionDistancePonit2Line.onMousedown()) {
+    //   selectGeometrysInteractionDispatch.clear()
+    // }
   }
 
   function onMousemove(event) {
@@ -130,6 +136,7 @@ import { useSelectLines as useSelectLinesViewportBehaviorCursor } from './viewpo
 function useSelectLines() {
   const raycaster = useRaycaster()
   const linesGeometryQuery = useLinesGeometryQuery()
+  const selectLinesStrictInteractionManager = useSelectLinesStrictInteractionManager()
   const selectGeometrysInteractionDispatch = useSelectGeometrysInteractionDispatch()
   const dimensionDistancesGeometryMapper = useDimensionDistancesGeometryMapper()
   const selectLinesViewportBehaviorCursor = useSelectLinesViewportBehaviorCursor()
@@ -144,8 +151,9 @@ function useSelectLines() {
         selectLinesViewportBehaviorCursor.onMousedown({ x, y }, event)
         return true
       }
-      //之后用到做线之间距离的时候后面的逻辑可补充，可能要考虑严格选择线的情况了
-      // selectGeometrysInteractionDispatch.push([line.id, line.start, line.end])
+
+      selectLinesStrictInteractionManager.add(line.id)
+      selectGeometrysInteractionDispatch.push([line.id, line.start, line.end])
       return true
     },
     onMousemove({ x, y }, event) {
@@ -170,6 +178,34 @@ function useDimensionDistancePonit2Point() {
       }
       let dimensionDistance = dimensionDistancesGeometryDispatch.addPonit2Point(
         ...selectPointsStrict,
+      )
+      setTimeout(() => {
+        dimensionDistancesGeometryDispatch.activate(dimensionDistance.lines[0])
+      })
+      return true
+    },
+  }
+}
+
+function useDimensionDistancePonit2Line() {
+  const selectPointsStrictInteractionQuery = useSelectPointsStrictInteractionQuery()
+  const selectLinesStrictInteractionQuery = useSelectLinesStrictInteractionQuery()
+  const dimensionDistancesGeometryDispatch = useDimensionDistancesGeometryDispatch()
+  const dimensionDistancesGeometryMapper = useDimensionDistancesGeometryMapper()
+  return {
+    onMousedown() {
+      let selectPointsStrict = selectPointsStrictInteractionQuery.get()
+      let selectLinesStrict = selectLinesStrictInteractionQuery.get()
+      if (selectPointsStrict.length !== 1 || selectLinesStrict.length !== 1) return false
+      if (
+        selectPointsStrict.some((id) => dimensionDistancesGeometryMapper.hasFormPointId(id)) ||
+        selectLinesStrict.some((id) => dimensionDistancesGeometryMapper.hasFormLineId(id))
+      ) {
+        return false
+      }
+      let dimensionDistance = dimensionDistancesGeometryDispatch.addPonit2Line(
+        selectPointsStrict[0],
+        selectLinesStrict[0],
       )
       setTimeout(() => {
         dimensionDistancesGeometryDispatch.activate(dimensionDistance.lines[0])

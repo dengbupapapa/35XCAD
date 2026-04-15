@@ -248,6 +248,9 @@ export function useDimensionDistances() {
             let line = linesGeometryQuery.get(id)
             prev.points.push(line.start, line.end)
           })
+          dimensionDistance.points.forEach((id) => {
+            prev.points.push(id)
+          })
           prev.lines.push(...dimensionDistance.lines)
           prev.texts.push(dimensionDistance.text)
           let textGeometry = textsGeometryQuery.get(dimensionDistance.text)
@@ -263,6 +266,7 @@ export function useDimensionDistances() {
 
       return (
         dimensionDistancesGeometryQuery.get(line?.creator) ||
+        dimensionDistancesGeometryQuery.get(point?.creator) ||
         dimensionDistancesGeometryQuery.get(text?.creator)
       )
       // if (textsGeometryMapper.hasFormPoint(point)) {

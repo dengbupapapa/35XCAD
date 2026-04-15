@@ -893,13 +893,15 @@ export function useDimensionDistances() {
   let dimensionDistancesGeometry = useDimensionDistancesGeometry()
   let dimensionDistancesHashGeometry = useDimensionDistancesHashGeometry()
   let planesGeometryQuery = usePlanesGeometryQuery()
+  let pointsGeometryQuery = usePointsGeometryQuery()
   let linesGeometryQuery = useLinesGeometryQuery()
   let textsGeometryQuery = useTextsGeometryQuery()
   let dimensionDistancesCreatorHashGeometry = useDimensionDistancesCreatorHashGeometry()
   return {
-    add(lines, text, creator) {
+    add({ lines = [], points = [], text, creator = [] }) {
       let dimensionDistance = {
         lines,
+        points,
         text,
         creator,
         id: nanoid(),
@@ -911,6 +913,10 @@ export function useDimensionDistances() {
       dimensionDistance.lines.forEach((id) => {
         let line = linesGeometryQuery.get(id)
         line.creator = dimensionDistance.id
+      })
+      dimensionDistance.points.forEach((id) => {
+        let point = pointsGeometryQuery.get(id)
+        point.creator = dimensionDistance.id
       })
       let text = textsGeometryQuery.get(dimensionDistance.text)
       text.creator = dimensionDistance.id

@@ -12,7 +12,12 @@ import {
   useConstraintsRelation as useConstraintsRelationManager,
   useConstraintsIncrement as useConstraintsIncrementManager,
 } from './constraint-manager'
-import { useSelectPoints, useSelectPointsStrict, useSelectLines } from './interaction-manager.js'
+import {
+  useSelectPoints,
+  useSelectPointsStrict,
+  useSelectLines,
+  useSelectLinesStrict,
+} from './interaction-manager.js'
 import { cloneDeep } from 'lodash-es'
 
 export function useLoader() {
@@ -77,12 +82,14 @@ export function useClear() {
   let selectPoints = useSelectPoints()
   let selectPointsStrict = useSelectPointsStrict()
   let selectLines = useSelectLines()
+  let selectLinesStrict = useSelectLinesStrict()
 
   return {
     all() {
       selectPoints.clear()
       selectPointsStrict.clear()
       selectLines.clear()
+      selectLinesStrict.clear()
       dimensionDistancesGeometryManager.clear()
       textsGeometryManager.clear()
       arcsGeometryManager.clear()
