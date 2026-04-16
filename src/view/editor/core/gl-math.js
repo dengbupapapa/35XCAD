@@ -89,6 +89,15 @@ export class Vector2 {
   angleTo(...args) {
     return this.impl.angleTo(...args.map(({ impl }) => impl))
   }
+  lengthSq() {
+    return this.impl.lengthSq()
+  }
+  dot(...args) {
+    return this.impl.dot(...args.map(({ impl }) => impl))
+  }
+  multiplyScalar(...args) {
+    return new Vector2(...this.impl.multiplyScalar(...args).toArray())
+  }
   set x(x) {
     this.impl.x = x
   }

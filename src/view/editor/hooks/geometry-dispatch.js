@@ -275,7 +275,7 @@ export function useArcs() {
   }
 }
 
-import { Vector3 } from '../core/gl-math'
+import { Vector3, Vector2 } from '../core/gl-math'
 import { useRenderer } from './viewport-provide-context'
 import { worldCoords2planeCoords, planeCoords2worldCoords } from '../utils/simple'
 import { useDimensionDistances as useDimensionDistancesGeometryMapper } from './geometry-mapper'
@@ -291,6 +291,9 @@ export function useDimensionDistances() {
   let pointsGeometryManager = usePointsGeometryManager()
   let pointsGeometryQuery = usePointsGeometryQuery()
   let planesGeometryQuery = usePlanesGeometryQuery()
+  let pointsGeometryMapper = usePointsGeometryMapper()
+  let linesGeometryMapper = useLinesGeometryMapper()
+
   let renderer = useRenderer()
   // let geometryUpdater = useGeometryUpdater()
   let constraintsDispatch = useConstraintsDispatch()
@@ -324,6 +327,7 @@ export function useDimensionDistances() {
 
     let corss1LineGeometry = linesGeometryQuery.get(corss1)
     let corss2LineGeometry = linesGeometryQuery.get(corss2)
+    let mainLineGeometry = linesGeometryQuery.get(main)
 
     if (use) {
       let constraintDistance = getConstraintDistance(id)
@@ -365,8 +369,8 @@ export function useDimensionDistances() {
         let vector3Line = vector3End.sub(vector3Start)
 
         let constraint = constraintsDispatch.add('addConstraintP2PDistance', [
-          corss1LineGeometry.start,
-          corss2LineGeometry.start,
+          mainLineGeometry.start,
+          mainLineGeometry.end,
           vector3Line.length(),
         ])
         setConstraintDistance(id, constraint.id)
@@ -376,7 +380,8 @@ export function useDimensionDistances() {
   /*
    * 创建约束
    */
-  function createConstraints(dimensionDistanceId, [point1Id, point2Id]) {
+  function createConstraints(dimensionDistanceId) {
+    //, [point1Id, point2Id]) {
     let dimensionDistance = dimensionDistancesGeometryQuery.get(dimensionDistanceId)
     let [main, corss1, corss2] = dimensionDistance.lines
 
@@ -396,18 +401,19 @@ export function useDimensionDistances() {
       corss2LineGeometry.start,
       corss2LineGeometry.end,
     ])
-    constraintsDispatch.add('addConstraintParallel2', [
-      corss1LineGeometry.start,
-      corss2LineGeometry.start,
-      mainLineGeometry.start,
-      mainLineGeometry.end,
-    ])
-    constraintsDispatch.add('addConstraintP2PCoincident', [point1Id, corss1LineGeometry.start])
+    // constraintsDispatch.add('addConstraintParallel2', [
+    //   ///????????????????
+    //   corss1LineGeometry.start,
+    //   corss2LineGeometry.start,
+    //   mainLineGeometry.start,
+    //   mainLineGeometry.end,
+    // ])
+    // constraintsDispatch.add('addConstraintP2PCoincident', [point1Id, corss1LineGeometry.start])
     constraintsDispatch.add('addConstraintP2PCoincident', [
       corss1LineGeometry.end,
       mainLineGeometry.start,
     ])
-    constraintsDispatch.add('addConstraintP2PCoincident', [point2Id, corss2LineGeometry.start])
+    // constraintsDispatch.add('addConstraintP2PCoincident', [point2Id, corss2LineGeometry.start])???????????
     constraintsDispatch.add('addConstraintP2PCoincident', [
       corss2LineGeometry.end,
       mainLineGeometry.end,
@@ -472,7 +478,7 @@ export function useDimensionDistances() {
     let text = number.toFixed(numberPrecision)
     let textGeometry = textsGeometryDispatch.add(text, mainLine.id)
 
-    return [mainLine.id, crossLine1.id, crossLine2.id, textGeometry.id]
+    return [mainLine, crossLine1, crossLine2, textGeometry]
   }
   return {
     removeById(batch) {
@@ -487,12 +493,20 @@ export function useDimensionDistances() {
     addPonit2Point(point1Id, point2Id) {
       let [mainLine, crossLine1, crossLine2, text] = createGeometry(point1Id, point2Id)
       let dimensionDistance = dimensionDistancesGeometryManager.add({
-        lines: [mainLine, crossLine1, crossLine2],
-        text,
+        lines: [mainLine.id, crossLine1.id, crossLine2.id],
+        text: text.id,
         creator: [point1Id, point2Id],
       })
       switchConstraint(dimensionDistance.id, true)
-      createConstraints(dimensionDistance.id, [point1Id, point2Id])
+      createConstraints(dimensionDistance.id)
+      constraintsDispatch.add('addConstraintP2PCoincident', [point1Id, crossLine1.start])
+      constraintsDispatch.add('addConstraintP2PCoincident', [point2Id, crossLine2.start])
+      constraintsDispatch.add('addConstraintParallel2', [
+        crossLine1.start,
+        crossLine2.start,
+        mainLine.start,
+        mainLine.end,
+      ])
       switchConstraint(dimensionDistance.id, false)
 
       return dimensionDistance
@@ -503,27 +517,52 @@ export function useDimensionDistances() {
       let lineGeometry = linesGeometryQuery.get(lineId)
       if (pointGeometry.plane !== lineGeometry.plane) return
       /*
-       * 创建一个在线上的点
+       * 临时创建一个在线上的点
        */
-      let pointOnLine = pointsGeometryManager.clone(lineGeometry.start)
-      pointsGeometryManager.attach(pointOnLine)
-      let pointOnLineId = pointOnLine.id
-      let [mainLine, crossLine1, crossLine2, text] = createGeometry(pointId, pointOnLineId)
+      let planeGeometry = planesGeometryQuery.get(pointGeometry.plane)
+      let pointStartGeometry = pointsGeometryQuery.get(lineGeometry.start)
+      let pointEndGeometry = pointsGeometryQuery.get(lineGeometry.end)
+      let UVPoint = worldCoords2planeCoords(
+        [pointGeometry.x, pointGeometry.y, pointGeometry.z],
+        planeGeometry,
+      )
+      let UVPointStart = worldCoords2planeCoords(
+        [pointStartGeometry.x, pointStartGeometry.y, pointStartGeometry.z],
+        planeGeometry,
+      )
+      let UVPointEnd = worldCoords2planeCoords(
+        [pointEndGeometry.x, pointEndGeometry.y, pointEndGeometry.z],
+        planeGeometry,
+      )
+      let UVPointVector2 = new Vector2(...UVPoint)
+      let UVPointStartVector2 = new Vector2(...UVPointStart)
+      let UVPointEndVector2 = new Vector2(...UVPointEnd)
+      let dir = UVPointEndVector2.clone().sub(UVPointStartVector2)
+      let t = UVPointVector2.clone().sub(UVPointStartVector2).dot(dir) / dir.lengthSq()
+      let p = UVPointStartVector2.clone().add(dir.multiplyScalar(t))
+      let pointOnLine = planeCoords2worldCoords(p.toArray(), planeGeometry)
+      let pointOnLineGeometry = pointsGeometryManager.add(pointOnLine)
+      let [mainLine, crossLine1, crossLine2, text] = createGeometry(pointId, pointOnLineGeometry.id)
+      setTimeout(() => {
+        pointsGeometryManager.remove(pointOnLineGeometry)
+      })
+      /*
+       * 创建尺寸数据
+       */
       let dimensionDistance = dimensionDistancesGeometryManager.add({
-        lines: [mainLine, crossLine1, crossLine2],
-        points: [pointOnLineId],
-        text,
+        lines: [mainLine.id, crossLine1.id, crossLine2.id],
+        text: text.id,
         creator: [pointId, lineId],
       })
+      /*
+       * 约束
+       */
       switchConstraint(dimensionDistance.id, true)
-      constraintsDispatch.add('addConstraintPointOnLine', [pointOnLineId, lineId])
-      constraintsDispatch.add('addConstraintPerpendicular2', [
-        lineGeometry.start,
-        lineGeometry.end,
-        pointId,
-        pointOnLineId,
-      ])
-      createConstraints(dimensionDistance.id, [pointId, pointOnLineId])
+      createConstraints(dimensionDistance.id)
+      constraintsDispatch.add('addConstraintP2PCoincident', [pointId, crossLine1.start])
+      constraintsDispatch.add('addConstraintPointOnLine', [crossLine2.start, lineId])
+      constraintsDispatch.add('addConstraintPointOnPerpBisector', [crossLine2.start, lineId])
+      constraintsDispatch.add('addConstraintPerpendicular', [mainLine.id, lineId])
       switchConstraint(dimensionDistance.id, false)
 
       return dimensionDistance
@@ -573,6 +612,29 @@ export function useDimensionDistances() {
         selectGeometrysInteractionDispatch.remove([...points, ...lines])
       }
     },
+    // activate(id) {
+    //   let dimensionDistances = []
+    //   if (pointsGeometryQuery.hasById(id)) {
+    //     let { dimensionDistances: dimensionDistancesSubordinateFromPoints } =
+    //       pointsGeometryMapper.subordinate(id)
+    //     dimensionDistances.push(...dimensionDistancesSubordinateFromPoints)
+    //   }
+    //   if (linesGeometryQuery.hasById(id)) {
+    //     let { dimensionDistances: dimensionDistancesSubordinateFromLines } =
+    //       linesGeometryMapper.subordinate(id)
+    //     dimensionDistances.push(...dimensionDistancesSubordinateFromLines)
+    //   }
+    //   let dimensionDistanceGeometry =
+    //     dimensionDistancesGeometryMapper.getFormLineId(id) ||
+    //     dimensionDistancesGeometryMapper.getFormPointId(id)
+    //   if (dimensionDistanceGeometry) {
+    //     dimensionDistances.push(dimensionDistanceGeometry.id)
+    //   }
+    //   dimensionDistances.forEach((id) => {
+    //     let { points, lines } = dimensionDistancesGeometryMapper.subordinate(id)
+    //     selectGeometrysInteractionDispatch.push([...points, ...lines])
+    //   })
+    // },
   }
 }
 
