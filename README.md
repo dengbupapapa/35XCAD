@@ -30,7 +30,7 @@ A browser-based CAD software. online preview - [https://dengbupapapa.github.io/3
     - CoordinateX ✅
     - CoordinateY ✅
     - Coordinate ✅
-    - P2PDistance
+    - P2PDistance ✅
     - PointOnLine ✅
     - PointOnPerpBisector ✅
     - Parallel ✅
