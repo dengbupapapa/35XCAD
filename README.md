@@ -50,6 +50,9 @@ A browser-based CAD software. online preview - [https://dengbupapapa.github.io/3
     - ArcLength
   - Tool
     - Dimension length ⏳
+      - Point to point ✅
+      - Point to line ✅
+      - line to line ⏳
     - Dimension angle ⏳
 - Feature
 - Assembly
