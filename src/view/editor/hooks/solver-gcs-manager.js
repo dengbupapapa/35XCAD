@@ -1,8 +1,10 @@
 import {
   useModule as useModuleGCS,
   useSystems as useSystemsGCS,
+  useUnknowns as useUnknownsGCS,
   useUnknownsSet as useUnknownsSetGCS,
   useUnknownsSetJSON as useUnknownsSetJSONGCS,
+  useDrivenParamsSet as useDrivenParamsSetGCS,
   useNumerals as useNumeralsGCS,
   useNumeralsHash as useNumeralsHashGCS,
   useNumeralsPtrHash as useNumeralsPtrHashGCS,
@@ -26,8 +28,10 @@ import {
   useArcs as useArcsGCSQuery,
   useNumerals as useNumeralsGCSQuery,
   useSystems as useSystemsGCSQuery,
+  useUnknowns as useUnknownsGCSQuery,
   useConstraints as useConstraintsGCSQuery,
   useUnknownsSet as useUnknownsSetGCSQuery,
+  useDrivenParamsSet as useDrivenParamsSetGCSQuery,
 } from './solver-gcs-query.js'
 import {
   usePoints as usePointsGCSMapper,
@@ -814,6 +818,8 @@ export function useSystems() {
   let { System, Algorithm, SolveStatus, Dependents, DependentsGroups, Tags } = Module
   let unknownsSetManager = useUnknownsSet()
   let unknownsSetGCSQuery = useUnknownsSetGCSQuery()
+  let drivenParamsSetManager = useDrivenParamsSet()
+  let drivenParamsSetGCSQuery = useDrivenParamsSetGCSQuery()
   let resultsManager = useResults()
   let resultsQuery = useResultsQuery()
   let systemsGCSQuery = useSystemsGCSQuery()
@@ -822,6 +828,7 @@ export function useSystems() {
   let constraintsGCSQuery = useConstraintsGCSQuery()
   let pointsGCSQuery = usePointsGCSQuery()
   let numeralsGCSQuery = useNumeralsGCSQuery()
+  let unknownsGCSQuery = useUnknownsGCSQuery()
   // if (!solverThrottle) {
   //   solverThrottle = throttle(function () {
   //     let system = systemsGCSQuery.active.handle
@@ -911,6 +918,9 @@ export function useSystems() {
       unknowns.creator = system.id
       system.unknowns = unknowns.id
       let result = resultsManager.add(system)
+      let drivenParams = drivenParamsSetManager.add(system)
+      drivenParams.creator = system.id
+      system.drivenParams = drivenParams.id
       result.creator = system.id
       system.result = result.id
       systems.push(system)
@@ -939,6 +949,8 @@ export function useSystems() {
     reset() {
       systemsGCSQuery.active.handle.invalidatedDiagnosis()
       systemsGCSQuery.active.handle.declareUnknowns(unknownsSetGCSQuery.active.handle)
+      // systemsGCSQuery.active.handle.declareUnknowns(unknownsGCSQuery.get())
+      // systemsGCSQuery.active.handle.declareDrivenParams(drivenParamsSetGCSQuery.active.handle)
       // systemsGCSQuery.active.handle.initSolution(Algorithm.DogLeg);
       // systemsGCSQuery.active.handle.clear()
       // //需要加载约束项
@@ -1042,7 +1054,6 @@ export function useSystems() {
       let result = resultsQuery.get(systemsGCSQuery.active.result)
       if (constraintsGCSQuery.all().length === 0) return result
       resultsManager.backup(systemsGCSQuery.active.result)
-      // system.declareUnknowns(unknownsSetGCSQuery.active.handle)
       system.initSolution(Algorithm.DogLeg)
 
       let status = system.solve(true, Algorithm.DogLeg, false)
@@ -1054,7 +1065,7 @@ export function useSystems() {
         let tags = new Tags()
         system.getConflicting(tags)
         for (let i = 0; i < tags.size(); i++) {
-          conflictings.push(tags.ptr(i))
+          conflictings.push(tags.get(i))
         }
       }
       let redundants = []
@@ -1063,7 +1074,7 @@ export function useSystems() {
         let tags = new Tags()
         system.getRedundant(tags)
         for (let i = 0; i < tags.size(); i++) {
-          redundants.push(tags.ptr(i))
+          redundants.push(tags.get(i))
         }
       }
       if (status != SolveStatus.Success.value && status != SolveStatus.Converged.value) {
@@ -1126,6 +1137,7 @@ export function useSystems() {
         system.active = false
       })
       unknownsSetManager.active(index)
+      drivenParamsSetManager.active(index)
     },
     // set active(index) {
     //   assertIndexFormList(systems, index)
@@ -1149,6 +1161,7 @@ export function useUnknownsSet() {
   let unknownsSetJSONGCS = useUnknownsSetJSONGCS()
   let unknownsSetGCSQuery = useUnknownsSetGCSQuery()
   let Module = useModuleGCS()
+  let unknownsManager = useUnknowns()
   return {
     add({ id }) {
       let unknowns = {
@@ -1187,6 +1200,7 @@ export function useUnknownsSet() {
       // if (unknownsSetJSONGCS.value[unknowns.id].includes(n.id)) return //允许重复，防止一个变量对应多个约束，一个约束删除导致其他约束变量失效问题
       unknownsSetJSONGCS.value[unknowns.id].push(n.id)
       unknownsSetGCSQuery.active.handle.push(n.handle)
+      unknownsManager.update()
     },
     numeralRemoveOne(n) {
       let unknowns = unknownsSetGCSQuery.active
@@ -1197,6 +1211,7 @@ export function useUnknownsSet() {
       // console.log(2, unknownsSetJSONGCS.value[unknowns.id].includes(n.id), n.id)
       if (unknownsSetJSONGCS.value[unknowns.id].includes(n.id)) return //如果还存在就不要移除变量，防止一个变量对应多个约束，一个约束删除导致其他约束变量失效问题
       unknownsSetGCSQuery.active.handle.remove(n.handle)
+      unknownsManager.update()
     },
     numeralRemoveAll(n) {
       let unknowns = unknownsSetGCSQuery.active
@@ -1207,6 +1222,7 @@ export function useUnknownsSet() {
         }
       })
       unknownsSetGCSQuery.active.handle.remove(n.handle)
+      unknownsManager.update()
     },
     active(index) {
       assertIndexFormList(unknownsSet, index, 'unknownsSet:active')
@@ -1218,19 +1234,80 @@ export function useUnknownsSet() {
         unknowns.active = false
       })
     },
-    // set active(index) {
-    //   assertIndexFormList(unknownsSet, index)
-    //   unknownsSet.forEach((unknowns, i) => {
-    //     if (index === i) {
-    //       unknowns.active = true
-    //       return
-    //     }
-    //     unknowns.active = false
-    //   })
-    // },
-    // get active() {
-    //   return unknownsSet.find(({ active }) => active)
-    // },
+  }
+}
+
+export function useDrivenParamsSet() {
+  let drivenParamsSetGCS = useDrivenParamsSetGCS()
+  let drivenParamsSetGCSQuery = useDrivenParamsSetGCSQuery()
+  let Module = useModuleGCS()
+  let unknownsManager = useUnknowns()
+  return {
+    add({ id }) {
+      let drivenParams = {
+        handle: new Module.Drivens(),
+        id: nanoid(),
+        // creator: id,
+        active: false,
+      }
+      drivenParamsSetGCS.push(drivenParams)
+      return drivenParams
+    },
+    removeByIndex(index) {
+      drivenParamsSetGCS.splice(index, 1)[0]
+    },
+    removeById(id) {
+      let index = drivenParamsSetGCS.findIndex((drivenParams) => drivenParams.id === id)
+      this.removeByIndex(index)
+    },
+    remove(drivenParams) {
+      let index = drivenParamsSetGCS.indexOf(drivenParams)
+      this.removeByIndex(index)
+    },
+    clear() {
+      ;[...drivenParamsSetGCS].forEach((drivenParams) => {
+        drivenParamsSetGCS.splice(0, 1)
+      })
+    },
+    numeralAdd(n) {
+      if (drivenParamsSetGCSQuery.hasFromActive(n)) return
+      drivenParamsSetGCSQuery.active.handle.push(n.handle)
+      unknownsManager.update()
+    },
+    numeralRemove(n) {
+      if (!drivenParamsSetGCSQuery.hasFromActive(n)) return
+      drivenParamsSetGCSQuery.active.handle.remove(n.handle)
+      unknownsManager.update()
+    },
+    active(index) {
+      assertIndexFormList(drivenParamsSetGCS, index, 'drivenParamsSet:active')
+      drivenParamsSetGCS.forEach((drivenParams, i) => {
+        if (index === i) {
+          drivenParams.active = true
+          return
+        }
+        drivenParams.active = false
+      })
+    },
+  }
+}
+
+export function useUnknowns() {
+  let unknowns = useUnknownsGCS()
+  let unknownsSetGCSQuery = useUnknownsSetGCSQuery()
+  let drivenParamsSetGCSQuery = useDrivenParamsSetGCSQuery()
+  let numeralsGCSQuery = useNumeralsGCSQuery()
+  return {
+    update() {
+      unknowns.clear()
+      for (let i = 0; i < unknownsSetGCSQuery.active.handle.size(); i++) {
+        let ptr = unknownsSetGCSQuery.active.handle.ptr(i)
+        let numeral = numeralsGCSQuery.getByPtr(ptr)
+        if (!drivenParamsSetGCSQuery.active.handle.has(numeral.handle)) {
+          unknowns.push(numeral.handle)
+        }
+      }
+    },
   }
 }
 

@@ -13,8 +13,10 @@ import {
   useResults as useResultsGCS,
   useResultsHash as useResultsHashGCS,
   useSystems as useSystemsGCS,
+  useUnknowns as useUnknownsGCS,
   useUnknownsSet as useUnknownsSetGCS,
   useUnknownsSetJSON as useUnknownsSetJSONGCS,
+  useDrivenParamsSet as useDrivenParamsSetGCS,
   useSolverResult as useSolverResultGCS,
 } from './solver-gcs-provide-context.js'
 
@@ -81,9 +83,9 @@ export function useNumerals() {
     indexOf(numeral) {
       return numerals.indexOf(numeral)
     },
-    all(){
+    all() {
       return numerals
-    }
+    },
   }
 }
 export function useConstraints() {
@@ -159,6 +161,32 @@ export function useUnknownsSet() {
     },
     get active() {
       return unknownsSet.find(({ active }) => active)
+    },
+    hasFromActive(n) {
+      let unknowns = this.active
+      return unknownsSetJSONGCS.value[unknowns.id].includes(n.id)
+    },
+  }
+}
+export function useDrivenParamsSet() {
+  let drivenParamsSet = useDrivenParamsSetGCS()
+  return {
+    get active() {
+      return drivenParamsSet.find(({ active }) => active)
+    },
+    has(numeral) {
+      return drivenParamsSet.some(({ handle }) => handle.has(numeral.handle))
+    },
+    hasFromActive(numeral) {
+      return this.active.handle.has(numeral.handle)
+    },
+  }
+}
+export function useUnknowns() {
+  let unknowns = useUnknownsGCS()
+  return {
+    get() {
+      return unknowns
     },
   }
 }

@@ -128,7 +128,7 @@ ConstraintResolver.registryRuler('addConstraintP2PCoincident')
       geometrys.push([current, next])
       constraints.push(constraint.id)
     }
-    constraintsRelationManager.add(name, geometrys, constraints)
+    return constraintsRelationManager.add(name, geometrys, constraints)
   })
   .unattach(function (constraintRelation) {
     let context = this.getContext()
@@ -168,7 +168,7 @@ ConstraintResolver.registryRuler('addConstraintCoordinateX')
       geometrys.push([point.id])
       constraints.push(constraint.id)
     }
-    constraintsRelationManager.add(name, geometrys, constraints)
+    return constraintsRelationManager.add(name, geometrys, constraints)
   })
 ConstraintResolver.registryRuler('addConstraintCoordinateY')
   .usable(function (selectGeometrys) {
@@ -194,7 +194,7 @@ ConstraintResolver.registryRuler('addConstraintCoordinateY')
       geometrys.push([point.id])
       constraints.push(constraint.id)
     }
-    constraintsRelationManager.add(name, geometrys, constraints)
+    return constraintsRelationManager.add(name, geometrys, constraints)
   })
 
 ConstraintResolver.registryRuler('addConstraintCoordinate')
@@ -246,7 +246,7 @@ ConstraintResolver.registryRuler('addConstraintArcRules').attach(function (name,
   let constraint = constraintsManager[name].apply(constraintsManager, [arc.id])
   let geometrys = [[arc.id]]
   let constraints = [constraint.id]
-  constraintsRelationManager.add(name, geometrys, constraints)
+  return constraintsRelationManager.add(name, geometrys, constraints)
 })
 
 ConstraintResolver.registryRuler('addConstraintPointOnLine')
@@ -276,7 +276,7 @@ ConstraintResolver.registryRuler('addConstraintPointOnLine')
       geometrys.push([point, line])
       constraints.push(constraint.id)
     })
-    constraintsRelationManager.add(name, geometrys, constraints)
+    return constraintsRelationManager.add(name, geometrys, constraints)
   })
 
 ConstraintResolver.registryRuler('addConstraintPointOnLine2')
@@ -300,7 +300,7 @@ ConstraintResolver.registryRuler('addConstraintPointOnLine2')
       geometrys.push([...selectGeometrys])
       constraints.push(constraint.id)
     })
-    constraintsRelationManager.add(name, geometrys, constraints)
+    return constraintsRelationManager.add(name, geometrys, constraints)
   })
 
 ConstraintResolver.registryRuler('addConstraintPointOnPerpBisector')
@@ -330,7 +330,7 @@ ConstraintResolver.registryRuler('addConstraintPointOnPerpBisector')
       geometrys.push([point, line])
       constraints.push(constraint.id)
     })
-    constraintsRelationManager.add(name, geometrys, constraints)
+    return constraintsRelationManager.add(name, geometrys, constraints)
   })
 
 ConstraintResolver.registryRuler('addConstraintParallel')
@@ -354,7 +354,7 @@ ConstraintResolver.registryRuler('addConstraintParallel')
       geometrys.push([current, next])
       constraints.push(constraint.id)
     }
-    constraintsRelationManager.add(name, geometrys, constraints)
+    return constraintsRelationManager.add(name, geometrys, constraints)
   })
 
 ConstraintResolver.registryRuler('addConstraintPerpendicular')
@@ -375,7 +375,7 @@ ConstraintResolver.registryRuler('addConstraintPerpendicular')
     ])
     let geometrys = [[selectGeometrys[0], selectGeometrys[1]]]
     let constraints = [constraint.id]
-    constraintsRelationManager.add(name, geometrys, constraints)
+    return constraintsRelationManager.add(name, geometrys, constraints)
   })
 
 ConstraintResolver.registryRuler('addConstraintEqualLength')
@@ -399,7 +399,7 @@ ConstraintResolver.registryRuler('addConstraintEqualLength')
       geometrys.push([current, next])
       constraints.push(constraint.id)
     }
-    constraintsRelationManager.add(name, geometrys, constraints)
+    return constraintsRelationManager.add(name, geometrys, constraints)
   })
 
 ConstraintResolver.registryRuler('addConstraintHorizontal')
@@ -422,7 +422,7 @@ ConstraintResolver.registryRuler('addConstraintHorizontal')
       geometrys.push([line])
       constraints.push(constraint.id)
     }
-    constraintsRelationManager.add(name, geometrys, constraints)
+    return constraintsRelationManager.add(name, geometrys, constraints)
   })
 
 ConstraintResolver.registryRuler('addConstraintVertical')
@@ -445,7 +445,7 @@ ConstraintResolver.registryRuler('addConstraintVertical')
       geometrys.push([line])
       constraints.push(constraint.id)
     }
-    constraintsRelationManager.add(name, geometrys, constraints)
+    return constraintsRelationManager.add(name, geometrys, constraints)
   })
 
 ConstraintResolver.registryRuler('addConstraintHorizontal2')
@@ -469,7 +469,7 @@ ConstraintResolver.registryRuler('addConstraintHorizontal2')
       geometrys.push([current, next])
       constraints.push(constraint.id)
     }
-    constraintsRelationManager.add(name, geometrys, constraints)
+    return constraintsRelationManager.add(name, geometrys, constraints)
   })
 ConstraintResolver.registryRuler('addConstraintVertical2')
   .usable(function (selectGeometrys) {
@@ -492,7 +492,7 @@ ConstraintResolver.registryRuler('addConstraintVertical2')
       geometrys.push([current, next])
       constraints.push(constraint.id)
     }
-    constraintsRelationManager.add(name, geometrys, constraints)
+    return constraintsRelationManager.add(name, geometrys, constraints)
   })
 
 ConstraintResolver.registryRuler('addConstraintMidpointOnLine')
@@ -510,7 +510,7 @@ ConstraintResolver.registryRuler('addConstraintMidpointOnLine')
     let line1 = selectGeometrys[0]
     let line2 = selectGeometrys[1]
     let constraint = constraintsManager[name].apply(constraintsManager, [line1, line2])
-    constraintsRelationManager.add(name, [[line1, line2]], [constraint.id])
+    return constraintsRelationManager.add(name, [[line1, line2]], [constraint.id])
   })
 ConstraintResolver.registryRuler('addConstraintMidpointOnLine2')
   .usable(function (selectGeometrys) {
@@ -534,7 +534,7 @@ ConstraintResolver.registryRuler('addConstraintMidpointOnLine2')
       point3,
       point4,
     ])
-    constraintsRelationManager.add(name, [[point1, point2, point3, point4]], [constraint.id])
+    return constraintsRelationManager.add(name, [[point1, point2, point3, point4]], [constraint.id])
   })
 
 ConstraintResolver.registryRuler('addConstraintP2PSymmetric')
@@ -553,7 +553,7 @@ ConstraintResolver.registryRuler('addConstraintP2PSymmetric')
     let point2 = selectGeometrys[1]
     let point = selectGeometrys[2]
     let constraint = constraintsManager[name].apply(constraintsManager, [point1, point2, point])
-    constraintsRelationManager.add(name, [[point1, point2, point]], [constraint.id])
+    return constraintsRelationManager.add(name, [[point1, point2, point]], [constraint.id])
   })
 
 ConstraintResolver.registryRuler('addConstraintP2PSymmetric2')
@@ -576,7 +576,7 @@ ConstraintResolver.registryRuler('addConstraintP2PSymmetric2')
     let points = selectGeometrys.filter((id) => pointsGeometryQuery.hasById(id))
     let line = selectGeometrys.filter((id) => linesGeometryQuery.hasById(id))[0]
     let constraint = constraintsManager[name].apply(constraintsManager, [...points, line])
-    constraintsRelationManager.add(name, [[...points, line]], [constraint.id])
+    return constraintsRelationManager.add(name, [[...points, line]], [constraint.id])
   })
 
 ConstraintResolver.registryRuler('addConstraintP2PDistance')
@@ -616,7 +616,7 @@ ConstraintResolver.registryRuler('addConstraintParallel2')
     let constraintsManager = context.get('constraintsManager')
     let constraintsRelationManager = context.get('constraintsRelationManager')
     let constraint = constraintsManager[name].apply(constraintsManager, [...args])
-    constraintsRelationManager.add(name, [[...args]], [constraint.id])
+    return constraintsRelationManager.add(name, [[...args]], [constraint.id])
   })
 ConstraintResolver.registryRuler('addConstraintPerpendicular2')
   .usable(function (args) {
@@ -629,5 +629,5 @@ ConstraintResolver.registryRuler('addConstraintPerpendicular2')
     let constraintsManager = context.get('constraintsManager')
     let constraintsRelationManager = context.get('constraintsRelationManager')
     let constraint = constraintsManager[name].apply(constraintsManager, [...args])
-    constraintsRelationManager.add(name, [[...args]], [constraint.id])
+    return constraintsRelationManager.add(name, [[...args]], [constraint.id])
   })

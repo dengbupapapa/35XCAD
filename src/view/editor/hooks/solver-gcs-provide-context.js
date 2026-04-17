@@ -9,9 +9,14 @@ export default function useRegistry() {
     // console.log(Module)
     return Module
   }
+  let unknowns
+  function unknownsCallback() {
+    return unknowns
+  }
   const systems = []
   const unknownsSet = []
   const unknownsSetJSON = ref({})
+  const drivenParamsSet = []
   const numerals = []
   const numeralsHash = {}
   const numeralsPtrHash = {}
@@ -28,9 +33,12 @@ export default function useRegistry() {
   const resultsHash = ref({})
   const solverResult = ref({})
   provide(moduleSymbol, ModuleCallback)
+  provide(unknownsSymbol, unknownsCallback)
   provide(systemsSymbol, systems)
   provide(unknownsSetSymbol, unknownsSet)
   provide(unknownsSetJSONSymbol, unknownsSetJSON)
+  provide(drivenParamsSetSymbol, drivenParamsSet)
+
   provide(numeralsSymbol, numerals)
   provide(numeralsHashSymbol, numeralsHash)
   provide(numeralsPtrHashSymbol, numeralsPtrHash)
@@ -49,6 +57,7 @@ export default function useRegistry() {
   gcs()
     .then((M) => {
       Module = M
+      unknowns = new Module.Unknowns()
       // let solveThrottle = throttle(function (...args) {
       //   return this.solve.apply(this, args)
       // }, 0)
@@ -68,8 +77,10 @@ export default function useRegistry() {
 
 const statusSymbol = Symbol('status')
 const moduleSymbol = Symbol('module')
+const unknownsSymbol = Symbol('unknowns')
 const unknownsSetSymbol = Symbol('unknownsSet')
 const unknownsSetJSONSymbol = Symbol('unknownsSetJSON')
+const drivenParamsSetSymbol = Symbol('drivenParamsSet')
 const systemsSymbol = Symbol('systems')
 const numeralsSymbol = Symbol('numerals')
 const numeralsHashSymbol = Symbol('numeralsHash')
@@ -92,11 +103,17 @@ export function useStatus() {
 export function useModule() {
   return inject(moduleSymbol)()
 }
+export function useUnknowns() {
+  return inject(unknownsSymbol)()
+}
 export function useSystems() {
   return inject(systemsSymbol)
 }
 export function useUnknownsSet() {
   return inject(unknownsSetSymbol)
+}
+export function useDrivenParamsSet() {
+  return inject(drivenParamsSetSymbol)
 }
 export function useUnknownsSetJSON() {
   return inject(unknownsSetJSONSymbol)

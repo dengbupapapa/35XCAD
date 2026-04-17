@@ -43,6 +43,7 @@ export function useSelect() {
   const selectLines = useSelectLines()
   const dimensionDistancePonit2Point = useDimensionDistancePonit2Point()
   const dimensionDistancePonit2Line = useDimensionDistancePonit2Line()
+  const dimensionDistanceLine2Line = useDimensionDistanceLine2Line()
 
   function onMousedown(event) {
     if (event.button !== 0) return
@@ -55,7 +56,11 @@ export function useSelect() {
       selectGeometrysInteractionDispatch.clear()
     }
     // selectLines.onMousedown(state, event)
-    if (dimensionDistancePonit2Point.onMousedown() || dimensionDistancePonit2Line.onMousedown()) {
+    if (
+      dimensionDistancePonit2Point.onMousedown() ||
+      dimensionDistancePonit2Line.onMousedown() ||
+      dimensionDistanceLine2Line.onMousedown()
+    ) {
       selectGeometrysInteractionDispatch.clear()
       // selectPointsStrictInteractionManager.clear()
     }
@@ -192,6 +197,8 @@ function useDimensionDistancePonit2Line() {
   const selectLinesStrictInteractionQuery = useSelectLinesStrictInteractionQuery()
   const dimensionDistancesGeometryDispatch = useDimensionDistancesGeometryDispatch()
   const dimensionDistancesGeometryMapper = useDimensionDistancesGeometryMapper()
+  const linesGeometryQuery = useLinesGeometryQuery()
+  const selectPointsStrictInteractionManager = useSelectPointsStrictInteractionManager()
   return {
     onMousedown() {
       let selectPointsStrict = selectPointsStrictInteractionQuery.get()
@@ -203,10 +210,40 @@ function useDimensionDistancePonit2Line() {
       ) {
         return false
       }
+      let lineGeometry = linesGeometryQuery.get(selectLinesStrict[0])
+
+      if (
+        lineGeometry.start === selectPointsStrict[0] ||
+        lineGeometry.end === selectPointsStrict[0]
+      ) {
+        selectPointsStrictInteractionManager.clear()
+        return false
+      }
+
       let dimensionDistance = dimensionDistancesGeometryDispatch.addPonit2Line(
         selectPointsStrict[0],
         selectLinesStrict[0],
       )
+      setTimeout(() => {
+        dimensionDistancesGeometryDispatch.activate(dimensionDistance.lines[0])
+      })
+      return true
+    },
+  }
+}
+
+function useDimensionDistanceLine2Line() {
+  const selectLinesStrictInteractionQuery = useSelectLinesStrictInteractionQuery()
+  const dimensionDistancesGeometryDispatch = useDimensionDistancesGeometryDispatch()
+  const dimensionDistancesGeometryMapper = useDimensionDistancesGeometryMapper()
+  return {
+    onMousedown() {
+      let selectLinesStrict = selectLinesStrictInteractionQuery.get()
+      if (selectLinesStrict.length !== 2) return false
+      if (selectLinesStrict.some((id) => dimensionDistancesGeometryMapper.hasFormLineId(id))) {
+        return false
+      }
+      let dimensionDistance = dimensionDistancesGeometryDispatch.addLine2Line(...selectLinesStrict)
       setTimeout(() => {
         dimensionDistancesGeometryDispatch.activate(dimensionDistance.lines[0])
       })

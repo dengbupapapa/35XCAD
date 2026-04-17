@@ -148,6 +148,7 @@ import {
   usePointsHash as usePointsHashGCSDerived,
   useNumeralsHash as useNumeralsHashGCSDerived,
   useUnknownsSetJSON as useUnknownsSetJSONGCSDerived,
+  useSolverResult as useSolverResultGCSDerived,
 } from './solver-gcs-derived'
 import { watchEffect, toRaw, ref } from 'vue'
 export function useDependencyGraph() {
@@ -155,18 +156,41 @@ export function useDependencyGraph() {
   let pointsHashGCSDerived = usePointsHashGCSDerived()
   let numeralsHashGCSDerived = useNumeralsHashGCSDerived()
   let unknownsSetJSONGCSDerived = useUnknownsSetJSONGCSDerived()
+  let solverResultGCSDerived = useSolverResultGCSDerived()
   let graph = ref({})
   watchEffect(() => {
+    let { conflictings = [], redundants = [] } = solverResultGCSDerived.value
+    let pointsConflicting = new Set()
+    let pointsRedundant = new Set()
+    console.log(solverResultGCSDerived.value)
     let points = pointsGeometryDerived.value.map((point) => {
       point = { ...point }
       point.gcs = { ...pointsHashGCSDerived[point.gcs] }
       point.gcs.u = { ...numeralsHashGCSDerived[point.gcs.u] }
       point.gcs.v = { ...numeralsHashGCSDerived[point.gcs.v] }
+      console.log(point.gcs.u.ptr, point.gcs.v.ptr)
+      if (
+        solverResultGCSDerived.value.conflictings instanceof Array &&
+        (solverResultGCSDerived.value.conflictings.includes(point.gcs.u.ptr) ||
+          solverResultGCSDerived.value.conflictings.includes(point.gcs.v.ptr))
+      ) {
+        pointsConflicting.add(point.id)
+      }
+      if (
+        solverResultGCSDerived.value.redundants instanceof Array &&
+        (solverResultGCSDerived.value.redundants.includes(point.gcs.u.ptr) ||
+          solverResultGCSDerived.value.redundants.includes(point.gcs.v.ptr))
+      ) {
+        pointsRedundant.add(point.id)
+      }
+
       return toRaw(point)
     })
     graph.value = {
       points,
       unknowns: toRaw(Object.values(unknownsSetJSONGCSDerived.value)[0]),
+      pointsConflicting: [...pointsConflicting],
+      pointsRedundant: [...pointsRedundant],
     }
   })
   return graph

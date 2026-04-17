@@ -102,7 +102,10 @@ export function usePoints() {
         arcsGeometryDispatch.updateCommit(index, position)
       }
       if (dimensionDistancesGeometryMapper.getFormPointIndex(index)) {
-        dimensionDistancesGeometryDispatch.updateCommit(index, position)
+        return [
+          ...(dimensionDistancesGeometryDispatch.updateCommit(index, position) || []),
+          ...pointsGeometryManager.updateCommit(index, position),
+        ]
       }
       return pointsGeometryManager.updateCommit(index, position)
     },

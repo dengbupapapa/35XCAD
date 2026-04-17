@@ -37,6 +37,7 @@ import {
   // useConstraints as useConstraintsGCSManager,
   useSystems as useSystemsGCSManager,
   useUnknownsSet as useUnknownsSetGCSManager,
+  useDrivenParamsSet as useDrivenParamsSetGCSManager,
 } from './solver-gcs-manager.js'
 import {
   useNumerals as useNumeralsGCSQuery,
@@ -179,6 +180,7 @@ export function usePoints() {
   let systemsGCSQuery = useSystemsGCSQuery()
   let selectPointsInteractioManager = useSelectPointsInteractioManager()
   let unknownsSetGCSManager = useUnknownsSetGCSManager()
+  let drivenParamsSetGCSManager = useDrivenParamsSetGCSManager()
   let toolTempGCSManager = useToolTempGCSManager()
   let unknownsSetGCSQuery = useUnknownsSetGCSQuery()
   // let pointsEntitie = usePointsEntitie()
@@ -251,85 +253,6 @@ export function usePoints() {
         pointsViewportManager.remove(index)
       })
     },
-    // updateById(batch) {
-    //   if (arguments.length === 2) {
-    //     let id = arguments[0]
-    //     let position = arguments[1]
-    //     batch = [{ id, position }]
-    //   }
-
-    //   batch = batch.map(({ id, position }) => {
-    //     let point = pointsGeometryQuery.get(id)
-    //     let index = pointsGeometryQuery.indexOf(point)
-    //     return {
-    //       index,
-    //       position,
-    //     }
-    //   })
-    //   this.update(batch)
-    // },
-    // update(...batch) {
-    //   /* [问题]
-    //    * 这段求解调用应该移到gcs里去 ko (占时不用移动,因为保证manager从上执行原则)
-    //    */
-    //   let numerals = this.updateCommit(...batch)
-    //   this.updateApply(numerals)
-    // },
-    // updateCommit(batch) {
-    //   if (arguments.length === 2) {
-    //     let index = arguments[0]
-    //     let position = arguments[1]
-    //     batch = [{ index, position }]
-    //   }
-    //   let numerals = []
-    //   batch.forEach(({ index, position }) => {
-    //     let pointCurrentGeometry = pointsGeometry.value[index]
-    //     let pointCurrentGCS = pointsGCSQuery.get(pointCurrentGeometry.gcs)
-    //     let numeralCurrentU = numeralsGCSQuery.get(pointCurrentGCS.u)
-    //     let numeralCurrentV = numeralsGCSQuery.get(pointCurrentGCS.v)
-    //     // numerals.push(numeralCurrentU, numeralCurrentV)
-    //     // this.updatePure(index, position)
-    //     //不是变量
-    //     if (
-    //       !unknownsSetGCSManager.has(numeralCurrentU) &&
-    //       !unknownsSetGCSManager.has(numeralCurrentV)
-    //     ) {
-    //       return this.updatePure(index, position)
-    //     }
-    //     let plane = planesGeometryQuery.get(pointCurrentGeometry.plane)
-    //     let [u, v] = worldCoords2planeCoords(position, plane)
-
-    //     let stables = unknownsSetGCSQuery.stable()
-
-    //     // console.log(stables.includes(numeralCurrentU), stables.includes(numeralCurrentV))
-
-    //     if (unknownsSetGCSManager.has(numeralCurrentU) && !stables.includes(numeralCurrentU)) {
-    //       numeralCurrentU.handle.set(u)
-    //       let doubleX = toolTempGCSManager.addNumeral({ value: u })
-    //       systemsGCSQuery.active.handle.addConstraintCoordinateX(
-    //         pointCurrentGCS.handle,
-    //         doubleX.handle,
-    //         -1,
-    //         false,
-    //       )
-    //       numerals.push(numeralCurrentU)
-    //     }
-
-    //     if (unknownsSetGCSManager.has(numeralCurrentV) && !stables.includes(numeralCurrentV)) {
-    //       numeralCurrentV.handle.set(v)
-    //       let doubleY = toolTempGCSManager.addNumeral({ value: v })
-    //       systemsGCSQuery.active.handle.addConstraintCoordinateY(
-    //         pointCurrentGCS.handle,
-    //         doubleY.handle,
-    //         -1,
-    //         false,
-    //       )
-    //       numerals.push(numeralCurrentV)
-    //     }
-    //     // toolTempGCSManager.addConstraintCoordinate(pointCurrentGeometry, position)
-    //   })
-    //   return numerals
-    // },
     updateCommit(index, position) {
       let numerals = []
       let pointCurrentGeometry = pointsGeometry.value[index]
@@ -395,6 +318,7 @@ export function usePoints() {
       let result = systemsGCSManager.solver()
       let { dependentsGroups, dependents, status, redundants, dependentsGraph } = result
       // console.log(result, numerals)
+      numerals = [...new Set(numerals)]
       if (numerals.length > 0) {
         let updatedPoints = new Set()
         dependentsGraph.forEach((graph) => {
@@ -466,6 +390,26 @@ export function usePoints() {
       pointsGeometry.value[index].z = z
       pointsGCSManager.update(pointsGeometry.value[index])
       pointsViewportManager.translation(index, position)
+    },
+    undriven(id) {
+      let pointsGeometry = pointsGeometryQuery.get(id)
+      let pointGCS = pointsGCSQuery.get(pointsGeometry.gcs)
+      let numeralU = numeralsGCSQuery.get(pointGCS.u)
+      let numeralV = numeralsGCSQuery.get(pointGCS.v)
+      drivenParamsSetGCSManager.numeralRemove(numeralU)
+      drivenParamsSetGCSManager.numeralRemove(numeralV)
+      // unknownsSetGCSManager.numeralAddUnsafe(numeralU)
+      // unknownsSetGCSManager.numeralAddUnsafe(numeralV)
+    },
+    driven(id) {
+      let pointsGeometry = pointsGeometryQuery.get(id)
+      let pointGCS = pointsGCSQuery.get(pointsGeometry.gcs)
+      let numeralU = numeralsGCSQuery.get(pointGCS.u)
+      let numeralV = numeralsGCSQuery.get(pointGCS.v)
+      drivenParamsSetGCSManager.numeralAdd(numeralU)
+      drivenParamsSetGCSManager.numeralAdd(numeralV)
+      // unknownsSetGCSManager.numeralRemoveUnsafe(numeralU)
+      // unknownsSetGCSManager.numeralRemoveUnsafe(numeralV)
     },
   }
 }
@@ -1102,6 +1046,12 @@ export function useTexts() {
     },
     clear() {
       ;[...textsGeometry.value].forEach((text) => {
+        let changeMap = textsViewportManager.remove(text.id)
+        changeMap.forEach((indexAfter, indexBefore) => {
+          let text = textsGeometryQuery.getByCharIndex(indexBefore)
+          this.removeCharIndex(text.id, indexBefore)
+          this.addCharIndex(text.id, indexAfter)
+        })
         text.indexs.forEach((index) => {
           delete textsCharIndexHashGeometry.value[index]
         })

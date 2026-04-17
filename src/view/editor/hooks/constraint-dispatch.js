@@ -42,6 +42,14 @@ export function useConstraints(options) {
         constraintsManager.disable(constraint)
       })
     },
+    interactive(id) {
+      let constraintRelation = constraintsRelationQuery.get(id)
+      delete constraintRelation.noninteractive
+    },
+    noninteractive(id) {
+      let constraintRelation = constraintsRelationQuery.get(id)
+      constraintRelation.noninteractive = true
+    },
     /*
      * 以下目前适合geometry正确处理完毕的
      */

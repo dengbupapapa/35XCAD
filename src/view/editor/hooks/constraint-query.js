@@ -77,6 +77,10 @@ export function useConstraintsRelation() {
         })
       })
     },
+    isNonInteractive(id) {
+      let constraintRelation = this.get(id)
+      return !!constraintRelation.noninteractive
+    },
   }
 }
 export function useEffectDdebouncePromise() {
