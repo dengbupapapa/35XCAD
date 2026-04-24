@@ -842,12 +842,13 @@ export function useDimensionDistances() {
   let textsGeometryQuery = useTextsGeometryQuery()
   let dimensionDistancesCreatorHashGeometry = useDimensionDistancesCreatorHashGeometry()
   return {
-    add({ lines = [], points = [], text, creator = [] }) {
+    add({ lines = [], points = [], text, creator = [], coincidents = [] }) {
       let dimensionDistance = {
         lines,
         points,
         text,
         creator,
+        coincidents,
         id: nanoid(),
         plane: planesGeometryQuery?.active?.id,
       }

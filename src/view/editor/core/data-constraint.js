@@ -631,3 +631,17 @@ ConstraintResolver.registryRuler('addConstraintPerpendicular2')
     let constraint = constraintsManager[name].apply(constraintsManager, [...args])
     return constraintsRelationManager.add(name, [[...args]], [constraint.id])
   })
+
+ConstraintResolver.registryRuler('addConstraintP2PAngle')
+  .usable(function (args) {
+    let context = this.getContext()
+    let pointsGeometryQuery = context.get('pointsGeometryQuery')
+    return args.length === 2 && args.every((id) => pointsGeometryQuery.hasById(id))
+  })
+  .attach(function (name, args) {
+    let context = this.getContext()
+    let constraintsManager = context.get('constraintsManager')
+    let constraintsRelationManager = context.get('constraintsRelationManager')
+    let constraint = constraintsManager[name].apply(constraintsManager, [...args])
+    return constraintsRelationManager.add(name, [[...args]], [constraint.id])
+  })

@@ -11,6 +11,7 @@ export default function useRegistry() {
   provide(constraintsIncrementSymbol, constraintsIncrement)
   const constraintsRelation = ref([])
   const constraintsRelationHash = ref({})
+  // const constraintsRelationByTypeHash = ref({})
   provide(constraintsRelationSymbol, constraintsRelation)
   provide(constraintsRelationHashSymbol, constraintsRelationHash)
   const effectDdebouncePromise = {}
