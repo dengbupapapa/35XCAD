@@ -15,6 +15,7 @@ export function useConstraints(options) {
   let constraintsRelationQuery = useConstraintsRelationQuery()
 
   let constraintResolver = new ConstraintResolver() //加占时只能用同步不能用effectDdebounce
+
   return {
     /*
      * 以下目前适合基于ConstraintResolver逻辑处理的
@@ -23,7 +24,8 @@ export function useConstraints(options) {
       constraintResolver.solverUnattach(id)
     },
     add(name, args, driving, tag) {
-      return constraintResolver.solverAttach(name, args, driving, tag)
+      let constraintRelation = constraintResolver.solverAttach(name, args, driving, tag)
+      return constraintRelation
     },
     usable(args) {
       return constraintResolver.solverUsable(args)

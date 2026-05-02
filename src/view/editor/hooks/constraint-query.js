@@ -5,6 +5,7 @@ import {
   useConstraintsIncrement as useConstraintsIncrementProvideContext,
   useConstraintsRelation as useConstraintsRelationProvideContext,
   useConstraintsRelationHash as useConstraintsRelationHashProvideContext,
+  useConstraintsRelationIndex as useConstraintsRelationIndexProvideContext,
   useEffectDdebouncePromise as useEffectDdebouncePromiseProvideContext,
 } from './constraint-provide-context.js'
 
@@ -91,6 +92,28 @@ export function useEffectDdebouncePromise() {
     },
     working() {
       return effectDdebouncePromiseProvideContext.status === 'pending'
+    },
+  }
+}
+
+export function useConstraintsRelationIndex() {
+  let constraintsRelationIndexProvideContext = useConstraintsRelationIndexProvideContext()
+  return {
+    getByTypeAndGeometrys(type, geometrys) {
+      constraintsRelationIndexProvideContext.byType.get(type)
+
+      let targetSet = constraintsRelationIndexProvideContext.byType.get(type)
+      if (!targetSet) return []
+      for (let i = 0; i < geometrys.length; i++) {
+        let geometry = geometrys[i]
+        targetSet = targetSet.intersection(
+          constraintsRelationIndexProvideContext.byGeometry.get(geometry) || new Set(),
+        )
+        if (targetSet.size === 0) {
+          return []
+        }
+      }
+      return targetSet.values().toArray()
     },
   }
 }

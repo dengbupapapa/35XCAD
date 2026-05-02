@@ -174,6 +174,7 @@ function useDimensionDistancePonit2Point() {
   const selectPointsStrictInteractionQuery = useSelectPointsStrictInteractionQuery()
   const dimensionDistancesGeometryDispatch = useDimensionDistancesGeometryDispatch()
   const dimensionDistancesGeometryMapper = useDimensionDistancesGeometryMapper()
+  const selectPointsStrictInteractionManager = useSelectPointsStrictInteractionManager()
   return {
     onMousedown() {
       let selectPointsStrict = selectPointsStrictInteractionQuery.get()
@@ -186,6 +187,7 @@ function useDimensionDistancePonit2Point() {
       )
       setTimeout(() => {
         dimensionDistancesGeometryDispatch.activate(dimensionDistance.lines[0])
+        // selectPointsStrictInteractionManager.add(dimensionDistance.lines[0]) //显示侧边栏,要解决这个问题得先解决选择非help的时候清理help类
       })
       return true
     },
@@ -226,6 +228,7 @@ function useDimensionDistancePonit2Line() {
       )
       setTimeout(() => {
         dimensionDistancesGeometryDispatch.activate(dimensionDistance.lines[0])
+        // selectPointsStrictInteractionManager.add(dimensionDistance.lines[0]) //显示侧边栏
       })
       return true
     },
@@ -236,6 +239,7 @@ function useDimensionDistanceLine2Line() {
   const selectLinesStrictInteractionQuery = useSelectLinesStrictInteractionQuery()
   const dimensionDistancesGeometryDispatch = useDimensionDistancesGeometryDispatch()
   const dimensionDistancesGeometryMapper = useDimensionDistancesGeometryMapper()
+  const selectPointsStrictInteractionManager = useSelectPointsStrictInteractionManager()
   return {
     onMousedown() {
       let selectLinesStrict = selectLinesStrictInteractionQuery.get()
@@ -246,6 +250,7 @@ function useDimensionDistanceLine2Line() {
       let dimensionDistance = dimensionDistancesGeometryDispatch.addLine2Line(...selectLinesStrict)
       setTimeout(() => {
         dimensionDistancesGeometryDispatch.activate(dimensionDistance.lines[0])
+        // selectPointsStrictInteractionManager.add(dimensionDistance.lines[0]) //显示侧边栏
       })
       return true
     },

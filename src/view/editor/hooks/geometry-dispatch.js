@@ -280,6 +280,7 @@ import { useRenderer } from './viewport-provide-context'
 import { worldCoords2planeCoords, planeCoords2worldCoords } from '../utils/simple'
 import { useDimensionDistances as useDimensionDistancesGeometryMapper } from './geometry-mapper'
 import { useSelectGeometrys as useSelectGeometrysInteractionDispatch } from './interaction-dispatch.js'
+import { useConstraintsRelationIndex as useConstraintsRelationIndexQuery } from './constraint-query'
 import configUI from '../config-ui.json'
 const space = 50
 let updatedOnceDimensionDistance = new Set()
@@ -293,6 +294,8 @@ export function useDimensionDistances() {
   let planesGeometryQuery = usePlanesGeometryQuery()
   let pointsGeometryMapper = usePointsGeometryMapper()
   let linesGeometryMapper = useLinesGeometryMapper()
+
+  let constraintsRelationIndexQuery = useConstraintsRelationIndexQuery()
 
   let renderer = useRenderer()
   // let geometryUpdater = useGeometryUpdater()
@@ -807,6 +810,10 @@ export function useDimensionDistances() {
         pointId,
         pointOnLineProjectionId,
       ])
+
+      // constraintsDispatch.add('addConstraintPointOnLine', [pointOnLineMiddleId, crossLine2.id])
+      // constraintsDispatch.add('addConstraintPointOnLine', [crossLine2.start, lineId])
+
       switchConstraint(dimensionDistance.id, false)
 
       return dimensionDistance
@@ -818,9 +825,16 @@ export function useDimensionDistances() {
       let pointId = lineGeometry1.start
       /*
        * [问题]
-       * 还需要判断该两直线是否存在平行约束,如果存在就不要再加了,不然约束冗余
+       * 还需要判断该两直线是否存在平行约束,如果存在就不要再加了,不然约束冗余 ko
+       * 但是没有解决间接平行的问题
        */
-      constraintsDispatch.add('addConstraintParallel', [lineId1, lineId2])
+      let alike = constraintsRelationIndexQuery.getByTypeAndGeometrys('addConstraintParallel', [
+        lineId1,
+        lineId2,
+      ])
+      if (alike.length === 0) {
+        constraintsDispatch.add('addConstraintParallel', [lineId1, lineId2])
+      }
       let dimensionDistance = this.addPonit2Line(pointId, lineId2)
       return dimensionDistance
     },

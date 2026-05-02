@@ -5,6 +5,7 @@ import {
   useConstraintsIncrement as useConstraintsIncrementProvideContext,
   useConstraintsRelation as useConstraintsRelationProvideContext,
   useConstraintsRelationHash as useConstraintsRelationHashProvideContext,
+  useConstraintsRelationIndex as useConstraintsRelationIndexProvideContext,
   useEffectDdebouncePromise as useEffectDdebouncePromiseProvideContext,
 } from './constraint-provide-context.js'
 import {
@@ -556,6 +557,7 @@ export function useConstraintsRelation() {
   let constraintsRelationProvideContext = useConstraintsRelationProvideContext()
   let constraintsRelationHashProvideContext = useConstraintsRelationHashProvideContext()
   let constraintsIncrementQuery = useConstraintsIncrementQuery()
+  let constraintsRelationIndexManager = useConstraintsRelationIndex()
   return {
     add(type, geometrys, constraints) {
       let constraintRelation = {
@@ -570,6 +572,7 @@ export function useConstraintsRelation() {
     attach(constraintRelation) {
       constraintsRelationProvideContext.value.push(constraintRelation)
       constraintsRelationHashProvideContext.value[constraintRelation.id] = constraintRelation
+      constraintsRelationIndexManager.add(constraintRelation)
       return constraintRelation
     },
     removeByIndex(index) {
@@ -580,6 +583,7 @@ export function useConstraintsRelation() {
       )
       let constraintRelation = constraintsRelationProvideContext.value.splice(index, 1)[0]
       delete constraintsRelationHashProvideContext.value[constraintRelation.id]
+      constraintsRelationIndexManager.remove(constraintRelation.id)
     },
     remove(constraintRelation) {
       let index = constraintsRelationProvideContext.value.indexOf(constraintRelation)
@@ -602,6 +606,40 @@ export function useConstraintsRelation() {
     },
   }
 }
+
+function useConstraintsRelationIndex() {
+  let constraintsRelationIndexProvideContext = useConstraintsRelationIndexProvideContext()
+  return {
+    add(constraintsRelation) {
+      let { id, type, geometrys, constraints } = constraintsRelation
+      constraintsRelationIndexProvideContext.byId.set(id, constraintsRelation)
+
+      if (!constraintsRelationIndexProvideContext.byType.get(type)) {
+        constraintsRelationIndexProvideContext.byType.set(type, new Set())
+      }
+      constraintsRelationIndexProvideContext.byType.get(type).add(id)
+
+      new Set([].concat(...geometrys)).forEach((geometry) => {
+        if (!constraintsRelationIndexProvideContext.byGeometry.get(geometry)) {
+          constraintsRelationIndexProvideContext.byGeometry.set(geometry, new Set())
+        }
+        constraintsRelationIndexProvideContext.byGeometry.get(geometry).add(id)
+      })
+    },
+    remove(id) {
+      let constraintsRelation = constraintsRelationIndexProvideContext.byId.get(id)
+      let { type, geometrys, constraints } = constraintsRelation
+      if (constraintsRelationIndexProvideContext.byType.get(type))
+        constraintsRelationIndexProvideContext.byType.get(type).delete(id)
+
+      new Set([].concat(...geometrys)).forEach((geometry) => {
+        if (constraintsRelationIndexProvideContext.byGeometry.get(geometry))
+          constraintsRelationIndexProvideContext.byGeometry.get(geometry).delete(id)
+      })
+    },
+  }
+}
+
 export function useEffectDdebouncePromise() {
   let effectDdebouncePromiseProvideContext = useEffectDdebouncePromiseProvideContext()
   return {
